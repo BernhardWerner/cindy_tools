@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>stroke recorder</title>
+  </head>
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+
+
+<canvas id="drawingCanvas" align="left" valign="top" width="800" height="600" style="border:1px solid #000000;"></canvas>
+
+
+
+
+
+
+<script>
+  const canvas = document.getElementById('drawingCanvas');
+  const ctx = canvas.getContext('2d');
+  let isDrawing = false;
+  let points = [];
+
+  function addPoint(x, y, pressure) {
+  let lastPoint = points.length > 0 ? points[points.length - 1] : null;
+  let newPoint = [x, y, pressure];
+
+  if (lastPoint) {
+    let weight = 0.85;
+    newPoint[0] = (1 - weight) * x + weight * lastPoint[0]; // x-component
+    newPoint[1] = (1 - weight) * y + weight * lastPoint[1]; // y-component
+    newPoint[2] = (1 - weight) * pressure + weight * lastPoint[2]; // pressure
+
+    ctx.beginPath();
+    ctx.moveTo(lastPoint[0], lastPoint[1]); // Move to last x, last y
+    ctx.lineTo(newPoint[0], newPoint[1]); // Line to new x, new y
+    ctx.lineWidth = newPoint[2] * 10; // Example pressure-based line width
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  points.push(newPoint);
+}
+  canvas.addEventListener('pointerdown', (e) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    isDrawing = true;
+    points = []; 
+    addPoint(e.offsetX, e.offsetY, e.pressure);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    addPoint(e.offsetX, e.offsetY, e.pressure);
+  });
+
+  canvas.addEventListener('pointerup', (e) => {
+    if (isDrawing) {
+      isDrawing = false;
+      formatedPoints = points.map((point) => {
+        return [(point[0] - 0.5 * canvas.width) / 20, (point[1] - 0.5 * canvas.height) / 20, point[2]];
+      });
+      console.log(JSON.stringify(formatedPoints));
+    }
+  });
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
