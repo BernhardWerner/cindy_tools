@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Presentation</title>
+    <script type="text/javascript" src="Cindy.js"></script>
+  </head>
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+
+
+<script id='csinit' type='text/x-cindyscript'>
+
+  
+// ************************************************************************************************
+
+
+
+// ************************************************************************************************
+
+// duration and time elapsed
+tracks = [
+  [1, 0]
+];
+
+state = 1;
+
+setupTime();
+playanimation();
+running = false;
+</script>
+
+
+<script id='csdraw' type='text/x-cindyscript'>
+
+
+t1 = tracks_1_2 / tracks_1_1;
+
+
+
+</script>
+
+
+<script id='cstick' type='text/x-cindyscript'>
+delta = deltaTime();
+
+if(running,
+  if(state <= length(tracks),
+
+    tracks_state_2 = min(tracks_state_2 + delta, tracks_state_1);
+
+  
+
+
+    if(tracks_state_2 >= tracks_state_1,
+      running = false;
+      state = state + 1;
+    );
+  );
+);
+
+</script>
+
+
+<script id='csmousemove' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousedown' type='text/x-cindyscript'>
+running = true;
+</script>
+
+
+<script id='csmousedrag' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmouseup' type='text/x-cindyscript'>
+</script>
+
+<!-- <script id='cskeydown' type='text/x-cindyscript'>
+</script> -->
+
+
+<canvas id="CSCanvas" align="left" valign="top" width="1000" height="800" style="border:0px solid #000000;"></canvas>
+
+
+
+
+
+
+<script>
+var cindy = CindyJS({
+  canvasname:"CSCanvas",
+  scripts:"cs*",
+  images: {}
+});
+
+
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
