@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Responsive Cindy Widget</title>
+    <script type="text/javascript" src="Cindy.js"></script>
+    <script type="text/javascript" src="CindyGL.js"></script>
+
+  <style>
+    body, html {
+      padding: 0;
+      margin: 0;
+    }
+
+    #CSCanvas {
+       width: 100vw; 
+       height: 100vh; /* height:width ratio = 9/16 = .5625  */
+       /* max-height: 100vh; */
+       /* max-width: 177.78vh; */
+       /* 16/9 = 1.778 */
+       margin: auto;
+       position: absolute;
+       top:0;bottom:0; /* vertical center */
+       left:0;right:0; /* horizontal center */
+   }
+  </style>
+  </head>
+
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+
+
+<script id='csinit' type='text/x-cindyscript'>
+
+updateLayout() := (
+  canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
+  canvasCorners = {
+      "tl": canvasPoly_1,
+      "tr": canvasPoly_2,
+      "br": canvasPoly_3,
+      "bl": canvasPoly_4
+  };
+  canvasCenter  = 0.5 * canvasCorners.tl + 0.5 * canvasCorners.br;
+  canvasWidth   = dist(canvasCorners.tl, canvasCorners.tr);
+  canvasHeight  = dist(canvasCorners.tl, canvasCorners.bl);
+  [canvasLeft, canvasTop] = canvasCorners.tl;
+  [canvasRight, canvasBottom] = canvasCorners.br;
+
+  points = [
+    canvasCorners.tl + [1, -1],
+    canvasCorners.tr + [-1, -1],
+    canvasCorners.br + [-1, 1],
+    canvasCorners.bl + [1, 1]
+  ];
+);
+
+bla() := println(screenbounds());
+
+// ************************************************************************************************
+
+updateLayout();
+
+
+playanimation();
+</script>
+
+
+<script id='csdraw' type='text/x-cindyscript'>
+fillpoly(canvasPoly, color -> (1,0,0));
+fillpoly(points, color -> (1,1,1));
+draw(canvasCenter, color -> (0,0,0), size -> 10);
+</script>
+
+
+<script id='cstick' type='text/x-cindyscript'>
+updateLayout();
+</script>
+
+
+<script id='csmousemove' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousedown' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousedrag' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmouseup' type='text/x-cindyscript'>
+</script>
+
+<!-- <script id='cskeydown' type='text/x-cindyscript'>
+</script> -->
+
+
+<canvas id="CSCanvas"></canvas>
+
+
+
+
+
+
+
+<script>
+  var cindy = CindyJS({
+    canvasname: "CSCanvas",
+    scripts:"cs*",
+    import: ["egdod"]
+  });
+
+  window.addEventListener("resize", function() {
+    //cindy.evokeCS('updateLayout();');
+  });
+
+</script>
+
+
+<script>
+
+</script>
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
