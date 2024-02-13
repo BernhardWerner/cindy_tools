@@ -15,6 +15,63 @@
       flex: 1; /* Each column takes up an equal amount of space */
       padding: 10px; /* Optional padding */
     }
+
+
+    .tabs {
+  font-family: Arial, sans-serif;
+}
+
+/* Style the tab-links */
+.tab-links {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.tab-links li {
+  margin-right: 5px;
+}
+
+.tab-links a {
+  text-decoration: none;
+  padding: 10px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 3px 3px 0 0;
+}
+
+.tab-links a:hover {
+  background-color: #e0e0e0;
+}
+
+/* Style the active tab link */
+.tab-links li.active a,
+.tab-links a:active {
+  background-color: #fff;
+  border-bottom: none;
+}
+
+/* Hide all tab content by default */
+.tab-content {
+  display: none;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+/* Show the active tab content */
+.tab-content.active {
+  display: block;
+}
+
+textarea {
+  font: 'Courier New', monospace;
+  resize: none;
+}
+
   </style>
   </head>
 
@@ -39,8 +96,22 @@
   <div class="column"><form id="code-editor" action="/submit-your-text" method="post">
     <!-- <label for="textEditArea">Draw Script:</label> -->
     <div>
-      <h3>Draw Script:</h3>
-      <textarea id="textEditArea" name="textEditArea" rows="20" cols="70"></textarea>
+      <ul class="tab-links">
+        <li class="active"><a href="#tab-init">Init Script</a></li>
+        <li><a href="#tab-draw">Draw Script</a></li>
+      </ul>
+
+      <div id="tab-init" class="tab-content active">
+        <h3>Init Script:</h3>
+        <textarea id="textEditArea-init" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
+      <div id="tab-draw" class="tab-content">
+        <h3>Draw Script:</h3>
+        <textarea id="textEditArea-draw" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        </div>
+
+
+
     </div>
     <input type="submit" value="Run">
   </form>
@@ -58,8 +129,13 @@
 <script>
 let cindy;
 let consoleOutput = document.getElementById('console-output');
+let scriptList = ["init", "draw"];
 
 function startCindy() {
+  // clear console output
+  consoleOutput.innerHTML = '';
+
+
   cindy = CindyJS({
     canvasname:"CSCanvas",
     scripts:"cs*",
@@ -90,13 +166,64 @@ document.addEventListener('DOMContentLoaded', function() {
   var form = document.getElementById('code-editor');
   form.onsubmit = function(event) {
     event.preventDefault(); // Prevents the form from submitting in the traditional way
-    var textInput = document.getElementById('textEditArea').value;
-    var script = document.getElementById('csdraw');
-    script.textContent = textInput;
+    for (let i = 0; i < scriptList.length; i++) {
+      let script = document.getElementById('textEditArea-' + scriptList[i]).value;
+      let scriptElement = document.getElementById('cs' + scriptList[i]);
+      scriptElement.textContent = script;
+    } 
     startCindy();
   };
 });
 
+
+
+document.addEventListener("DOMContentLoaded", function() {
+
+// Get all tab links and contents
+var tabs = document.querySelectorAll('.tab-links a');
+var panels = document.querySelectorAll('.tab-content');
+
+// Add click event to each tab
+tabs.forEach(function(tab) {
+  tab.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    // Remove active class from all tabs and panels
+    tabs.forEach(function(t) { t.parentElement.classList.remove('active'); });
+    panels.forEach(function(p) { p.classList.remove('active'); });
+
+    // Add active class to clicked tab and corresponding panel
+    tab.parentElement.classList.add('active');
+    var panel = document.querySelector(tab.getAttribute('href'));
+    panel.classList.add('active');
+  });
+});
+
+});
+
+function replaceTab(event) {
+  var keyCode = event.keyCode || event.which;
+  
+  // Check if the pressed key is the Tab key (keyCode 9)
+  if (keyCode === 9) {
+            // Prevent default tab behavior (focus next element)
+            event.preventDefault();
+            
+            // Get the textarea
+            var textarea = event.target;
+            
+            // Get cursor position
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var tabSpaces = '    '; // Four spaces
+
+            // Insert tab character at cursor position
+            textarea.value = textarea.value.substring(0, start) + tabSpaces + textarea.value.substring(end);
+
+            // Move the cursor to the right, after the inserted tab
+            textarea.selectionStart = textarea.selectionEnd = start + tabSpaces.length;
+    }
+}
 
 
 startCindy(); 
