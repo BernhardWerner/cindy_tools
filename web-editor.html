@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Web editor</title>
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/Cindy.js"></script>
+
+  <style>
+    .container {
+      display: flex;
+    }
+
+    .column {
+      flex: 1; /* Each column takes up an equal amount of space */
+      padding: 10px; /* Optional padding */
+    }
+  </style>
+  </head>
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+
+
+<script id='csinit' type='text/x-cindyscript'></script>
+<script id='csdraw' type='text/x-cindyscript'></script>
+<script id='cstick' type='text/x-cindyscript'></script>
+<script id='csmousemove' type='text/x-cindyscript'></script>
+<script id='csmousedown' type='text/x-cindyscript'></script>
+<script id='csmousedrag' type='text/x-cindyscript'></script>
+<script id='csmouseup' type='text/x-cindyscript'></script>
+
+
+
+
+
+
+<div class="container">
+  <div class="column"><form id="code-editor" action="/submit-your-text" method="post">
+    <!-- <label for="textEditArea">Draw Script:</label> -->
+    <div>
+      <h3>Draw Script:</h3>
+      <textarea id="textEditArea" name="textEditArea" rows="20" cols="70"></textarea>
+    </div>
+    <input type="submit" value="Run">
+  </form>
+  </div>
+  <div class="column"><canvas id="CSCanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+  </div>
+  <div class="column"><div>
+    <h3>Console:</h3>
+      <p id="console-output" style="overflow-y: auto; height: 600;"></p>
+    </div>
+    </div>
+</div>
+
+
+<script>
+let cindy;
+let consoleOutput = document.getElementById('console-output');
+
+function startCindy() {
+  cindy = CindyJS({
+    canvasname:"CSCanvas",
+    scripts:"cs*",
+    images: {},
+  });
+}
+
+function displayConsoleMessage(message) {
+  var textNode = document.createTextNode(message); // Add a line break for readability
+  var lineBreak = document.createElement('br');
+  consoleOutput.appendChild(textNode);
+  consoleOutput.appendChild(lineBreak);
+  consoleOutput.scrollTop = consoleOutput.scrollHeight; // Auto-scroll
+}
+
+
+
+
+(function() {
+    var oldLog = console.log;
+    console.log = function(message) {
+        displayConsoleMessage(message);
+        oldLog.apply(console, arguments);
+    };
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+  var form = document.getElementById('code-editor');
+  form.onsubmit = function(event) {
+    event.preventDefault(); // Prevents the form from submitting in the traditional way
+    var textInput = document.getElementById('textEditArea').value;
+    var script = document.getElementById('csdraw');
+    script.textContent = textInput;
+    startCindy();
+  };
+});
+
+
+
+startCindy(); 
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
