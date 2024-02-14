@@ -94,11 +94,15 @@ textarea {
 
 <div class="container">
   <div class="column"><form id="code-editor" action="/submit-your-text" method="post">
-    <!-- <label for="textEditArea">Draw Script:</label> -->
     <div>
       <ul class="tab-links">
-        <li class="active"><a href="#tab-init">Init Script</a></li>
-        <li><a href="#tab-draw">Draw Script</a></li>
+        <li class="active"><a href="#tab-init">Init</a></li>
+        <li><a href="#tab-draw">Draw</a></li>
+        <li><a href="#tab-tick">Tick</a></li>
+        <li><a href="#tab-mousemove">Mouse Move</a></li>
+        <li><a href="#tab-mousedown">Mouse Down</a></li>
+        <li><a href="#tab-mousedrag">Mouse Drag</a></li>
+        <li><a href="#tab-mouseup">Mouse Up</a></li>
       </ul>
 
       <div id="tab-init" class="tab-content active">
@@ -108,7 +112,27 @@ textarea {
       <div id="tab-draw" class="tab-content">
         <h3>Draw Script:</h3>
         <textarea id="textEditArea-draw" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
-        </div>
+      </div>
+      <div id="tab-tick" class="tab-content">
+        <h3>Tick Script:</h3>
+        <textarea id="textEditArea-tick" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
+      <div id="tab-mousemove" class="tab-content">
+        <h3>Mouse Move Script:</h3>
+        <textarea id="textEditArea-mousemove" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
+      <div id="tab-mousedown" class="tab-content">
+        <h3>Mouse Down Script:</h3>
+        <textarea id="textEditArea-mousedown" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
+      <div id="tab-mousedrag" class="tab-content">
+        <h3>Mouse Drag Script:</h3>
+        <textarea id="textEditArea-mousedrag" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
+      <div id="tab-mouseup" class="tab-content">
+        <h3>Mouse Up Script:</h3>
+        <textarea id="textEditArea-mouseup" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+      </div>
 
 
 
@@ -120,7 +144,7 @@ textarea {
   </div>
   <div class="column"><div>
     <h3>Console:</h3>
-      <p id="console-output" style="overflow-y: auto; height: 600;"></p>
+      <p id="console-output" style="overflow-y: auto; height: 600px; border: #000000 1px solid;"></p>
     </div>
     </div>
 </div>
@@ -129,7 +153,7 @@ textarea {
 <script>
 let cindy;
 let consoleOutput = document.getElementById('console-output');
-let scriptList = ["init", "draw"];
+let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
 
 function startCindy() {
   // clear console output
