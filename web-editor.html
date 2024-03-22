@@ -6,6 +6,9 @@
     <title>Web editor</title>
     <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/Cindy.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.js"></script>
+
   <style>
     .container {
       display: flex;
@@ -107,64 +110,70 @@ textarea {
 
       <div id="tab-init" class="tab-content active">
         <h3>Init Script:</h3>
-        <textarea id="textEditArea-init" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-init" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-draw" class="tab-content">
         <h3>Draw Script:</h3>
-        <textarea id="textEditArea-draw" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-draw" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-tick" class="tab-content">
         <h3>Tick Script:</h3>
-        <textarea id="textEditArea-tick" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-tick" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousemove" class="tab-content">
         <h3>Mouse Move Script:</h3>
-        <textarea id="textEditArea-mousemove" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousemove" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousedown" class="tab-content">
         <h3>Mouse Down Script:</h3>
-        <textarea id="textEditArea-mousedown" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousedown" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousedrag" class="tab-content">
         <h3>Mouse Drag Script:</h3>
-        <textarea id="textEditArea-mousedrag" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousedrag" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mouseup" class="tab-content">
         <h3>Mouse Up Script:</h3>
-        <textarea id="textEditArea-mouseup" rows="20" cols="70" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mouseup" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
 
 
 
     </div>
     <input type="submit" value="Run">
+    <h3>Console:</h3>
+    <p id="console-output" style="overflow-y: scroll; height: 200px; border: #000000 1px solid;"></p>
+
   </form>
   </div>
-  <div class="column"><canvas id="CSCanvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+  <div class="column"><canvas id="CSCanvas" width="800" height="800" style="border:1px solid #000000;"></canvas>
   </div>
-  <div class="column"><div>
-    <h3>Console:</h3>
-      <p id="console-output" style="overflow-y: auto; height: 600px; border: #000000 1px solid;"></p>
-    </div>
-    </div>
+
 </div>
 
 
 <script>
+var textareas = document.querySelectorAll('textarea');
+textareas.forEach(function(textarea) {
+  CodeMirror.fromTextArea(textarea, {
+    lineNumbers: true,
+  });
+});
+
+
 let cindy;
 let consoleOutput = document.getElementById('console-output');
 let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
 
 function startCindy() {
-  // clear console output
-  consoleOutput.innerHTML = '';
-
+  
 
   cindy = CindyJS({
     canvasname:"CSCanvas",
     scripts:"cs*",
-    images: {},
+    images: {}
   });
+
 }
 
 function displayConsoleMessage(message) {
