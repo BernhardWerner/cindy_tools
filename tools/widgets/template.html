@@ -4,8 +4,8 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <title>template</title>
-    <script type="text/javascript" src="Cindy.js"></script>
-    <script type="text/javascript" src="CindyGL.js"></script>
+    <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+    <script type="text/javascript" src="../../cindy/CindyGL.js"></script>
   </head>
 
 <body style="font-family:Palatino; margin:0; font-size:16pt">
@@ -63,7 +63,7 @@ var cindy = CindyJS({
   scripts:"cs*",
   images: {},
   use: ["katex", "CindyGL"],
-  import: ["egdod", "colorPalettes"]
+  import: {"init": ["../single_scripts/egdod", "../single_scripts/colorPalettes"]}
 });
 
 

@@ -1,0 +1,9 @@
+{
+    "init": [
+        {"name": "updateFunction.cjs", "place": -100},
+        {"name": "updateOnInit.cjs", "place": 100}
+    ],
+    "tick": [
+        {"name": "updateOnTick.cjs", "place": 100}
+    ]
+}

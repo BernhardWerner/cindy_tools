@@ -3,8 +3,8 @@
  <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Responsive Cindy Widget</title>
-    <script type="text/javascript" src="Cindy.js"></script>
+    <title>Fullscreen Cindy Widget</title>
+    <script type="text/javascript" src="../../cindy/Cindy.js"></script>
 
   <style>
     body, html {
@@ -33,20 +33,10 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-updateLayout() := (
-  canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
-  canvasCorners = {
-      "tl": canvasPoly_1,
-      "tr": canvasPoly_2,
-      "br": canvasPoly_3,
-      "bl": canvasPoly_4
-  };
-  canvasCenter  = 0.5 * canvasCorners.tl + 0.5 * canvasCorners.br;
-  canvasWidth   = dist(canvasCorners.tl, canvasCorners.tr);
-  canvasHeight  = dist(canvasCorners.tl, canvasCorners.bl);
-  [canvasLeft, canvasTop] = canvasCorners.tl;
-  [canvasRight, canvasBottom] = canvasCorners.br;
 
+
+
+customLayout() := (
   points = [
     canvasCorners.tl + [1, -1],
     canvasCorners.tr + [-1, -1],
@@ -55,14 +45,7 @@ updateLayout() := (
   ];
 );
 
-bla() := println(screenbounds());
 
-// ************************************************************************************************
-
-updateLayout();
-
-
-playanimation();
 </script>
 
 
@@ -74,7 +57,6 @@ draw(canvasCenter, color -> (0,0,0), size -> 10);
 
 
 <script id='cstick' type='text/x-cindyscript'>
-updateLayout();
 </script>
 
 
@@ -109,7 +91,10 @@ updateLayout();
   var cindy = CindyJS({
     canvasname: "CSCanvas",
     scripts:"cs*",
-    import: ["egdod"]
+    import: {
+      "init": ["../single_scripts/egdod"],
+      "packages": ["../packages/responsive"]
+    }
   });
 
 

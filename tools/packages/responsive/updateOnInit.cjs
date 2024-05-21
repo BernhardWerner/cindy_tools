@@ -1,0 +1,2 @@
+updateLayout();
+playanimation();
