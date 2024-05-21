@@ -1,19 +1,15 @@
-updateLayout() := (
-    canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
-    canvasCorners = {
-        "tl": canvasPoly_1,
-        "tr": canvasPoly_2,
-        "br": canvasPoly_3,
-        "bl": canvasPoly_4
-    };
-    canvasCenter  = 0.5 * canvasCorners.tl + 0.5 * canvasCorners.br;
-    canvasWidth   = dist(canvasCorners.tl, canvasCorners.tr);
-    canvasHeight  = dist(canvasCorners.tl, canvasCorners.bl);
-    [canvasLeft, canvasTop] = canvasCorners.tl;
-    [canvasRight, canvasBottom] = canvasCorners.br;
-);
-updateLayout();
-
+canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
+canvasCorners = {
+    "tl": canvasPoly_1,
+    "tr": canvasPoly_2,
+    "br": canvasPoly_3,
+    "bl": canvasPoly_4
+};
+canvasCenter  = 0.5 * canvasCorners.tl + 0.5 * canvasCorners.br;
+canvasWidth   = dist(canvasCorners.tl, canvasCorners.tr);
+canvasHeight  = dist(canvasCorners.tl, canvasCorners.bl);
+[canvasLeft, canvasTop] = canvasCorners.tl;
+[canvasRight, canvasBottom] = canvasCorners.br;
 screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBottom) / canvasHeight];
 
 
@@ -303,7 +299,14 @@ rotate3D(vec, axis, angle) := (
 
 
 
+sdfTwist(p, amount) := (
+    regional(c, s, m);
 
+    c = cos(amount * p_3);
+    s = sin(amount * p_3);
+    m = [[c, -s, 0], [s, c, 0], [0, 0, 1]];
+    m * p;
+);
 
 
 
@@ -334,9 +337,7 @@ drawOutline(image, size, outlineColor) := (
     regional(vis, a, b, c, resultColor, imageColor);
 
     
-    a = 128;
-    b = 64;
-    c = 32;
+    a = 40;
     
     colorplot(
         imageColor = imagergba(image, #);
@@ -346,8 +347,6 @@ drawOutline(image, size, outlineColor) := (
         , // else //
             vis = 0;
             repeat(a, i, vis = vis + imagergba(image, # + size *         [sin(2 * pi * i / a), cos(2 * pi * i / a)])_4);
-            repeat(b, i, vis = vis + imagergba(image, # + size * 2 / 3 * [sin(2 * pi * i / b), cos(2 * pi * i / b)])_4);
-            repeat(c, i, vis = vis + imagergba(image, # + size     / 3 * [sin(2 * pi * i / c), cos(2 * pi * i / c)])_4);
 
             vis = clamp(vis, 0, 1);
         );
@@ -364,9 +363,7 @@ drawOutline(image, targetTexture, size, outlineColor) := (
     regional(vis, a, b, c, resultColor, imageColor);
 
     
-    a = 128;
-    b = 64;
-    c = 32;
+    a = 40;
     
     colorplot(targetTexture,
         imageColor = imagergba(image, #);
@@ -376,8 +373,6 @@ drawOutline(image, targetTexture, size, outlineColor) := (
         , // else //
             vis = 0;
             repeat(a, i, vis = vis + imagergba(image, # + size *         [sin(2 * pi * i / a), cos(2 * pi * i / a)])_4);
-            repeat(b, i, vis = vis + imagergba(image, # + size * 2 / 3 * [sin(2 * pi * i / b), cos(2 * pi * i / b)])_4);
-            repeat(c, i, vis = vis + imagergba(image, # + size     / 3 * [sin(2 * pi * i / c), cos(2 * pi * i / c)])_4);
 
             vis = clamp(vis, 0, 1);
         );
@@ -664,6 +659,28 @@ setupMultiAnimationTracks(start, listOfDurations, pause) := (
 
     res;
 );
+
+// times must be of the form [startPause, duration 1, endPause 1, duration 2, endPause 2, ...]
+setupMultiAnimationTracks(times) := (
+    regional(startPause, durations, endPauses, n, res, start);
+
+    n = (length(times) - 1) / 2;
+    startPause = times_1;
+    durations = apply(1..n, times_(2 * #));
+    endPauses = apply(1..n, times_(2 * # + 1));
+
+    res = [];
+
+    forall(1..n,
+        start = startPause + if(# == 1, 0, sum(durations_(1..#-1)) + sum(endPauses_(1..#-1)););
+        res = res :> setupAnimationTrack(start, start + durations_#);
+    );
+
+    res;
+);
+
+
+
 
 trackStarted(track, delay) := now() >= track.start + delay;
 trackEnded(track, delay) := now() > track.end + delay;
@@ -1535,7 +1552,9 @@ lerpLCH(vecA, vecB, t) := (
         result;
     );
 
+    /*
     // CONVEX POLYGONS ONLY!!!
+    
     pointInPolygon(point, poly) := (
         regional(resultForwards, resultBackwards);
 
@@ -1548,8 +1567,33 @@ lerpLCH(vecA, vecB, t) := (
 
         or(resultForwards, resultBackwards);
     );
+    */      
+    pointInPolygon(point, polygon) := (
+        regional(x,y, inside, i, j, xi, yi, xj, yj, intersect);
+        
+        if(polygon_1 ~= polygon_(-1),
+            pointInPolygon(point, pop(polygon));
+        , // else //
+            x = point_1;
+            y = point_2;
             
+            inside = false;
 
+            j = length(polygon);
+            forall(1..length(polygon), i,
+                xi = polygon_i_1;
+                yi = polygon_i_2;
+                xj = polygon_j_1;
+                yj = polygon_j_2;
+                
+                intersect = ((yi > y) != (yj > y)) & (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                if (intersect, inside = !inside);
+                j = i;
+            );
+            
+            inside;
+        );
+    );
 
     // *************************************************************************************************
     // Computes the angle at q from p to r. The result lies in [0, 2 * pi].
@@ -1722,14 +1766,13 @@ lerpLCH(vecA, vecB, t) := (
 
 
 
+        
 
 
 
 
 
-
-    ang2vec(alpha) := rotate([1,0], alpha);
-
+    ang2vec(alpha) := [cos(alpha), sin(alpha)];
 
 
 
@@ -2070,7 +2113,6 @@ moonSDF(p, ra, rb, d) := (
        "size":       (2D vector),
        "label":      (String),
        "textSize":   (float),
-       "labelColor": (3D Vector),
        "colors":     (array with 3 colour vectors),
        "corner":     (float),
        "pressed":    (bool),
@@ -2204,6 +2246,9 @@ moonSDF(p, ra, rb, d) := (
 ";
 
     wrapText(string, lineLength) := joinStrings(splitString(string, lineLength), newLine);
+
+
+
 
 
 
@@ -2451,9 +2496,7 @@ catchDropDownMenu(obj) := (
       "length":      (float),
       "size":        (float),
       "vertical":    (bool),
-      "outerColor":       (color vector),
-      "innerColor":       (color vector),
-      "labelColor":       (color vector),
+      "color":       (color vector),
       "startLabel":  (string),
       "endLabel":    (string),
       "labelSize":   (float),
@@ -2494,7 +2537,7 @@ catchDropDownMenu(obj) := (
 
         endPoints = sliderEnds(slider);
 
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
+        if(lineSegmentSDF2D(endPoints, mouse().xy) <= slider.bulbSize + 0.02 * slider.size,
           slider.value = if(slider.vertical,
             clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
           , // else //
@@ -2508,7 +2551,7 @@ catchDropDownMenu(obj) := (
 
         endPoints = sliderEnds(slider);
 
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
+        if(lineSegmentSDF2D(endPoints, mouse().xy) <= slider.bulbSize + 0.02 * slider.size,
           slider.dragging = true;
         );
         catchSliderDrag(slider);
