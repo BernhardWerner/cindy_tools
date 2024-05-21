@@ -11,6 +11,14 @@ FRAMERENDERSTATES = {
     "EXPORTING": 2
 };
 frameRenderState = FRAMERENDERSTATES.CALCULATING;
+framesToExport = 0;
+FORMATS = {
+    "PNG": "PNG",
+    "SVG": "SVG",
+    "PDF": "PDF"
+};
+exportFormat = FORMATS.PNG;
+
 
 STEPRENDERSTATES = {
     "WAITING": 0,
@@ -58,7 +66,11 @@ triggerScreenshot() := (
         frameRenderState = FRAMERENDERSTATES.EXPORTING;
         frameCount = frameCount + 1;
         println(frameCount + "/" + maxFrames);
-        javascript("cindy.exportPNG('" + frameCount + "');");
+        if(framesToExport != 0,
+            if(contains(framesToExport, frameCount) & contains(values(FORMATS), exportFormat),
+                javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
+            );
+        );
         frameExportTimer = frameExportWaitTime;
         playanimation();
     );

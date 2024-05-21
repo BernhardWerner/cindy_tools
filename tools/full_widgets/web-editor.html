@@ -166,14 +166,11 @@ let consoleOutput = document.getElementById('console-output');
 let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
 
 function startCindy() {
-  
-
   cindy = CindyJS({
     canvasname:"CSCanvas",
     scripts:"cs*",
     images: {}
   });
-
 }
 
 function displayConsoleMessage(message) {

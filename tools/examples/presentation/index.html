@@ -23,8 +23,9 @@ if(renderMode == RENDERMODES.STEPS,
 
 
 <script>
+let canvas = document.getElementById("CSCanvas");
 
-var cindy;
+let cindy;
 let currentSlide = 0;
 let numberOfSlides = 2;
 
@@ -39,6 +40,7 @@ function nextSlide() {
       }
     });
   }
+
 }
 
 nextSlide();
