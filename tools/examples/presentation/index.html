@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>presentation</title>
+  <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+</head>
+
+<body>
+
+
+
+
+<script id='cstick' type='text/x-cindyscript'>
+if(renderMode == RENDERMODES.STEPS,
+  if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex == numberOfTracks + 1,
+    javascript("nextSlide();");
+  );
+);
+</script>
+
+
+<canvas id="CSCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
+
+
+<script>
+
+var cindy;
+let currentSlide = 0;
+let numberOfSlides = 2;
+
+function nextSlide() {
+  currentSlide++;
+  if (currentSlide <= numberOfSlides) {
+    cindy = CindyJS({
+      canvasname:"CSCanvas",
+      scripts:"cs*",
+      import: {
+        "packages": ["../../packages/animation", "slide" + currentSlide],
+      }
+    });
+  }
+}
+
+nextSlide();
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
