@@ -1,1 +1,3 @@
-mouseScriptIndicator = "drag";
+mouseScriptIndicator = "Drag";
+
+forall(uiCollection, #.handleInput);

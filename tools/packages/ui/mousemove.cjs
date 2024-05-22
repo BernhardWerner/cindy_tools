@@ -1,1 +1,1 @@
-mouseScriptIndicator = "move";
+mouseScriptIndicator = "Move";

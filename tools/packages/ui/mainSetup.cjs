@@ -1,0 +1,4 @@
+mouseScriptIndicator = "init";
+
+uiCollection = [];
+

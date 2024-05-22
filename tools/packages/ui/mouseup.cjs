@@ -1,1 +1,3 @@
-mouseScriptIndicator = "up";
+mouseScriptIndicator = "Up";
+
+forall(uiCollection, #.handleInput);

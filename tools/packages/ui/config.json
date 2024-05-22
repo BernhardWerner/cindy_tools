@@ -1,5 +1,9 @@
 {
-    "init": [{"name": "init", "place": -10000}],
+    "init": [
+        {"name": "uiBase", "place": -10000},
+        {"name": "mainSetup", "place": -9999}
+    ],
+    "draw": [{"name": "draw", "place": 10000}],
     "mousemove": [{"name": "mousemove", "place": -10000}],
     "mousedown": [{"name": "mousedown", "place": -10000}],
     "mousedrag": [{"name": "mousedrag", "place": -10000}],

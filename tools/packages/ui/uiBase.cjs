@@ -1,7 +1,23 @@
-mouseScriptIndicator = "init";
+ 
+    // ************************************************************************************************
+    // Draws a rectangle with rounded corners.
+    // ************************************************************************************************
+    roundedrectangle(tl, w, h, r) := roundedrectangle(tl, tl + [w,-h], r);
+    roundedrectangle(tl, br, r) := (
+        regional(tr, bl);
+        tr = [br.x, tl.y];
+        bl = [tl.x, br.y];
+        r = min([r, |tl.x-br.x|/2, |tl.y-br.y|/2]);
+        //rounded corners
+        circle(tl.xy + [r,-r], r)
+            ++ circle(bl.xy + [r,r], r)
+            ++ circle(br.xy + [-r,r], r)
+            ++ circle(tr.xy + [-r,-r], r)
+        //rectangle
+            ++ polygon([tl.xy + [r,0], tr.xy + [-r,0], br.xy + [-r,0], bl.xy + [r,0]])
+            ++ polygon([tl.xy + [0,-r], tr.xy + [0,-r], br.xy + [0,r], bl.xy + [0,r]]);
+    );
 
-
-// ****************************************************************************************************
 
 
 // *************************************************************************************************
@@ -61,8 +77,61 @@ lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
 
 
 
+newButton(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":   if(contains(keys, "position"), dict.position, [0,0]),
+    "size":       if(contains(keys, "size"), dict.size, [5, 2]),
+    "label":      if(contains(keys, "label"), dict.label, "Button"),
+    "labelSize":  if(contains(keys, "labelSize"), dict.labelSize,  25),
+    "colors":     if(contains(keys, "colors"), dict.colors, [(1,1,1) * 0.7, (1,1,1) * 0.5, (1,1,1) * 0.3]),
+    "labelColor": if(contains(keys, "labelColor"), dict.labelColor, (1,1,1)),
+    "corner":     if(contains(keys, "corner"), dict.corner, 0.7),
+    "isToggle":   if(contains(keys, "isToggle"), dict.isToggle, false),
+    "pressed":    if(contains(keys, "pressed"), dict.pressed, false),
+    "fontFamily": if(contains(keys, "fontFamily"), dict.fontFamily, 0),
+    "active":     if(contains(keys, "active"), dict.active, true),
+    "visible":    if(contains(keys, "visible"), dict.visible, true)
+  };
+  res.draw := (
+    if(self().visible,
+      if(self().pressed,
+          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner), color -> (self().colors)_1);
+          drawtext(self().position + (0, -0.5 * self().labelSize / 35) + (0, -0.2), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
+      , // else //
+          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner), color -> (self().colors)_3);
+          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size_1, self().size_2, self().corner), color -> (self().colors)_2);
+          drawtext(self().position + (0, -0.5 * self().labelSize / 35), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
+      );
+    );
+  );
+  res.onDown := ();
+  res.onDrag := ();
+  res.onUp := ();
+  res.handleInput := (
+    if(self().active & mouseInButton(self()), 
+      if(mouseScriptIndicator == "Down",
+        self().pressed = if(self().isToggle, !self().pressed, true);
+        self().onDown;
+      );
+
+      if(mouseScriptIndicator == "Up", 
+        self().onUp;
+        if(!self().isToggle, self().pressed = false);
+      );
+    );
+  );
+
+
+  uiCollection = uiCollection :> res;
+
+  res;
+);
+newButton() := newButton({});
+
     /* ************************************************************************************************
-     Draws and handles button. They have to be a JSON with the following keys and value-types:
+     Draws and handles buttons. They have to be a JSON with the following keys and value-types:
      button = {
        "position":   (2D vector),
        "size":       (2D vector),
@@ -74,17 +143,6 @@ lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
        "fontFamily": (String)
      };
      ************************************************************************************************ */
-     drawButton(button) := (
-        if(button.pressed,
-            //fill(roundedrectangle(button.position + 0.5 * (-button.size.x, button.size.y), button.size.x, button.size.y, button.corner), color -> (button.colors)_2);
-            fill(roundedrectangle(button.position + 0.5 * (-button.size.x, button.size.y) + (0, -0.2), button.size.x, button.size.y, button.corner), color -> (button.colors)_1);
-                drawtext(button.position + (0, -0.5 * button.textSize / 35) + (0, -0.2), button.label, align->"mid", size->button.textSize, color->button.labelColor, bold->true, family->button.fontFamily);
-        , // else //
-            fill(roundedrectangle(button.position + 0.5 * (-button.size.x, button.size.y) + (0, -0.2), button.size.x, button.size.y, button.corner), color -> (button.colors)_3);
-            fill(roundedrectangle(button.position + 0.5 * (-button.size.x, button.size.y), button.size_1, button.size_2, button.corner), color -> (button.colors)_2);
-            drawtext(button.position + (0, -0.5 * button.textSize / 35), button.label, align->"mid", size->button.textSize, color->button.labelColor, bold->true, family->button.fontFamily);
-        );
-    );
 
 
     // Boilerplate code for button functionality. Call via
