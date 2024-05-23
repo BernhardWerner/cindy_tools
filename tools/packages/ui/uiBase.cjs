@@ -1,22 +1,22 @@
  
-    // ************************************************************************************************
-    // Draws a rectangle with rounded corners.
-    // ************************************************************************************************
-    roundedrectangle(tl, w, h, r) := roundedrectangle(tl, tl + [w,-h], r);
-    roundedrectangle(tl, br, r) := (
-        regional(tr, bl);
-        tr = [br.x, tl.y];
-        bl = [tl.x, br.y];
-        r = min([r, |tl.x-br.x|/2, |tl.y-br.y|/2]);
-        //rounded corners
-        circle(tl.xy + [r,-r], r)
-            ++ circle(bl.xy + [r,r], r)
-            ++ circle(br.xy + [-r,r], r)
-            ++ circle(tr.xy + [-r,-r], r)
-        //rectangle
-            ++ polygon([tl.xy + [r,0], tr.xy + [-r,0], br.xy + [-r,0], bl.xy + [r,0]])
-            ++ polygon([tl.xy + [0,-r], tr.xy + [0,-r], br.xy + [0,r], bl.xy + [0,r]]);
-    );
+// ************************************************************************************************
+// Draws a rectangle with rounded corners.
+// ************************************************************************************************
+roundedrectangle(tl, w, h, r) := roundedrectangle(tl, tl + [w,-h], r);
+roundedrectangle(tl, br, r) := (
+    regional(tr, bl);
+    tr = [br.x, tl.y];
+    bl = [tl.x, br.y];
+    r = min([r, |tl.x-br.x|/2, |tl.y-br.y|/2]);
+    //rounded corners
+    circle(tl.xy + [r,-r], r)
+        ++ circle(bl.xy + [r,r], r)
+        ++ circle(br.xy + [-r,r], r)
+        ++ circle(tr.xy + [-r,-r], r)
+    //rectangle
+        ++ polygon([tl.xy + [r,0], tr.xy + [-r,0], br.xy + [-r,0], bl.xy + [r,0]])
+        ++ polygon([tl.xy + [0,-r], tr.xy + [0,-r], br.xy + [0,r], bl.xy + [0,r]]);
+);
 
 
 
@@ -46,32 +46,32 @@ lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
         or(resultForwards, resultBackwards);
     );
     */      
-    pointInPolygon(point, polygon) := (
-        regional(x,y, inside, i, j, xi, yi, xj, yj, intersect);
+pointInPolygon(point, polygon) := (
+    regional(x,y, inside, i, j, xi, yi, xj, yj, intersect);
+    
+    if(polygon_1 ~= polygon_(-1),
+        pointInPolygon(point, pop(polygon));
+    , // else //
+        x = point_1;
+        y = point_2;
         
-        if(polygon_1 ~= polygon_(-1),
-            pointInPolygon(point, pop(polygon));
-        , // else //
-            x = point_1;
-            y = point_2;
-            
-            inside = false;
+        inside = false;
 
-            j = length(polygon);
-            forall(1..length(polygon), i,
-                xi = polygon_i_1;
-                yi = polygon_i_2;
-                xj = polygon_j_1;
-                yj = polygon_j_2;
-                
-                intersect = ((yi > y) != (yj > y)) & (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                if (intersect, inside = !inside);
-                j = i;
-            );
+        j = length(polygon);
+        forall(1..length(polygon), i,
+            xi = polygon_i_1;
+            yi = polygon_i_2;
+            xj = polygon_j_1;
+            yj = polygon_j_2;
             
-            inside;
+            intersect = ((yi > y) != (yj > y)) & (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect, inside = !inside);
+            j = i;
         );
+        
+        inside;
     );
+);
 
 
 
@@ -130,6 +130,8 @@ newButton(dict) := (
 );
 newButton() := newButton({});
 
+
+
     /* ************************************************************************************************
      Draws and handles buttons. They have to be a JSON with the following keys and value-types:
      button = {
@@ -150,10 +152,10 @@ newButton() := newButton({});
     // 	SOME CODE
     // );
     // in the mousedownscript and mouseupscript. The property button.pressed has to be set/updated manually; allowing for both switch- and toggle-buttons.
-    mouseInButton(button) := (
-      dist(mouse().x, button.position.x) < 0.5 * button.size.x
-    & dist(mouse().y, button.position.y) < 0.5 * button.size.y;
-    );
+mouseInButton(button) := (
+  dist(mouse().x, button.position.x) < 0.5 * button.size.x
+& dist(mouse().y, button.position.y) < 0.5 * button.size.y;
+);
 
 
 
@@ -171,17 +173,17 @@ newButton() := newButton({});
     //   "fontFamily": (String)
     // };
     // ************************************************************************************************
-    drawToggle(toggle) := (
-        fillcircle(toggle.position, toggle.radius, size->toggle.lineSize, color -> toggle.innerColor);
-        if(toggle.pressed,
-            drawcircle(toggle.position, toggle.radius, size->toggle.lineSize, color->toggle.borderColor);
-        , // else //
-            drawcircle(toggle.position, toggle.radius, size->1, color->(0,0,0));
-        );
-        drawtext(toggle.position + [0, -0.015 * toggle.textSize], toggle.label, size->toggle.textSize, align->"mid", family->toggle.fontFamily, color -> toggle.labelColor);
+drawToggle(toggle) := (
+    fillcircle(toggle.position, toggle.radius, size->toggle.lineSize, color -> toggle.innerColor);
+    if(toggle.pressed,
+        drawcircle(toggle.position, toggle.radius, size->toggle.lineSize, color->toggle.borderColor);
+    , // else //
+        drawcircle(toggle.position, toggle.radius, size->1, color->(0,0,0));
     );
+    drawtext(toggle.position + [0, -0.015 * toggle.textSize], toggle.label, size->toggle.textSize, align->"mid", family->toggle.fontFamily, color -> toggle.labelColor);
+);
 
-    catchToggle(toggle) := if(dist(mouse().xy, toggle.position) < toggle.radius, toggle.pressed = !toggle.pressed);
+catchToggle(toggle) := if(dist(mouse().xy, toggle.position) < toggle.radius, toggle.pressed = !toggle.pressed);
 
 
 
@@ -288,162 +290,162 @@ catchDropDownMenu(obj) := (
     };
     ************************************************************************************************* */
     
-    sliderEnds(slider) := [slider.position, slider.position + if(slider.vertical, [0, -slider.length], [slider.length, 0])];
+sliderEnds(slider) := [slider.position, slider.position + if(slider.vertical, [0, -slider.length], [slider.length, 0])];
 
-    drawSlider(slider) := (
-      regional(endPoints, startOffset, endOffset);
+drawSlider(slider) := (
+  regional(endPoints, startOffset, endOffset);
 
-      endPoints = sliderEnds(slider);
+  endPoints = sliderEnds(slider);
 
-      draw(endPoints, size -> slider.size, color -> slider.outerColor);
-      fillcircle(lerp(endPoints_1, endPoints_2, slider.value), slider.bulbSize, color -> slider.outerColor);
-      fillcircle(lerp(endPoints_1, endPoints_2, slider.value), 0.7 * slider.bulbSize, color -> slider.innerColor);
+  draw(endPoints, size -> slider.size, color -> slider.outerColor);
+  fillcircle(lerp(endPoints_1, endPoints_2, slider.value), slider.bulbSize, color -> slider.outerColor);
+  fillcircle(lerp(endPoints_1, endPoints_2, slider.value), 0.7 * slider.bulbSize, color -> slider.innerColor);
 
-      startOffset = if(slider.vertical,
-        [0, 1.2 * slider.bulbSize + 0.2];
+  startOffset = if(slider.vertical,
+    [0, 1.2 * slider.bulbSize + 0.2];
+  , // else //
+    [-1.2 * slider.bulbSize, -0.015 * slider.labelSize];
+  );
+  endOffset = if(slider.vertical,
+    [0, -1.2 * slider.bulbSize - 0.05 * slider.labelSize];
+  , // else //
+    [1.2 * slider.bulbSize, -0.015 * slider.labelSize];
+  );
+  drawtext(endPoints_1 + startOffset, slider.startLabel, align -> if(slider.vertical, "mid", "right"),  color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
+  drawtext(endPoints_2 + endOffset,   slider.endLabel,   align -> if(slider.vertical, "mid", "left"),   color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
+);
+
+catchSliderRaw(slider) := (
+    regional(endPoints);
+
+    endPoints = sliderEnds(slider);
+
+    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
+      slider.value = if(slider.vertical,
+        clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
       , // else //
-        [-1.2 * slider.bulbSize, -0.015 * slider.labelSize];
+        clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
       );
-      endOffset = if(slider.vertical,
-        [0, -1.2 * slider.bulbSize - 0.05 * slider.labelSize];
+    );
+);
+
+  catchSliderDown(slider) := (
+    regional(endPoints);
+
+    endPoints = sliderEnds(slider);
+
+    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
+      slider.dragging = true;
+    );
+    catchSliderDrag(slider);
+  );
+
+  catchSliderDrag(slider) := (
+    regional(endPoints);
+
+    endPoints = sliderEnds(slider);
+
+    if(slider.dragging,
+      slider.value = if(slider.vertical,
+        clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
       , // else //
-        [1.2 * slider.bulbSize, -0.015 * slider.labelSize];
+        clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
       );
-      drawtext(endPoints_1 + startOffset, slider.startLabel, align -> if(slider.vertical, "mid", "right"),  color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
-      drawtext(endPoints_2 + endOffset,   slider.endLabel,   align -> if(slider.vertical, "mid", "left"),   color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
     );
+  );
 
-    catchSliderRaw(slider) := (
-        regional(endPoints);
-
-        endPoints = sliderEnds(slider);
-
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
-          slider.value = if(slider.vertical,
-            clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
-          , // else //
-            clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
-          );
-        );
-    );
-
-      catchSliderDown(slider) := (
-        regional(endPoints);
-
-        endPoints = sliderEnds(slider);
-
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
-          slider.dragging = true;
-        );
-        catchSliderDrag(slider);
-      );
-
-      catchSliderDrag(slider) := (
-        regional(endPoints);
-
-        endPoints = sliderEnds(slider);
-
-        if(slider.dragging,
-          slider.value = if(slider.vertical,
-            clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
-          , // else //
-            clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
-          );
-        );
-      );
-
-      catchSliderUp(slider) := (
-        catchSliderDrag(slider);
-        slider.dragging = false;
-      );
+  catchSliderUp(slider) := (
+    catchSliderDrag(slider);
+    slider.dragging = false;
+  );
 
 
-    // MAJOR BACKWARDS COMPTATBILITY BREAK IN SELECTORS !!!!!
-    /*************************************************************************************************
-        Creates and handles selector UI element. Has to be a JSON object with the following keys and value-types.
-        selector = {
-          "position":    (2D vector),
-          "gapSize":     (float),
-          "size":        (float),
-          "vertical":    (bool),
-          "outerColor":       (color vector),
-          "innerColor":       (color vector),
-          "textColor":       (color vector),
-          "textSize":    (float),
-          "content":	 (array),
-          "index":       (int),
-          "bulbSize":    (float),
-          "dragging":    (bool),
-          "fontFamily":  (String)
-        };
-    *************************************************************************************************/
-    selectorEnds(selector) := [selector.position, selector.position + if(selector.vertical, [0, -selector.gapSize * (length(selector.content) - 1)], [selector.gapSize * (length(selector.content) - 1), 0])];
+// MAJOR BACKWARDS COMPTATBILITY BREAK IN SELECTORS !!!!!
+/*************************************************************************************************
+    Creates and handles selector UI element. Has to be a JSON object with the following keys and value-types.
+    selector = {
+      "position":    (2D vector),
+      "gapSize":     (float),
+      "size":        (float),
+      "vertical":    (bool),
+      "outerColor":       (color vector),
+      "innerColor":       (color vector),
+      "textColor":       (color vector),
+      "textSize":    (float),
+      "content":	 (array),
+      "index":       (int),
+      "bulbSize":    (float),
+      "dragging":    (bool),
+      "fontFamily":  (String)
+    };
+*************************************************************************************************/
+selectorEnds(selector) := [selector.position, selector.position + if(selector.vertical, [0, -selector.gapSize * (length(selector.content) - 1)], [selector.gapSize * (length(selector.content) - 1), 0])];
 
-    drawSelector(selector) := (
-        regional(endPoints);
+drawSelector(selector) := (
+    regional(endPoints);
+
+endPoints = selectorEnds(selector);
+
+draw(endPoints, size -> selector.size, color -> selector.outerColor);
+fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), selector.bulbSize, color -> selector.outerColor);
+fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), 0.7 * selector.bulbSize, color -> selector.innerColor);
+
+drawimage(canvasCorners.bl, canvasCorners.br, selector.outlineTexture);
+forall(1..length(selector.content),
+    drawtext(lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)) + (0, -0.015 * selector.textSize), selector.content_#, size -> selector.textSize, align -> "mid", color -> selector.textColor, family -> selector.fontFamily);
+);
+
+
+);
+
+catchSelectorRaw(selector) := (
+    regional(endPoints, closeEntries);
 
     endPoints = selectorEnds(selector);
 
-    draw(endPoints, size -> selector.size, color -> selector.outerColor);
-    fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), selector.bulbSize, color -> selector.outerColor);
-    fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), 0.7 * selector.bulbSize, color -> selector.innerColor);
-
-    drawimage(canvasCorners.bl, canvasCorners.br, selector.outlineTexture);
-    forall(1..length(selector.content),
-        drawtext(lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)) + (0, -0.015 * selector.textSize), selector.content_#, size -> selector.textSize, align -> "mid", color -> selector.textColor, family -> selector.fontFamily);
-    );
-    
-
-    );
-
-    catchSelectorRaw(selector) := (
-        regional(endPoints, closeEntries);
-
-        endPoints = selectorEnds(selector);
-
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
-        closeEntries = select(1..length(selector.content),
-            dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content))) < selector.bulbSize + 0.02 * selector.size
-        );
-
-
-        if(closeEntries != [],
-            selector.index = sort(closeEntries, 
-                dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
-            )_1;
-        );
-
-      );
-    );
-
-    catchSelectorDown(selector) := (
-        regional(endPoints, closeEntries);
-
-        endPoints = selectorEnds(selector);
-
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
-            selector.dragging = true;
-        );
-        catchSelectorDrag(selector);
+    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
+    closeEntries = select(1..length(selector.content),
+        dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content))) < selector.bulbSize + 0.02 * selector.size
     );
 
 
-    catchSelectorDrag(selector) := (
-        regional(endPoints, closeEntries);
-
-        endPoints = selectorEnds(selector);
-
-        if(selector.dragging,
-            selector.index = sort(1..length(selector.content), 
-                dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
-            )_1;
-        );
+    if(closeEntries != [],
+        selector.index = sort(closeEntries, 
+            dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
+        )_1;
     );
 
-    catchSelectorUp(selector) := (
-        catchSelectorDrag(selector);
-        selector.dragging = false;	
+  );
+);
+
+catchSelectorDown(selector) := (
+    regional(endPoints, closeEntries);
+
+    endPoints = selectorEnds(selector);
+
+    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
+        selector.dragging = true;
     );
+    catchSelectorDrag(selector);
+);
+
+
+catchSelectorDrag(selector) := (
+    regional(endPoints, closeEntries);
+
+    endPoints = selectorEnds(selector);
+
+    if(selector.dragging,
+        selector.index = sort(1..length(selector.content), 
+            dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
+        )_1;
+    );
+);
+
+catchSelectorUp(selector) := (
+    catchSelectorDrag(selector);
+    selector.dragging = false;	
+);
 
 
 

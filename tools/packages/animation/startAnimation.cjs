@@ -12,9 +12,7 @@ if(renderMode == RENDERMODES.FRAMES,
     maxFrames = 60 * totalDuration;
 );
 
-if(renderMode == RENDERMODES.STEPS,
-    currentTrackIndex = 1;
-);
+
 
 
 
@@ -30,9 +28,10 @@ if(renderMode == RENDERMODES.FRAMES,
 );
 
 if(renderMode == RENDERMODES.STEPS,
-    totalTime = startDelay;
-    currentTimeEBOW = startDelay;
+    totalTime = startDelay + if(currentTrackIndex > 1, sum(trackData_(1 .. 2 * (currentTrackIndex-1))), 0);
     now() := totalTime;
+    calculate(totalTime);
     setupTime();
     playanimation();
+
 );

@@ -13,7 +13,6 @@ renderMode = RENDERMODES.REAL;
 showDebugInfo = true;
 
 
-
 // *************************************************************************
   
 // Configure timelines.
@@ -62,7 +61,7 @@ calculation() := (
 rendering() := (
   // Do rendering here.
 
-  fillpoly(screenbounds().xy, color -> 0.9 * (1,1,1));
+  fillpoly(screenbounds(), color -> 0.9 * (1,1,1));
 
   fillcircle(circle.center, circle.radius, color -> circle.color);
 );

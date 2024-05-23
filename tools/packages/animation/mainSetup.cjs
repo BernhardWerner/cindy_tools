@@ -31,10 +31,11 @@ STEPFORWARDS = "D";
 SKIPFORWARDS = "S";
 SKIPBACKWARDS = "W";
 
+currentTrackIndex = 1;
 
 
 showDebugInfo = true;
-debugInfoPosition = screenbounds()_1.xy + [1, -3];
+debugInfoPosition = screenbounds()_1.xy + [1, -1.5];
 
 debugInfoColor = (0,0,0);
 
