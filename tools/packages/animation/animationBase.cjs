@@ -223,28 +223,12 @@ trackRunning(track) := and(trackStarted(track), not(trackEnded(track)));
 
 
 
-// Needs to run on every frame!
 /*
-updateAnimationTrack(track, delta) := (
-    if(track.running & trackStarted(track),
-        track.timeLeft = track.timeLeft - delta;	
-        track.progress = 1 - track.timeLeft / track.duration;
-        if(track.timeLeft <= 0,
-            if(track.looping,
-                track.timeLeft = track.end - track.start;
-            , // else //
-                track.timeLeft = 0;
-                track.progress = 1;
-                track.running = false;		
-            );
-        );
-    );
-);
-*/
+// Needs to run on every frame!
 updateAnimationTrack(track, delta) := (
     if(or(
         and(delta > 0, trackStarted(track)),
-        and(delta < 0, not(trackended(track)))
+        and(delta < 0, not(trackEnded(track)))
     ),
         track.timeLeft = track.timeLeft - delta;	
         //track.progress = 1 - track.timeLeft / track.duration;
@@ -256,6 +240,22 @@ updateAnimationTrack(track, delta) := (
         );
     );
 );
+*/
+
+
+// Now with absolute time
+updateAnimationTrack(track) := (
+    regional(timeToEnd);
+
+    timeToEnd = track.end - now();
+    if(track.looping,
+        track.timeLeft = mod(timeToEnd, track.duration);
+    , // else //
+        track.timeLeft = clamp(timeToEnd, 0, track.duration);
+    );
+);
+
+
 
 
 

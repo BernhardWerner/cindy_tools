@@ -5,6 +5,8 @@ RENDERMODES = {
 };
 renderMode = RENDERMODES.REAL;
 
+// ************************************************************
+
 FRAMERENDERSTATES = {
     "CALCULATING": 0,
     "RENDERING": 1,
@@ -19,6 +21,7 @@ FORMATS = {
 };
 exportFormat = FORMATS.PNG;
 
+// ************************************************************
 
 STEPRENDERSTATES = {
     "WAITING": 0,
@@ -31,6 +34,32 @@ STEPFORWARDS = "D";
 SKIPFORWARDS = "S";
 SKIPBACKWARDS = "W";
 
+STEPMODES = {
+    "KEYBOARD": 0,
+    "MANUAL": 1
+};
+stepMode = STEPMODES.KEYBOARD;
+
+moveStepForwards() := (
+    if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex <= numberOfTracks,
+        stepRenderState = STEPRENDERSTATES.RUNNING;
+    );
+);
+skipStepForwards() := (
+    if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex <= numberOfTracks,
+        calculate(trackData_(2 * currentTrackIndex - 1) + trackData_(2 * currentTrackIndex));
+        currentTrackIndex = currentTrackIndex + 1;
+    );
+);
+skipStepBackwards() := (
+    if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex > 1,
+        currentTrackIndex = currentTrackIndex - 1;    
+        calculate(-trackData_(2 * currentTrackIndex) -trackData_(2 * currentTrackIndex - 1));
+    );
+);
+
+// ************************************************************
+
 currentTrackIndex = 1;
 
 
@@ -39,8 +68,9 @@ debugInfoPosition = screenbounds()_1.xy + [1, -1.5];
 
 debugInfoColor = (0,0,0);
 
+totalTime = 0;
 
-
+timeScale = 1;
 
 fpsBuffer = [0];
 
@@ -84,12 +114,13 @@ continueAnimation() := (
 );
 
 calculate(delta) := (
-    totalTime = totalTime + delta;
-    forall(tracks, updateAnimationTrack(#, delta));
+    totalTime = totalTime + delta * timeScale;
+    forall(tracks, updateAnimationTrack(#));
 
     forall(1..numberOfTracks, parse("t" + # + " = tracks_" + # +".progress;"));
 
+
     objectSetup();
     calculation();
-
 );
+

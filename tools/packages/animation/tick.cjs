@@ -34,7 +34,7 @@ if(renderMode == RENDERMODES.STEPS,
     );
 );
 
-if(currentTrackIndex <= numberOfTracks,
+if(currentTrackIndex < numberOfTracks,
     if(tracks_currentTrackIndex.progress >= 1,
         currentTrackIndex = currentTrackIndex + 1;
     );

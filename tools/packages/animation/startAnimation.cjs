@@ -3,6 +3,7 @@ numberOfTracks = length(tracks);
 
 forall(1..numberOfTracks, parse("t" + # + " = " + 0 + ";"));
 
+now() := totalTime;
 
 
 
@@ -17,21 +18,23 @@ if(renderMode == RENDERMODES.FRAMES,
 
 
 if(renderMode == RENDERMODES.REAL,
-    totalTime = 0;
+    totalTime = if(currentTrackIndex > 1, startDelay + sum(trackData_(1 .. 2 * (currentTrackIndex-1))), 0);
     setupTime();
     playanimation();
+    calculate(0);
 );
 
 if(renderMode == RENDERMODES.FRAMES,
-    totalTime = 0;
-    now() := totalTime;
+    totalTime = if(currentTrackIndex > 1, startDelay + sum(trackData_(1 .. 2 * (currentTrackIndex-1))), 0);
+    calculate(0);
 );
+
 
 if(renderMode == RENDERMODES.STEPS,
     totalTime = startDelay + if(currentTrackIndex > 1, sum(trackData_(1 .. 2 * (currentTrackIndex-1))), 0);
-    now() := totalTime;
-    calculate(totalTime);
     setupTime();
     playanimation();
+    calculate(0);
+
 
 );
