@@ -12,7 +12,7 @@
 
 <script id='cstick' type='text/x-cindyscript'>
 if(renderMode == RENDERMODES.STEPS,
-  if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex == numberOfTracks + 1,
+  if(stepRenderState == STEPRENDERSTATES.WAITING & tracks_numberOfTracks.progress >= 1,
     javascript("nextSlide();");
   );
 );
@@ -40,7 +40,6 @@ function nextSlide() {
       }
     });
   }
-
 }
 
 nextSlide();
