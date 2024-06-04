@@ -278,20 +278,76 @@ END = 1;
 
 fragmentText(string, size) := (
     regional(n, result, pixelsize);
-  
+
     n = length(string);
-    result = [];
+    result = {
+        "size": size,
+        "length": n,
+        "characters": [],
+        "offsets": []
+    };
     pixelsize = 1/screenresolution();
-  
+
     if(n > 0,
-      result = result :> [string_1, 0];
-      forall(2..n,
-        result = result :> [string_#, pixelsize * (pixelsize(sum(string_(1..#)), size -> size)_1 - pixelsize(string_#, size -> size)_1)];
-      );
+        result.characters = result.characters :> string_1;
+        result.offsets = result.offsets :> 0;
+
+        forall(2..n,
+            result.characters = result.characters :> string_#;
+            result.offsets = result.offsets :> pixelsize * (pixelsize(sum(string_(1..#)), size -> size)_1 - pixelsize(string_#, size -> size)_1);
+        );
     );
-  
+
     result;
-  );
+
+);
+
+drawFragmentedText(pos, dict, time, mode, modifs) := (
+    regional(modifKeys, n, fontHeight, yOffset, alpha, size);
+
+    modifKeys = keys(modifs);
+    if(!contains(modifKeys, "color"), modifs.color = (0,0,0));
+    if(!contains(modifKeys, "alpha"), modifs.alpha = 1);
+
+    n = round(lerp(0, dict.length, time));
+
+    fontHeight = pixelsize("M", size -> dict.size);
+    fontHeight = fontHeight_2 + fontHeight_3;
+
+    forall(1..n,
+        yOffset = 0;
+        alpha = 1;
+        size = 1;
+    
+        if(mode == "up",
+            if(# == n, 
+                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+                yOffset = lerp(-0.3 * fontHeight, 0, easeOutCubic(customTime));
+                alpha = easeOutCirc(customTime);
+            );
+        );
+        if(mode == "down",
+        if(# == n, 
+            customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+            yOffset = lerp(0.3 * fontHeight, 0, easeOutCubic(customTime));
+            alpha = easeOutCirc(customTime);
+        );
+    );
+        if(mode == "pop",
+            if(# == n, 
+                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+                size = easeOutBack(customTime)^2;
+            );
+        );
+        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size->dict.size * size, color->modifs.color, alpha->modifs.alpha * alpha);
+    );
+);
+drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
+
+
+
+
+
 
 
 

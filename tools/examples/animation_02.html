@@ -23,23 +23,19 @@ startDelay = 0.5;
 // A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
 trackData = [
   1, 0.3,
-  1, 0.3,
-  1, 0.3,
-  1, 0.3
+
 ];
 
 // *************************************************************************
 
 // Set up objects here. Everything that should get animated via tween must go into objectSetup() below. All other things can be above.
+
+textSize = 30;
+textA = fragmentText("This is just a test.", textSize);
+
+
 objectSetup() := (
 
-  circle = {
-    "center": canvasCenter,
-    "radius": 0,
-    "color": (0.8,0.2,0.3);  
-  };
-  
-  
 );
 
 
@@ -47,23 +43,12 @@ calculation() := (
   // Do calculations here.
   // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
 
-  tween(circle, "radius", 3, easeOutBack(t1));
-  
-  tween(circle, "center", canvasCenter + [5,0], easeInOutCubic(t2));
-  
-  tween(circle, "color", (0.3, 0.2, 0.8), t3);
-  
-  tween(circle, "radius", 1, easeInOutBack(t4));
-  tween(circle, "center", canvasCenter, easeInOutCubic(t4));
-  tween(circle, "color", (0.3, 0.8, 0.2), t4);
 );
 
 rendering() := (
   // Do rendering here.
 
-  fillpoly(screenbounds(), color -> 0.9 * (1,1,1));
-
-  fillcircle(circle.center, circle.radius, color -> circle.color);
+  drawFragmentedText([0,0], textA, t1, "pop", {"color": (0.2, 0.3, 0.8)});
 );
 
 </script>

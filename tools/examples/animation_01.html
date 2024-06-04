@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Animation</title>
+  <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+</head>
+
+<body>
+
+<script id='csinit' type='text/x-cindyscript'>
+
+renderMode = RENDERMODES.REAL;
+showDebugInfo = true;
+
+
+// *************************************************************************
+  
+// Configure timelines.
+  
+startDelay = 0.5;
+
+// Alternating duration and pause.
+// A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
+trackData = [
+  1, 0.3,
+  1, 0.3,
+  1, 0.3,
+  1, 0.3
+];
+
+// *************************************************************************
+
+// Set up objects here. Everything that should get animated via tween must go into objectSetup() below. All other things can be above.
+
+
+
+objectSetup() := (
+
+  circle = {
+    "center": canvasCenter,
+    "radius": 0,
+    "color": (0.8,0.2,0.3);  
+  };
+  
+  
+);
+
+
+calculation() := (
+  // Do calculations here.
+  // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
+
+  tween(circle, "radius", 3, easeOutBack(t1));
+  
+  tween(circle, "center", canvasCenter + [5,0], easeInOutCubic(t2));
+  
+  tween(circle, "color", (0.3, 0.2, 0.8), t3);
+  
+  tween(circle, "radius", 1, easeInOutBack(t4));
+  tween(circle, "center", canvasCenter, easeInOutCubic(t4));
+  tween(circle, "color", (0.3, 0.8, 0.2), t4);
+);
+
+rendering() := (
+  // Do rendering here.
+
+  fillpoly(screenbounds(), color -> 0.9 * (1,1,1));
+
+  fillcircle(circle.center, circle.radius, color -> circle.color);
+);
+
+</script>
+
+
+
+<canvas id="CSCanvas" width="1024" height="768" style="border:1px solid #000000;"></canvas>
+
+
+<script>
+// The CindyJS object must be called cindy for the export of frames to work!
+var cindy = CindyJS({
+  canvasname:"CSCanvas",
+  scripts:"cs*",
+  import: {
+    "packages": ["../packages/animation"]
+  }
+});
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
