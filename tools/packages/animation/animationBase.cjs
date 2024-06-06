@@ -15,7 +15,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 strokeSampleRateEBOW = 64;
-texDelimitersEBOW = ["@", "€"];
+texDelimitersEBOW = ["@", "/"];
 integralResolutionEBOW = 3;
 
 
@@ -299,8 +299,41 @@ fragmentText(string, size) := (
     );
 
     result;
+);
+
+fragmentTex(string, size) := (
+    regional(n, m, pairsOfDelimiters, candidate);
+
+    m = length(string);
+
+    pairsOfDelimiters = [];
+    forall(1..m,
+        if(string_# == texDelimitersEBOW_1, 
+            candidate = findMatchingTexDelimiter(string, #);
+            if(candidate > 0,
+                pairsOfDelimiters = pairsOfDelimiters :> [#, candidate];
+            );
+        );
+    );
+
+    n = length(pairsOfDelimiters);
+    string = tokenize(string, texDelimitersEBOW_1);
+    string = sum(flatten(zip(string, apply(1..n, "\color{[TEX_COLOR_" + # + "][TEX_ALPHA_" + # + "]}{") :> "")));
+    string = joinStrings(tokenize(string, texDelimitersEBOW_2), "}");
+
+    {
+        "size": size,
+        "length": n,
+        "formattedString": string
+    };
 
 );
+
+
+
+zip(a, b) := transpose([a, b]);
+joinStrings(list, symbol) := 
+
 
 drawFragmentedText(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size);
@@ -308,6 +341,7 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
     modifKeys = keys(modifs);
     if(!contains(modifKeys, "color"), modifs.color = (0,0,0));
     if(!contains(modifKeys, "alpha"), modifs.alpha = 1);
+    if(!contains(modifKeys, "family"), modifs.family = "");
 
     n = round(lerp(0, dict.length, time));
 
@@ -322,14 +356,14 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
         if(mode == "up",
             if(# == n, 
                 customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(-0.3 * fontHeight, 0, easeOutCubic(customTime));
+                yOffset = lerp(-0.2 * fontHeight, 0, easeOutCubic(customTime));
                 alpha = easeOutCirc(customTime);
             );
         );
         if(mode == "down",
         if(# == n, 
             customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-            yOffset = lerp(0.3 * fontHeight, 0, easeOutCubic(customTime));
+            yOffset = lerp(0.2 * fontHeight, 0, easeOutCubic(customTime));
             alpha = easeOutCirc(customTime);
         );
     );
@@ -337,6 +371,8 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
             if(# == n, 
                 customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
                 size = easeOutBack(customTime)^2;
+                alpha = (customTime);
+
             );
         );
         drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size->dict.size * size, color->modifs.color, alpha->modifs.alpha * alpha);
@@ -345,7 +381,73 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
 drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
 
 
+drawFragmentedTex(pos, dict, time, mode, modifs) := (
+    regional(modifKeys, n, fontHeight, yOffset, alpha, size, s);
 
+    modifKeys = keys(modifs);
+    if(!contains(modifKeys, "color"), modifs.color = (0,0,0));
+    if(!contains(modifKeys, "alpha"), modifs.alpha = 1);
+    if(!contains(modifKeys, "family"), modifs.family = "");
+
+    n = round(lerp(0, dict.length, time));
+
+    fontHeight = pixelsize("M", size -> dict.size);
+    fontHeight = fontHeight_2 + fontHeight_3;
+
+
+    forall(1..n,
+        yOffset = 0;
+        alpha = 1;
+        size = 1;
+    
+        if(mode == "up",
+            if(# == n, 
+                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+                yOffset = lerp(-0.2 * fontHeight, 0, easeOutCubic(customTime));
+                alpha = easeOutCirc(customTime);
+            );
+        );
+        if(mode == "down",
+            if(# == n, 
+                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+                yOffset = lerp(0.2 * fontHeight, 0, easeOutCubic(customTime));
+                alpha = easeOutCirc(customTime);
+            );
+        );
+        if(mode == "pop",
+            if(# == n, 
+                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
+                size = easeOutBack(customTime)^2;
+                alpha = (customTime);
+
+            );
+        );
+        s = joinStrings(tokenize(dict.formattedString, "[TEX_COLOR_" + # + "]"), rgb2hex(modifs.color));
+        println(s);
+        s = joinStrings(tokenize(dict.formattedString, "[TEX_ALPHA_" + # + "]"), modifs.alpha * alpha);
+        drawtext(pos + [dict.offsets_#, yOffset], s, size->dict.size * size);
+    );
+);
+drawFragmentedTex(pos, dict, time, mode) := drawFragmentedTex(pos, dict, time, mode, {});
+
+
+
+
+
+
+
+deca2hexa(digit) := ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]_(digit + 1);
+
+rgb2hex(vec) := (
+    regional(a, b);
+    vec = round(255 * vec);
+
+    "#" + sum(apply(vec,
+        a = mod(#, 16);
+        b = (# - a) / 16;
+        deca2hexa(b) + deca2hexa(a);
+    ));			
+);
 
 
 
@@ -417,6 +519,29 @@ wrapText(string, lineLength) := joinStrings(splitString(string, lineLength), new
 
 
 
+findMatchingTexDelimiter(string, startIndex) := (
+    regional(endIndex, innerCount, foundMatch, n);
+
+    endIndex = 0;
+    n = length(string);
+    if(startIndex > 0,
+        endIndex = startIndex;
+        innerCount = 0;
+        foundMatch = false;
+        while((endIndex < n) & not(foundMatch),
+            endIndex = endIndex + 1;
+            if(string_endIndex == texDelimitersEBOW_1, innerCount = innerCount + 1);
+            if(string_endIndex == texDelimitersEBOW_2, 
+                innerCount = innerCount - 1;
+                if(innerCount <= -1,
+                    foundMatch = true;            
+                );
+            );
+        );
+    );
+    if(foundMatch, endIndex, 0);
+);
+
 
 
 // *************************************************************************************************
@@ -434,21 +559,21 @@ convertTexDelimiters(string, buffer) := (
         foundEnd = false;
         while(not(foundEnd),
         endIndex = endIndex + 1;
-        if(endIndex == length(string),
-            foundEnd = true;
-        , // else //
-            if(string_endIndex == texDelimitersEBOW_1, innerCount = innerCount + 1);
-            if(string_endIndex == texDelimitersEBOW_2, 
-            innerCount = innerCount - 1;
-            if(innerCount == -1,
-                foundEnd = true;            
-            );
-            );
-        )
+            if(endIndex == length(string),
+                foundEnd = true;
+            , // else //
+                if(string_endIndex == texDelimitersEBOW_1, innerCount = innerCount + 1);
+                if(string_endIndex == texDelimitersEBOW_2, 
+                innerCount = innerCount - 1;
+                if(innerCount == -1,
+                    foundEnd = true;            
+                );
+                );
+            )
         );
     
         convertTexDelimiters(
-            sum(string_(1..startIndex - 1)) 
+          sum(string_(1..startIndex - 1)) 
         + if(buffer > 0, "", "\phantom{")
         + sum(string_(startIndex + 1 .. endIndex - 1))
         + if(buffer > 0, "", "}") 
