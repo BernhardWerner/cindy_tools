@@ -110,14 +110,14 @@ newButton(dict) := (
   res.onDrag := ();
   res.onUp := ();
   res.handleInput := (
-    if(self().active & mouseInButton(self()), 
-      if(mouseScriptIndicator == "Down",
+    if(self().active, 
+      if(mouseScriptIndicator == "Down" & mouseInButton(self()),
         self().pressed = if(self().isToggle, !self().pressed, true);
         self().onDown;
       );
 
       if(mouseScriptIndicator == "Up", 
-        self().onUp;
+        if(mouseInButton(self()), self().onUp);
         if(!self().isToggle, self().pressed = false);
       );
     );

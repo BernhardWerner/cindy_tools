@@ -13,7 +13,20 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
+background = 1;
 
+testButton = newButton();
+testButton.label = "Test";
+testButton.position = [10, 3];
+testButton.size = [6, 3];
+testButton.labelSize = 35;
+testButton.onUp := (
+  background = 1 - background;
+);
+
+</script>
+<script id='csdraw' type='text/x-cindyscript'>
+  fillpoly(screenbounds(), color -> background * (1,1,1));
 </script>
 
 
@@ -28,7 +41,10 @@
 <script>
 var cindy = CindyJS({
   canvasname:"CSCanvas",
-  scripts:"cs*"
+  scripts:"cs*",
+  import: {
+    "packages": ["../packages/ui"]
+  }
 });
 
 
