@@ -14,7 +14,15 @@ showDebugInfo = true;
 
 
 // *************************************************************************
-  
+
+textSize = 40;
+
+textA = fragmentText("This is just a test.", textSize);
+texB = fragmentTex("$\displaystyle @\sum_{@i/@=/@0/}^{@n/@-/@1/}@q/^{@i/}/ @=/ @\frac{@1/ @-/ @q/^{@n/}}{@1/@-/@q/}/$", textSize);
+
+typingSpeed = 10;
+
+
 // Configure timelines.
   
 startDelay = 0.5;
@@ -22,20 +30,16 @@ startDelay = 0.5;
 // Alternating duration and pause.
 // A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
 trackData = [
-  1, 0.3,
-  1, 0.3
+  textA.length / typingSpeed, 0.3,
+  texB.length / typingSpeed, 0.3
 ];
 
 // *************************************************************************
 
 // Set up objects here. Everything that should get animated via tween must go into objectSetup() below. All other things can be above.
 
-textSize = 40;
 
-textA = fragmentText("This is just a test.", textSize);
-texB = fragmentTex("@1/@2/@3/@4/@5/@6/@7/@8/@9/@0/$", textSize);
 
-drawFragmentedTex([-5, 5], texB, 0.5, "up", {"color": (0.2, 0.3, 0.8)});
 
 
 objectSetup() := (
@@ -52,7 +56,8 @@ calculation() := (
 rendering() := (
   // Do rendering here.
 
-  //drawFragmentedText([-5, 5], textA, t1, "up", {"color": (0.2, 0.3, 0.8)});
+  drawFragmentedText([-5, 7], textA, t1, "pop", {"color": (0.8, 0.2, 0.3)});
+  drawFragmentedTex([0, 0], texB, t2, "up", {"color": (0.2, 0.3, 0.8)});
 );
 
 </script>
@@ -67,6 +72,7 @@ rendering() := (
 var cindy = CindyJS({
   canvasname:"CSCanvas",
   scripts:"cs*",
+  use: ["katex"],
   import: {
     "packages": ["../packages/animation"]
   }

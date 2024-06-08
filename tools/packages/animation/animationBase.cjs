@@ -317,14 +317,13 @@ fragmentTex(string, size) := (
     );
 
     n = length(pairsOfDelimiters);
-    string = tokenize(string, texDelimitersEBOW_1);
-    string = sum(flatten(zip(string, apply(1..n, "\color{[TEX_COLOR_" + # + "][TEX_ALPHA_" + # + "]}{") :> "")));
-    string = joinStrings(tokenize(string, texDelimitersEBOW_2), "}");
+    string = replace(string, texDelimitersEBOW_2, "}");
 
     {
         "size": size,
         "length": n,
-        "formattedString": string
+        "characters": apply(1..n, i, sum(flatten(zip(tokenize(string, texDelimitersEBOW_1), apply(1..n, j, "\color{" + if(i == j, "[COLOR_" + j + "][ALPHA_" + j + "]", "#00000000") + "}{") :> "")))),
+        "offsets": apply(1..n, 0)
     };
 
 );
@@ -332,7 +331,7 @@ fragmentTex(string, size) := (
 
 
 zip(a, b) := transpose([a, b]);
-joinStrings(list, symbol) := 
+joinStrings(list, symbol) := sum(flatten(zip(list, apply(1..length(list) - 1, symbol) :> "")));
 
 
 drawFragmentedText(pos, dict, time, mode, modifs) := (
@@ -381,6 +380,8 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
 drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
 
 
+
+
 drawFragmentedTex(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, s);
 
@@ -393,6 +394,7 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
 
     fontHeight = pixelsize("M", size -> dict.size);
     fontHeight = fontHeight_2 + fontHeight_3;
+
 
 
     forall(1..n,
@@ -422,9 +424,9 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
 
             );
         );
-        s = joinStrings(tokenize(dict.formattedString, "[TEX_COLOR_" + # + "]"), rgb2hex(modifs.color));
-        println(s);
-        s = joinStrings(tokenize(dict.formattedString, "[TEX_ALPHA_" + # + "]"), modifs.alpha * alpha);
+        s = dict.characters_#;
+        s = replace(s, "[COLOR_" + # + "]", rgb2hex(modifs.color));
+        s = replace(s, "[ALPHA_" + # + "]", alpha2hex(modifs.alpha * alpha));
         drawtext(pos + [dict.offsets_#, yOffset], s, size->dict.size * size);
     );
 );
@@ -448,7 +450,14 @@ rgb2hex(vec) := (
         deca2hexa(b) + deca2hexa(a);
     ));			
 );
+alpha2hex(x) := (
+    regional(a,b);
 
+    x = round(x * 255);
+    a = mod(x, 16);
+    b = (x - a) / 16;
+    deca2hexa(b) + deca2hexa(a);
+);
 
 
 

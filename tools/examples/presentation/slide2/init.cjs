@@ -17,7 +17,7 @@ trackData = [
 title = parseText("Abstract projective planes");
 definition = stitch([
     parseText("A projective plane is a triple "),
-    parseTex("$@(€@\mathcal{P}€@,€ @\mathcal{L}€@,€ @\mathcal{I}€@)€$"),
+    parseTex("$@(/@\mathcal{P}/@,/ @\mathcal{L}/@,/ @\mathcal{I}/@)/$"),
     parseText(" of points, lines, and an incidence relation
 between them such that:"),
 ]);
