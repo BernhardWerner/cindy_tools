@@ -335,12 +335,13 @@ joinStrings(list, symbol) := sum(flatten(zip(list, apply(1..length(list) - 1, sy
 
 
 drawFragmentedText(pos, dict, time, mode, modifs) := (
-    regional(modifKeys, n, fontHeight, yOffset, alpha, size);
+    regional(modifKeys, n, fontHeight, yOffset, alpha, size, hasColorMap, col);
 
     modifKeys = keys(modifs);
     if(!contains(modifKeys, "color"), modifs.color = (0,0,0));
     if(!contains(modifKeys, "alpha"), modifs.alpha = 1);
     if(!contains(modifKeys, "family"), modifs.family = "");
+    hasColorMap = contains(modifKeys, "colorMap");
 
     n = round(lerp(0, dict.length, time));
 
@@ -374,7 +375,14 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
 
             );
         );
-        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size->dict.size * size, color->modifs.color, alpha->modifs.alpha * alpha);
+        col = modifs.color;
+        if(hasColorMap,
+            forall(modifs.colorMap, entry, 
+                if(contains(entry_1, #), col = entry_2);
+            );
+        );
+
+        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size -> dict.size * size, color -> col, alpha -> modifs.alpha * alpha);
     );
 );
 drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
@@ -383,12 +391,13 @@ drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time,
 
 
 drawFragmentedTex(pos, dict, time, mode, modifs) := (
-    regional(modifKeys, n, fontHeight, yOffset, alpha, size, s);
+    regional(modifKeys, n, fontHeight, yOffset, alpha, size, s, hasColorMap, col);
 
     modifKeys = keys(modifs);
     if(!contains(modifKeys, "color"), modifs.color = (0,0,0));
     if(!contains(modifKeys, "alpha"), modifs.alpha = 1);
     if(!contains(modifKeys, "family"), modifs.family = "");
+    hasColorMap = contains(modifKeys, "colorMap");
 
     n = round(lerp(0, dict.length, time));
 
@@ -424,10 +433,21 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
 
             );
         );
+
+        col = modifs.color;
+        if(hasColorMap,
+            forall(modifs.colorMap, entry, 
+                if(contains(entry_1, #), col = entry_2);
+            );
+        );
+
         s = dict.characters_#;
-        s = replace(s, "[COLOR_" + # + "]", rgb2hex(modifs.color));
+        s = replace(s, "[COLOR_" + # + "]", rgb2hex(col));
         s = replace(s, "[ALPHA_" + # + "]", alpha2hex(modifs.alpha * alpha));
-        drawtext(pos + [dict.offsets_#, yOffset], s, size->dict.size * size);
+
+
+
+        drawtext(pos + [dict.offsets_#, yOffset], s, size -> dict.size * size);
     );
 );
 drawFragmentedTex(pos, dict, time, mode) := drawFragmentedTex(pos, dict, time, mode, {});
