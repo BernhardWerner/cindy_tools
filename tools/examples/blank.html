@@ -13,22 +13,9 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-background = 1;
 
-testButton = newButton();
-testButton.label = "Test";
-testButton.position = [10, 3];
-testButton.size = [6, 3];
-testButton.labelSize = 35;
-testButton.onUp := (
-  background = 1 - background;
-);
 
 </script>
-<script id='csdraw' type='text/x-cindyscript'>
-  fillpoly(screenbounds(), color -> background * (1,1,1));
-</script>
-
 
 
 <canvas id="CSCanvas" align="left" valign="top" width="800" height="600" style="border:1px solid #000000;"></canvas>

@@ -94,14 +94,16 @@ newButton(dict) := (
     "active":     if(contains(keys, "active"), dict.active, true),
     "visible":    if(contains(keys, "visible"), dict.visible, true)
   };
+  res.shape1 = roundedrectangle(res.position + 0.5 * (-res.size.x, res.size.y), res.size.x, res.size.y, res.corner);
+  res.shape2 = roundedrectangle(res.position + 0.5 * (-res.size.x, res.size.y) + (0, -0.2), res.size.x, res.size.y, res.corner);
   res.draw := (
     if(self().visible,
       if(self().pressed,
-          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner), color -> (self().colors)_1);
+          fill(self().shape2, color -> (self().colors)_1);
           drawtext(self().position + (0, -0.5 * self().labelSize / 35) + (0, -0.2), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
       , // else //
-          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner), color -> (self().colors)_3);
-          fill(roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size_1, self().size_2, self().corner), color -> (self().colors)_2);
+          fill(self().shape2, color -> (self().colors)_3);
+          fill(self().shape1, color -> (self().colors)_2);
           drawtext(self().position + (0, -0.5 * self().labelSize / 35), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
       );
     );
