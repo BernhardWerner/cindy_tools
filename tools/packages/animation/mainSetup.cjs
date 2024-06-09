@@ -60,6 +60,9 @@ skipStepBackwards() := (
 
 // ************************************************************
 
+startDelay = 0;
+trackData = [];
+
 currentTrackIndex = 1;
 
 
@@ -101,6 +104,8 @@ triggerScreenshot() := (
             if(contains(framesToExport, frameCount) & contains(values(FORMATS), exportFormat),
                 javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
             );
+        , // else //
+            javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
         );
         frameExportTimer = frameExportWaitTime;
         playanimation();
