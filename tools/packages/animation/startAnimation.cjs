@@ -7,8 +7,9 @@ now() := totalTime;
 
 
 
+totalDuration = startDelay + sum(trackData);
+
 if(renderMode == RENDERMODES.FRAMES,
-    totalDuration = startDelay + sum(trackData);
     frameCount = 0;
     maxFrames = 60 * totalDuration;
 );

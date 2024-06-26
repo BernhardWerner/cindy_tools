@@ -31,8 +31,8 @@ stepRenderState = STEPRENDERSTATES.WAITING;
 
 STEPBACKWARDS = "A";
 STEPFORWARDS = "D";
-SKIPFORWARDS = "S";
-SKIPBACKWARDS = "W";
+SKIPFORWARDS = "X";
+SKIPBACKWARDS = "Q";
 
 STEPMODES = {
     "KEYBOARD": 0,
@@ -48,13 +48,15 @@ moveStepForwards() := (
 skipStepForwards() := (
     if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex <= numberOfTracks,
         calculate(trackData_(2 * currentTrackIndex - 1) + trackData_(2 * currentTrackIndex));
-        currentTrackIndex = currentTrackIndex + 1;
+        currentTrackIndex = min(currentTrackIndex + 1, numberOfTracks);
     );
 );
 skipStepBackwards() := (
     if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex > 1,
-        currentTrackIndex = currentTrackIndex - 1;    
-        calculate(-trackData_(2 * currentTrackIndex) -trackData_(2 * currentTrackIndex - 1));
+        if(!endOfAnimationReached,
+            currentTrackIndex = currentTrackIndex - 1;    
+        );
+        calculate(-trackData_(2 * currentTrackIndex) - trackData_(2 * currentTrackIndex - 1));
     );
 );
 
@@ -84,6 +86,7 @@ rendering() := ();
 frameExportWaitTime = 3;
 frameExportTimer = frameExportWaitTime;
 
+endOfAnimationReached = false;
 
 // ************************************************************
 
@@ -120,6 +123,8 @@ continueAnimation() := (
 
 calculate(delta) := (
     totalTime = totalTime + delta * timeScale;
+    endOfAnimationReached = totalTime ~>= totalDuration -trackData_(-1);
+    
     forall(tracks, updateAnimationTrack(#));
 
     forall(1..numberOfTracks, parse("t" + # + " = tracks_" + # +".progress;"));

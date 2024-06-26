@@ -390,6 +390,10 @@ drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time,
 
 
 
+preProcessTex(string) := (
+    
+);
+
 drawFragmentedTex(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, s, hasColorMap, col);
 
@@ -491,7 +495,7 @@ alpha2hex(x) := (
 
 
 
-
+/*
 
 
   drawWrappedText(pos, txt, lineLength, lineHeight, size, align, color, family) := (
@@ -526,17 +530,7 @@ splitString(string, subLength) := (
 );
 
 
-joinStrings(strings, separator) := (
-    regional(result);
 
-    result = strings_1;
-
-    forall(2..length(strings),
-        result = result + separator + strings_#;
-    );
-
-    result;
-);
 
 
 newLine = "
@@ -544,7 +538,7 @@ newLine = "
 
 wrapText(string, lineLength) := joinStrings(splitString(string, lineLength), newLine);
 
-
+*/
 
 
 
@@ -572,7 +566,7 @@ findMatchingTexDelimiter(string, startIndex) := (
 );
 
 
-
+/*
 // *************************************************************************************************
 // Handles typing effect for LaTeX formulas.
 // *************************************************************************************************
@@ -631,3 +625,5 @@ stitch(parts) := (
 
 
 typeParsedText(list, time) := list_(round(lerp(1, length(list), time)));
+
+*/

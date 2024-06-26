@@ -13,12 +13,16 @@ renderMode = RENDERMODES.REAL;
 showDebugInfo = true;
 
 
+
 // *************************************************************************
 
 textSize = 40;
 
 textA = fragmentText("This is just a test.", textSize);
-texB = fragmentTex("$\displaystyle @\sum_{@i/@=/@0/}^{@n/@-/@1/}@q/^{@i/}/ @=/ @\frac{@1/ @-/ @q/^{@n/}}{@1/@-/@q/}/$", textSize);
+texB = fragmentTeX("$\displaystyle @\sum_{@i/@=/@0/}^{@n/@-/@1/}@q/^{@i/}/ @=/ @\frac{@1/ @-/ @q/^{@n/}}{@1/@-/@q/}/$", textSize);
+bothC = fragmentString("This is text $@\sum/@1/@2/@3/@4/$ mixed with TeX.", textSize);
+
+
 
 typingSpeed = 10;
 
@@ -32,12 +36,14 @@ startDelay = 0.5;
 trackData = [
   textA.length / typingSpeed, 0.3,
   texB.length / typingSpeed, 0.3,
-  0.5, 0.3
+  0.5, 0.3,
+  sum(apply(bothC, #.length)) / typingSpeed, 0.3
 ];
 
 // *************************************************************************
 
 // Set up objects here. Everything that should get animated via tween must go into objectSetup() below. All other things can be above.
+
 
 
 
@@ -57,8 +63,20 @@ calculation() := (
 rendering() := (
   // Do rendering here.
 
-  drawFragmentedText([-5, 7], textA, t1, "pop", {"color": (0.8, 0.2, 0.3)});
-  drawFragmentedTex([0, 0], texB, t2, "up", {"color": (0,0,0), "colorMap": [[12..15, lerp((0,0,0), (0.3, 0.8, 0.2), t3)]]});
+  drawFragmentedText([-5, 7], textA, t1, "up", {"color": (0.8, 0.2, 0.3)});
+  drawFragmentedTeX([0, 0], texB, t2, "up", {
+    "color": (0,0,0),
+    "colorMap": [[12..15, lerp((0,0,0), (0.3, 0.8, 0.2), t3)]]
+  });
+  drawFragmentedString([1, 10], bothC, t4, "full", {"color": (0,0,0)});
+
+
+
+
+
+
+
+  
 );
 
 </script>
