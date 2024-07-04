@@ -876,6 +876,11 @@ sampleBezierCurve(controls) := (
     );
 );
 
+sampleBezierSpline(listOfCurves, t) := (
+    regional(lengths);
+    
+);
+
 // ************************************************************************************************
 // Discrete derivative of a discrete curve
 // ************************************************************************************************

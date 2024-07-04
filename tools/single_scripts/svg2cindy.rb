@@ -1,7 +1,7 @@
 require 'nokogiri'
 require 'optparse'
 
-# Helper function to parse path data commands
+# Helper functions to parse path data commands
 def parse_path_data(path_data)
   commands = path_data.scan(/([a-zA-Z])([^a-zA-Z]*)/).map { |cmd, params| [cmd, params.strip] }
   absolute_coordinates = []
@@ -61,6 +61,17 @@ def parse_path_data(path_data)
   absolute_coordinates
 end
 
+# Convert coordinates from y-down to y-up coordinate system
+def convert_coordinates(strokes)
+  strokes.map do |path|
+    path.map do |curve|
+      curve.map do |point|
+        [point[0], -point[1]]
+      end
+    end
+  end
+end
+
 # Main script
 options = {}
 OptionParser.new do |opts|
@@ -77,54 +88,43 @@ end
 
 svg_file = options[:file]
 svg_name = File.basename(svg_file, File.extname(svg_file))
-output_file = "#{svg_name}.cjs"
+output_file = "#{svg_name}Image.cjs"
 
+# Parse the SVG with Nokogiri, including handling namespaces
 doc = Nokogiri::XML(File.read(svg_file))
+svg_element = doc.at_xpath('//xmlns:svg', xmlns: 'http://www.w3.org/2000/svg')
 
-# Extract width and height from the SVG element
-svg_element = doc.at_xpath('//svg')
 if svg_element.nil?
   puts "Error: No <svg> element found in #{svg_file}"
   exit 1
 end
 
-svg_width = svg_element['width']&.to_f
-svg_height = svg_element['height']&.to_f
+# Extract width and height from the SVG element
+svg_width = svg_element.attr('width')&.to_f
+svg_height = svg_element.attr('height')&.to_f
 
 if svg_width.nil? || svg_height.nil?
   puts "Error: <svg> width and/or height attributes are missing in #{svg_file}"
   exit 1
 end
 
-strokes = doc.xpath('//svg:path').map do |path|
-  path_data = path['d']
+strokes = doc.xpath('//xmlns:path', xmlns: 'http://www.w3.org/2000/svg').map do |path|
+  path_data = path.attr('d')
   parse_path_data(path_data)
 end
 
-# Normalize and convert the y coordinates
-def normalize_and_convert_coordinates(strokes, width, height)
-  strokes.map do |path|
-    path.map do |curve|
-      curve.map do |point|
-        [point[0] / width, 1 - point[1] / height]
-      end
-    end
-  end
-end
+normalized_strokes = convert_coordinates(strokes)
 
-normalized_strokes = normalize_and_convert_coordinates(strokes, svg_width, svg_height)
-
+# Write the coordinates into a text file
 File.open(output_file, 'w') do |file|
-  file.puts "#{svg_name}Strokes = ["
+  file.puts "#{svg_name}Image = ["
   normalized_strokes.each_with_index do |path, p_idx|
     file.puts "    // path #{p_idx + 1}"
     file.puts "    ["
     path.each_with_index do |curve, c_idx|
-      # Correctly append a comma to each curve except the last one in the path
-      curve_str = curve.map { |point| "[#{point.join(', ')}]" }.join(', ')
-      file.puts "        #{curve_str}#{"," unless c_idx == path.size - 1}"
+      points_str = curve.map { |point| "[#{point.join(', ')}]" }.join(', ')
+      file.puts "        [#{points_str}]#{"," unless c_idx == path.size - 1}"
     end
-    # Correctly append a comma to each path except the last one in the strokes array
     file.puts "    ]#{"," unless p_idx == normalized_strokes.size - 1}"
   end
   file.puts "];"

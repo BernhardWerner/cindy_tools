@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>template</title>
+    <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+    <script type="text/javascript" src="../../cindy/CindyGL.js"></script>
+  </head>
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+
+
+<script id='csinit' type='text/x-cindyscript'>
+  strokeSampleRate = 64;
+
+  bite(list, i) := list_((i + 1)..length(list));
+  bite(list) := bite(list, 1);
+
+  pop(list, i) := list_(1..(length(list) - i));
+  pop(list) := pop(list, 1);
+
+
+  derive(curve) := apply(consecutive(curve), #_2 - #_1);
+
+  bezier(controls, t) := (
+    regional(n);
+
+    n = length(controls);
+
+    if(n == 1,
+        controls_1;
+    , // else //
+        (1 - t) * bezier(pop(controls), t) + t * bezier(bite(controls), t);
+    );
+  );
+
+
+
+
+sampleBezierCurve(controls, sr) := (
+    regional(t);
+
+    apply(0..sr - 1, 
+        t = # / (sr - 1);
+
+        bezier(controls, t);
+    );
+);
+
+catmullRom(controls, alpha, t) := (
+    regional(a, b, c, p, q, knot1, knot2, knot3, knot4);
+
+    knot1 = 0;
+    knot2 = knot1 + pow(dist(controls_2, controls_1), alpha);
+    knot3 = knot2 + pow(dist(controls_3, controls_2), alpha);
+    knot4 = knot3 + pow(dist(controls_4, controls_3), alpha);
+    
+    t = lerp(knot2, knot3, t);
+
+    a = lerp(controls_1, controls_2, t, knot1, knot2);
+    b = lerp(controls_2, controls_3, t, knot2, knot3);
+    c = lerp(controls_3, controls_4, t, knot3, knot4);
+
+    p = lerp(a, b, t, knot1, knot3);
+    q = lerp(b, c, t, knot2, knot4);
+
+    lerp(p, q, t, knot2, knot3);
+);
+
+
+
+
+sampleCatmullRomCurve(controls, alpha) := (
+    regional(t);
+    apply(0..strokeSampleRate - 1, 
+        t = # / (strokeSampleRate - 1);
+
+        catmullRom(controls, alpha, t);
+    );
+);
+sampleCatmullRomCurve(controls) := sampleCatmullRomCurve(controls, 0.5);
+        
+sampleCatmullRomSplineGeneralFREE(points, alpha, nop) := (
+    regional(dists, traj, before, after, cutTimes, piece, controls, t);
+
+    dists    = apply(derive(points), abs(#));
+    traj     = sum(dists);
+    before   = 2 * points_1    - points_2;
+    after    = 2 * points_(-1) - points_(-2);
+    cutTimes = 0 <: apply(1..(length(dists) - 1), sum(dists_(1..#))) / traj;
+  
+    apply(0..(nop - 1), i,
+      piece = select(1..(length(points) - 1), cutTimes_# * (nop - 1) <= i)_(-1);
+  
+    
+      if(piece == 1,
+        controls = [before, points_1, points_2, points_3];
+        t = i / (nop - 1) * traj / dists_1;
+      ,if(piece == length(points) - 1,
+        controls = [points_(-3), points_(-2), points_(-1), after];
+        t = (i / (nop - 1) - cutTimes_(-1)) * traj / dists_(-1);
+      , // else //
+        controls = [points_(piece - 1), points_(piece), points_(piece + 1), points_(piece + 2)];
+        t = (i / (nop - 1) - cutTimes_piece) * traj / dists_piece;
+      ));
+
+      catmullRom(controls, alpha, t);
+    );
+);
+sampleCatmullRomSplineGeneral(points, alpha) := sampleCatmullRomSplineGeneralFREE(points, alpha, strokeSampleRate);
+sampleCatmullRomSplineFREE(points, nop)      := sampleCatmullRomSplineGeneralFREE(points, 0.5, nop);
+sampleCatmullRomSpline(points)               := sampleCatmullRomSplineGeneralFREE(points, 0.5, strokeSampleRate);
+
+resample(stroke, nop) := sampleCatmullRomSplineFREE(stroke, nop);
+resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
+
+
+
+
+// ****************************************************************************************************
+
+canvasBL = screenbounds()_4.xy;
+canvasCenter = 0.5 * (screenbounds()_2.xy + screenbounds()_4.xy);
+res = screenresolution();
+
+allPoints = flatten(testImage, levels -> 2);
+imageCenter = sum(allPoints) / length(allPoints);  
+
+testImage = apply(testImage, spline, 
+  normalizedSpline = apply(spline, curve, 
+    apply(curve, canvasCenter + 3 * (# - imageCenter) / res);
+  );
+  apply(normalizedSpline, sampleBezierCurve(#, 256));
+);
+
+</script>
+
+
+<script id='csdraw' type='text/x-cindyscript'>
+forall(testImage, spline, forall(spline, curve,
+  connect(curve);
+));
+draw(canvasCenter);
+</script>
+
+
+<script id='cstick' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousemove' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousedown' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmousedrag' type='text/x-cindyscript'>
+</script>
+
+
+<script id='csmouseup' type='text/x-cindyscript'>
+</script>
+
+<!-- <script id='cskeydown' type='text/x-cindyscript'>
+</script> -->
+
+
+<canvas id="CSCanvas" align="left" valign="top" width="800" height="600" style="border:1px solid #000000;"></canvas>
+
+
+
+
+
+
+<script>
+var cindy = CindyJS({
+  canvasname:"CSCanvas",
+  scripts:"cs*",
+  images: {},
+  use: ["katex", "CindyGL"],
+  import: {"init": ["../single_scripts/egdod", "../single_scripts/colorPalettes", "testImage.cjs"]}
+});
+
+
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>
