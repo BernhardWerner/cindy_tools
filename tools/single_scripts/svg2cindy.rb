@@ -88,7 +88,8 @@ end
 
 svg_file = options[:file]
 svg_name = File.basename(svg_file, File.extname(svg_file))
-output_file = "#{svg_name}Image.cjs"
+svg_path = File.dirname(svg_file)
+output_file = "#{svg_path}/#{svg_name}.cjs"
 
 # Parse the SVG with Nokogiri, including handling namespaces
 doc = Nokogiri::XML(File.read(svg_file))
@@ -117,7 +118,7 @@ normalized_strokes = convert_coordinates(strokes)
 
 # Write the coordinates into a text file
 File.open(output_file, 'w') do |file|
-  file.puts "#{svg_name}Image = ["
+  file.puts "#{svg_name} = ["
   normalized_strokes.each_with_index do |path, p_idx|
     file.puts "    // path #{p_idx + 1}"
     file.puts "    ["

@@ -121,7 +121,7 @@ resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
 // ****************************************************************************************************
 
 strokeSampleRate = 32;
-strokeResolution = 32;
+strokeResolution = 128;
 
 
 canvasBL = screenbounds()_4.xy;
@@ -140,16 +140,19 @@ testImage = apply(testImage, spline,
 allPoints = flatten(testImage);
 imageCenter = sum(allPoints) / length(allPoints);
 testImage = apply(testImage, stroke,
-  apply(stroke, canvasCenter + 3 * (# - imageCenter));
+  apply(stroke, canvasCenter + 8 * (# - imageCenter));
 );
 
+lerp(x,y,t) := (1 - t) * x + t * y;
 </script>
 
 
 <script id='csdraw' type='text/x-cindyscript'>
+SX = min(1, dist(mouse().x, screenbounds()_1.x) / dist(screenbounds()_2.x - 5, screenbounds()_1.x));
 forall(testImage, spline, index,
-  col = if(length(testImage) <= 1, (0,0,0), ((index - 1) / (length(testImage) - 1), 0, 1 - mod(index, 2)));
-  connect(spline, size -> 3, color -> col);
+  //col = if(length(testImage) <= 1, (0,0,0), ((index - 1) / (length(testImage) - 1), 0, 1 - mod(index, 2)));
+  col = (0,0,0);
+  connect(spline_(1..lerp(1, length(spline), SX)), size -> 4, color -> col);
 );
 </script>
 
@@ -190,7 +193,7 @@ var cindy = CindyJS({
   scripts:"cs*",
   images: {},
   use: ["katex", "CindyGL"],
-  import: {"init": ["../single_scripts/egdod", "../single_scripts/colorPalettes", "testImage.cjs"]}
+  import: {"init": ["../single_scripts/egdod", "../single_scripts/colorPalettes", "./imgs/testImage"]}
 });
 
 
