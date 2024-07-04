@@ -13,7 +13,6 @@
 
 
 <script id='csinit' type='text/x-cindyscript'>
-  strokeSampleRate = 64;
 
   bite(list, i) := list_((i + 1)..length(list));
   bite(list) := bite(list, 1);
@@ -121,28 +120,37 @@ resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
 
 // ****************************************************************************************************
 
+strokeSampleRate = 32;
+strokeResolution = 32;
+
+
 canvasBL = screenbounds()_4.xy;
 canvasCenter = 0.5 * (screenbounds()_2.xy + screenbounds()_4.xy);
 res = screenresolution();
 
-allPoints = flatten(testImage, levels -> 2);
-imageCenter = sum(allPoints) / length(allPoints);  
 
 testImage = apply(testImage, spline, 
-  normalizedSpline = apply(spline, curve, 
-    apply(curve, canvasCenter + 3 * (# - imageCenter) / res);
-  );
-  apply(normalizedSpline, sampleBezierCurve(#, 256));
+  normalizedSpline = apply(spline, curve, apply(curve, # / res));
+  resampledSpline = apply(normalizedSpline, sampleBezierCurve(#, strokeSampleRate));
+  connectedCurve = resampledSpline_1_1 <: flatten(apply(resampledSpline, bite(#)));
+  totalLength = sum(apply(derive(connectedCurve), abs(#)));
+  resample(connectedCurve, totalLength * strokeResolution);
+);
+
+allPoints = flatten(testImage);
+imageCenter = sum(allPoints) / length(allPoints);
+testImage = apply(testImage, stroke,
+  apply(stroke, canvasCenter + 3 * (# - imageCenter));
 );
 
 </script>
 
 
 <script id='csdraw' type='text/x-cindyscript'>
-forall(testImage, spline, forall(spline, curve,
-  connect(curve);
-));
-draw(canvasCenter);
+forall(testImage, spline, index,
+  col = if(length(testImage) <= 1, (0,0,0), ((index - 1) / (length(testImage) - 1), 0, 1 - mod(index, 2)));
+  connect(spline, size -> 3, color -> col);
+);
 </script>
 
 
