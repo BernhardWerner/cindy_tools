@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>test</title>
+    <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+    <script type="text/javascript" src="../../cindy/CindyGL.js"></script>
+  </head>
+
+<body style="font-family:Palatino; margin:0; font-size:16pt">
+
+<!-- .\ffmpeg.exe -framerate 60 -i %d.png -c:v libx264 -pix_fmt yuv420p out.mp4 -->
+
+<script id='csinit' type='text/x-cindyscript'>
+
+
+canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
+
+canvasAnchors = [
+    canvasPoly_4,
+    0.5 * canvasPoly_4 + 0.5 * canvasPoly_3,
+    canvasPoly_3,
+
+    0.5 * canvasPoly_4 + 0.5 * canvasPoly_1,
+    0.5 * canvasPoly_4 + 0.5 * canvasPoly_2,
+    0.5 * canvasPoly_3 + 0.5 * canvasPoly_2,
+
+    canvasPoly_1,
+    0.5 * canvasPoly_1 + 0.5 * canvasPoly_2,
+    canvasPoly_2
+];
+
+
+canvasCenter  = canvasAnchors_5;
+canvasWidth   = dist(canvasAnchors_1, canvasAnchors_3);
+canvasHeight  = dist(canvasAnchors_1, canvasAnchors_7);
+[canvasLeft, canvasTop] = canvasAnchors_7;
+[canvasRight, canvasBottom] = canvasAnchors_3;
+screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBottom) / canvasHeight];
+
+lerp(x, y, t) := t * y + (1 - t) * x;
+inverseLerp(x, y, p) := if(dist(y, x) != 0, (p - x) / (y - x), 0.5);
+// Lerp relative to t in interval [a, b].
+lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
+
+
+
+
+
+
+
+
+
+
+
+
+res = 500;
+thickness = 10;
+colA = (0.1, 0.2, 0.9);
+colB = (0.95, 0.9, 0);
+height = canvasHeight / 16;
+
+
+
+</script>
+
+
+<script id='csdraw' type='text/x-cindyscript'>
+fillpoly(screenbounds(), color -> 0.8 * (1,1,1));
+
+forall(1..res,
+  x = lerp(canvasLeft, canvasRight, #, 1, res);
+
+  y = canvasAnchors_7.y - (0 * 3 + 1) * height;
+  col = lerp(colA, colB, #, 1, res);
+  draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
+
+  y = canvasAnchors_7.y - (1 * 3 + 1) * height;
+  col = blendRGB(colA, colB,inverseLerp(1, res, #));
+  draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
+
+  y = canvasAnchors_7.y - (2 * 3 + 1) * height;
+  col = blendHSV(colA, colB,inverseLerp(1, res, #));
+  draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
+
+  y = canvasAnchors_7.y - (3 * 3 + 1) * height;
+  col = blendLAB(colA, colB,inverseLerp(1, res, #));
+  draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
+
+  y = canvasAnchors_7.y - (4 * 3 + 1) * height;
+  col = blendLCH(colA, colB,inverseLerp(1, res, #));
+  draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
+);
+
+drawtext([canvasCenter.x, canvasAnchors_7.y - (0 * 3 + 2) * height - 0.013 * 40], "sRGB", align -> "mid", size -> 40, color -> (1,1,1), bold -> true);
+drawtext([canvasCenter.x, canvasAnchors_7.y - (1 * 3 + 2) * height - 0.013 * 40], "linear sRGB", align -> "mid", size -> 40, color -> (1,1,1), bold -> true);
+drawtext([canvasCenter.x, canvasAnchors_7.y - (2 * 3 + 2) * height - 0.013 * 40], "HSV", align -> "mid", size -> 40, color -> (1,1,1), bold -> true);
+drawtext([canvasCenter.x, canvasAnchors_7.y - (3 * 3 + 2) * height - 0.013 * 40], "Oklab", align -> "mid", size -> 40, color -> (1,1,1), bold -> true);
+drawtext([canvasCenter.x, canvasAnchors_7.y - (4 * 3 + 2) * height - 0.013 * 40], "Oklch", align -> "mid", size -> 40, color -> (1,1,1), bold -> true);
+
+
+
+
+</script>
+
+
+
+
+<script id='csmousedown' type='text/x-cindyscript'>
+
+
+
+
+
+
+</script>
+
+
+
+<canvas id="CSCanvas" align="left" valign="top" width="1024" height="768" style="border:0px solid #000000;"></canvas>
+
+
+
+
+
+
+<script>
+
+var cindy = CindyJS({
+  canvasname:"CSCanvas",
+  scripts:"cs*",
+  images: {},
+  use: ["katex", "CindyGL"],
+  import: {
+    "init": [
+      "../single_scripts/color"
+    ]
+  }
+});
+
+
+</script>
+
+
+
+
+
+
+
+
+
+<script>
+  
+
+</script>
+
+
+
+
+
+
+</body>
+
+</html>

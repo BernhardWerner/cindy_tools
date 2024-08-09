@@ -7,6 +7,7 @@ if(renderMode == RENDERMODES.REAL,
 );
 
 if(renderMode == RENDERMODES.FRAMES,
+    delta = 1/60;
     if(frameRenderState == FRAMERENDERSTATES.EXPORTING,
         if(frameExportTimer > 0,
             frameExportTimer = frameExportTimer - 1;

@@ -1,4 +1,4 @@
-RENDERMODES = {
+RENDERMODES := {
     "REAL": 0,
     "FRAMES": 1,
     "STEPS": 2
@@ -7,23 +7,25 @@ renderMode = RENDERMODES.REAL;
 
 // ************************************************************
 
-FRAMERENDERSTATES = {
+FRAMERENDERSTATES := {
     "CALCULATING": 0,
     "RENDERING": 1,
     "EXPORTING": 2
 };
 frameRenderState = FRAMERENDERSTATES.CALCULATING;
 framesToExport = 0;
-FORMATS = {
+FORMATS := {
     "PNG": "PNG",
     "SVG": "SVG",
     "PDF": "PDF"
 };
 exportFormat = FORMATS.PNG;
 
+disableFrameDownload = false;
+
 // ************************************************************
 
-STEPRENDERSTATES = {
+STEPRENDERSTATES := {
     "WAITING": 0,
     "RUNNING": 1
 };
@@ -34,7 +36,7 @@ STEPFORWARDS = "D";
 SKIPFORWARDS = "X";
 SKIPBACKWARDS = "Q";
 
-STEPMODES = {
+STEPMODES := {
     "KEYBOARD": 0,
     "MANUAL": 1
 };
@@ -79,20 +81,21 @@ timeScale = 1;
 
 fpsBuffer = [0];
 
-objectSetup() := ();
 calculation() := ();
 rendering() := ();
 
-frameExportWaitTime = 3;
+frameExportWaitTime = 2;
 frameExportTimer = frameExportWaitTime;
 
 endOfAnimationReached = false;
 
+delta = 0;
+
 // ************************************************************
 
-tick(delta) := (
+tick(d) := (
     if(frameCount < maxFrames,
-        calculate(delta);
+        calculate(d);
         frameRenderState = FRAMERENDERSTATES.RENDERING;
     );
 );
@@ -102,14 +105,19 @@ triggerScreenshot() := (
     if(frameRenderState == FRAMERENDERSTATES.RENDERING,
         frameRenderState = FRAMERENDERSTATES.EXPORTING;
         frameCount = frameCount + 1;
-        println(frameCount + "/" + maxFrames);
-        if(framesToExport != 0,
-            if(contains(framesToExport, frameCount) & contains(values(FORMATS), exportFormat),
+        if(!disableFrameDownload,
+
+            if(framesToExport != 0,
+                if(contains(framesToExport, frameCount) & contains(values(FORMATS), exportFormat),
+                    println(frameCount + "/" + maxFrames);
+                    javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
+                );
+            , // else //
+                println(frameCount + "/" + maxFrames);
                 javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
             );
-        , // else //
-            javascript("cindy.export" + exportFormat + "('" + frameCount + "');");
         );
+
         frameExportTimer = frameExportWaitTime;
         playanimation();
     );
@@ -118,11 +126,11 @@ triggerScreenshot() := (
 continueAnimation() := (
     frameRenderState = FRAMERENDERSTATES.CALCULATING;
     stopanimation();
-    tick(1/60);
+    tick(delta);
 );
 
-calculate(delta) := (
-    totalTime = totalTime + delta * timeScale;
+calculate(d) := (
+    totalTime = totalTime + d * timeScale;
     endOfAnimationReached = totalTime ~>= totalDuration -trackData_(-1);
     
     forall(tracks, updateAnimationTrack(#));
@@ -130,7 +138,8 @@ calculate(delta) := (
     forall(1..numberOfTracks, parse("t" + # + " = tracks_" + # +".progress;"));
 
 
-    objectSetup();
     calculation();
 );
+
+
 
