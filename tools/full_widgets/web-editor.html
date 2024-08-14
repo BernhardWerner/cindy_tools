@@ -110,31 +110,31 @@ textarea {
 
       <div id="tab-init" class="tab-content active">
         <h3>Init Script:</h3>
-        <textarea id="textEditArea-init" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-init" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-draw" class="tab-content">
         <h3>Draw Script:</h3>
-        <textarea id="textEditArea-draw" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-draw" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-tick" class="tab-content">
         <h3>Tick Script:</h3>
-        <textarea id="textEditArea-tick" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-tick" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousemove" class="tab-content">
         <h3>Mouse Move Script:</h3>
-        <textarea id="textEditArea-mousemove" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousemove" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousedown" class="tab-content">
         <h3>Mouse Down Script:</h3>
-        <textarea id="textEditArea-mousedown" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousedown" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mousedrag" class="tab-content">
         <h3>Mouse Drag Script:</h3>
-        <textarea id="textEditArea-mousedrag" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mousedrag" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
       <div id="tab-mouseup" class="tab-content">
         <h3>Mouse Up Script:</h3>
-        <textarea id="textEditArea-mouseup" rows="20" cols="100" onkeydown="replaceTab(event)"></textarea>
+        <textarea id="textEditArea-mouseup" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
 
 
@@ -157,6 +157,7 @@ var textareas = document.querySelectorAll('textarea');
 textareas.forEach(function(textarea) {
   CodeMirror.fromTextArea(textarea, {
     lineNumbers: true,
+    lineWrapping: true,
   });
 });
 
@@ -165,13 +166,68 @@ let cindy;
 let consoleOutput = document.getElementById('console-output');
 let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
 
+
+function update_textareas() {
+      // Update text areas with the current CindyScript code
+      for (let i = 0; i < scriptList.length; i++) {
+        let scriptElement = document.getElementById('cs' + scriptList[i]);
+        let script = scriptElement.textContent;
+        // Get the CodeMirror instance for the corresponding textarea
+        let textarea = document.getElementById('textEditArea-' + scriptList[i]);
+        let codeMirrorInstance = textarea.nextElementSibling.CodeMirror;
+
+        if (codeMirrorInstance) {
+          codeMirrorInstance.setValue(script);
+        } else {
+          console.log("CodeMirror instance not found for " + scriptList[i]);
+        }
+    }
+}
+
 function startCindy() {
-  cindy = CindyJS({
+  // clear console output
+  consoleOutput.innerHTML = '';
+
+  let params = {
     canvasname:"CSCanvas",
     scripts:"cs*",
-    images: {}
-  });
+    images: {},
+    import: {},
+    oninit: update_textareas,
+  };
+
+  // Parse the URL query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const loadParam = queryParams.get('load');
+
+  if (loadParam) {
+    params.import = {"init": [loadParam]};
+  }
+
+  cindy = CindyJS(params);
+
+
+
+
+
+ 
+  
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function displayConsoleMessage(message) {
   var textNode = document.createTextNode(message); // Add a line break for readability
@@ -180,6 +236,8 @@ function displayConsoleMessage(message) {
   consoleOutput.appendChild(lineBreak);
   consoleOutput.scrollTop = consoleOutput.scrollHeight; // Auto-scroll
 }
+
+
 
 
 
@@ -209,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.addEventListener("DOMContentLoaded", function() {
 
+
 // Get all tab links and contents
 var tabs = document.querySelectorAll('.tab-links a');
 var panels = document.querySelectorAll('.tab-content');
@@ -226,6 +285,12 @@ tabs.forEach(function(tab) {
     tab.parentElement.classList.add('active');
     var panel = document.querySelector(tab.getAttribute('href'));
     panel.classList.add('active');
+    // Refresh CodeMirror layout for all textareas in the active panel
+    var codeMirrors = panel.querySelectorAll('.CodeMirror');
+      codeMirrors.forEach(function(cm) {
+        cm.CodeMirror.refresh();
+      });
+
   });
 });
 
