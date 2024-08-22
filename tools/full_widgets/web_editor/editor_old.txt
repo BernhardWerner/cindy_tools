@@ -136,9 +136,6 @@ textarea {
         <h3>Mouse Up Script:</h3>
         <textarea id="textEditArea-mouseup" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
       </div>
-
-
-
     </div>
     <input type="submit" value="Run">
     <h3>Console:</h3>
