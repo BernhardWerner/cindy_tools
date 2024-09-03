@@ -212,6 +212,10 @@
             lineWrapping: true,
         });
     });
+    var codeMirrors = document.querySelectorAll('.CodeMirror');
+    codeMirrors.forEach(function(cm) {
+        cm.CodeMirror.setSize(null, document.body.clientHeight - 500);
+    });
 
     let cindy;
     let consoleOutput = document.getElementById('console-output');
@@ -337,32 +341,35 @@
     }
 
     function makeResizableRow(resizer, panel1, panel2) {
-        resizer.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+    resizer.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
 
-            function onMouseMove(e) {
-                let containerHeight = panel1.parentElement.getBoundingClientRect().height;
-                let newHeight = ((e.clientY - resizer.offsetHeight / 2) / containerHeight) * 100;
-                panel1.style.height = `${newHeight}%`;
-                panel2.style.height = `${100 - newHeight}%`;
-                // Update height of text edit areas and code mirror instances
-                let codeMirrors = panel1.querySelectorAll('.CodeMirror');
-                codeMirrors.forEach(function(cm) {
-                    cm.CodeMirror.refresh();
-                });
+        function onMouseMove(e) {
+            let containerHeight = panel1.parentElement.getBoundingClientRect().height;
+            let newHeightPercentage = ((e.clientY - 230 - resizer.offsetHeight / 2) / containerHeight) * 100;
 
-                
+            panel1.style.height = `${newHeightPercentage}%`;
+            panel2.style.height = `${100 - newHeightPercentage}%`;
 
-            }
+            adjustCodeMirrorHeight(newHeightPercentage * containerHeight / 100);  // Adjust CodeMirror height whenever the panel is resized
+        }
 
-            function onMouseUp() {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-        });
-    }
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    });
+}
+
+
+    function adjustCodeMirrorHeight(height) {
+    var codeMirrors = document.querySelectorAll('.CodeMirror');
+    codeMirrors.forEach(function(cm) {
+        cm.CodeMirror.setSize(null, height); // Adjust height dynamically; subtract some space for padding and margins
+    });
+}
 
     document.addEventListener('DOMContentLoaded', function() {
         const verticalResizer = document.getElementById('vertical-resizer');
