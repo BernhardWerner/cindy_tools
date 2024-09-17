@@ -3,6 +3,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web editor</title>
     <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
 
@@ -126,6 +127,12 @@
             width: 100%;
             height: 100%;
         }
+
+        .editor-form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 
@@ -141,16 +148,16 @@
 
 <div class="container">
     <div class="column" id="left-column">
-        <form id="code-editor" action="/submit-your-text" method="post" style="flex: 1; display: flex; flex-direction: column;">
-            <div style="flex: 1; display: flex; flex-direction: column;">
+        <form id="code-editor" action="/submit-your-text" method="post" class="editor-form">
+            <div class="editor-form">
                 <ul class="tab-links">
-                    <li class="active"><a href="#tab-init">Init</a></li>
-                    <li><a href="#tab-draw">Draw</a></li>
-                    <li><a href="#tab-tick">Tick</a></li>
-                    <li><a href="#tab-mousemove">Mouse Move</a></li>
-                    <li><a href="#tab-mousedown">Mouse Down</a></li>
-                    <li><a href="#tab-mousedrag">Mouse Drag</a></li>
-                    <li><a href="#tab-mouseup">Mouse Up</a></li>
+                    <li class="active"><a href="#tab-init" role="tab" aria-controls="tab-init" aria-selected="true">Init</a></li>
+                    <li><a href="#tab-draw" role="tab" aria-controls="tab-draw" aria-selected="false">Draw</a></li>
+                    <li><a href="#tab-tick" role="tab" aria-controls="tab-tick" aria-selected="false">Tick</a></li>
+                    <li><a href="#tab-mousemove" role="tab" aria-controls="tab-mousemove" aria-selected="false">Mouse Move</a></li>
+                    <li><a href="#tab-mousedown" role="tab" aria-controls="tab-mousedown" aria-selected="false">Mouse Down</a></li>
+                    <li><a href="#tab-mousedrag" role="tab" aria-controls="tab-mousedrag" aria-selected="false">Mouse Drag</a></li>
+                    <li><a href="#tab-mouseup" role="tab" aria-controls="tab-mouseup" aria-selected="false">Mouse Up</a></li>
                 </ul>
 
                 <div id="tab-init" class="tab-content active">
@@ -213,10 +220,11 @@
         });
     });
     var codeMirrors = document.querySelectorAll('.CodeMirror');
-    codeMirrors.forEach(function(cm) {
-        cm.CodeMirror.setSize(null, document.body.clientHeight - 500);
+    window.addEventListener('resize', function () {
+        codeMirrors.forEach(function (cm) {
+            cm.CodeMirror.setSize(null, document.getElementById('left-column').clientHeight);
+        });
     });
-
     let cindy;
     let consoleOutput = document.getElementById('console-output');
     let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
@@ -348,7 +356,7 @@
 
         function onMouseMove(e) {
             let containerHeight = panel1.parentElement.getBoundingClientRect().height;
-            let newHeightPercentage = ((e.clientY - 230 - resizer.offsetHeight / 2) / containerHeight) * 100;
+            let newHeightPercentage = ((e.clientY - 218 - resizer.offsetHeight / 2) / containerHeight) * 100;
 
             panel1.style.height = `${newHeightPercentage}%`;
             panel2.style.height = `${100 - newHeightPercentage}%`;
@@ -370,6 +378,33 @@
         cm.CodeMirror.setSize(null, height); // Adjust height dynamically; subtract some space for padding and margins
     });
 }
+
+function saveToLocalStorage() {
+    scriptList.forEach(function (scriptName) {
+        let scriptContent = document.getElementById('textEditArea-' + scriptName).value;
+        localStorage.setItem(scriptName, scriptContent);
+    });
+}
+
+window.addEventListener('beforeunload', saveToLocalStorage);
+
+function loadFromLocalStorage() {
+    scriptList.forEach(function (scriptName) {
+        let scriptContent = localStorage.getItem(scriptName);
+        if (scriptContent) {
+            document.getElementById('textEditArea-' + scriptName).value = scriptContent;
+        }
+        // update code mirrors:
+        let codeMirrorInstance = document.getElementById('textEditArea-' + scriptName).nextElementSibling.CodeMirror;
+        if (codeMirrorInstance) {
+            codeMirrorInstance.setValue(scriptContent);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
+
+
 
     document.addEventListener('DOMContentLoaded', function() {
         const verticalResizer = document.getElementById('vertical-resizer');
