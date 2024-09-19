@@ -191,6 +191,8 @@
             </div>
             <div>
               <input type="submit" value="Run">
+              <button type="button" id="clear-console-btn">Clear Console</button>
+              <button type="button" id="delete-all-scripts-btn">Delete All Scripts</button>
             </div>
 
             <div class="resizer-horizontal resizable" id="horizontal-resizer"></div>
@@ -379,18 +381,18 @@
     });
 }
 
-function saveToLocalStorage() {
+function saveToSessionStorage() {
     scriptList.forEach(function (scriptName) {
         let scriptContent = document.getElementById('textEditArea-' + scriptName).value;
-        localStorage.setItem(scriptName, scriptContent);
+        sessionStorage.setItem(scriptName, scriptContent);
     });
 }
 
-window.addEventListener('beforeunload', saveToLocalStorage);
+window.addEventListener('beforeunload', saveToSessionStorage);
 
-function loadFromLocalStorage() {
+function loadFromSessionStorage() {
     scriptList.forEach(function (scriptName) {
-        let scriptContent = localStorage.getItem(scriptName);
+        let scriptContent = sessionStorage.getItem(scriptName);
         if (scriptContent) {
             document.getElementById('textEditArea-' + scriptName).value = scriptContent;
         }
@@ -402,11 +404,66 @@ function loadFromLocalStorage() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
+document.addEventListener('DOMContentLoaded', loadFromSessionStorage);
 
 
 
-    document.addEventListener('DOMContentLoaded', function() {
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('code-editor');
+    var clearConsoleBtn = document.getElementById('clear-console-btn');
+    var deleteAllScriptsBtn = document.getElementById('delete-all-scripts-btn');
+    var consoleOutput = document.getElementById('console-output');
+    var scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
+
+    // Handle form submission (Run button)
+    form.onsubmit = function(event) {
+        event.preventDefault();
+        for (let i = 0; i < scriptList.length; i++) {
+            let script = document.getElementById('textEditArea-' + scriptList[i]).value;
+            let scriptElement = document.getElementById('cs' + scriptList[i]);
+            scriptElement.textContent = script;
+        }
+        startCindy();
+    };
+
+    // Handle Clear Console button
+    clearConsoleBtn.addEventListener('click', function() {
+        consoleOutput.innerHTML = ''; // Clear the console output
+    });
+
+    // Handle Delete All Scripts button
+    deleteAllScriptsBtn.addEventListener('click', function() {
+        // Show a confirmation dialog
+        var confirmation = confirm("Are you sure you want to delete all scripts? This action cannot be undone.");
+
+        // If the user confirms (clicks "Yes")
+        if (confirmation) {
+            scriptList.forEach(function(scriptName) {
+                // Clear the content of the textarea
+                let textarea = document.getElementById('textEditArea-' + scriptName);
+                textarea.value = '';
+
+                // Update the CodeMirror instance if it exists
+                let codeMirrorInstance = textarea.nextElementSibling.CodeMirror;
+                if (codeMirrorInstance) {
+                    codeMirrorInstance.setValue(''); // Clear the CodeMirror content
+                }
+
+                // Remove the corresponding entry from localStorage
+                localStorage.removeItem(scriptName);
+            });
+
+        } else {
+            // Nothing
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
         const verticalResizer = document.getElementById('vertical-resizer');
         const horizontalResizer = document.getElementById('horizontal-resizer');
         const leftColumn = document.getElementById('left-column');
@@ -417,6 +474,10 @@ document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
         makeResizableColumn(verticalResizer, leftColumn, rightColumn);
         makeResizableRow(horizontalResizer, form, consoleOutput);
     });
+
+
+    
+
 
     startCindy(); 
 </script>
