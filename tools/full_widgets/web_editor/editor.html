@@ -257,12 +257,11 @@
             oninit: update_textareas,
         };
 
-        const queryParams = new URLSearchParams(window.location.search);
-        const loadParam = queryParams.get('load');
-
-        if (loadParam) {
-            params.import = {"init": [loadParam]};
-        }
+        // const queryParams = new URLSearchParams(window.location.search);
+        // const loadParam = queryParams.get('load');
+        // if (loadParam) {
+        //     params.import = {"init": [loadParam]};
+        // }
 
         cindy = CindyJS(params);
     }
@@ -476,10 +475,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    
+    const queryParams = new URLSearchParams(window.location.search);
+    const loadParam = queryParams.get('load');
+    if(loadParam) {
+        fetch(loadParam + ".cjs")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('textEditArea-init').value = data;
+                document.getElementById('csinit').textContent = data;
+                // update code mirror:
+                let codeMirrorInstance = document.getElementById('textEditArea-init').nextElementSibling.CodeMirror;
+                if (codeMirrorInstance) {
+                    codeMirrorInstance.setValue(data);
+                }
+                startCindy();
+            });
+    } else {
+        startCindy();
+    }
 
 
-    startCindy(); 
 </script>
 
 </body>
