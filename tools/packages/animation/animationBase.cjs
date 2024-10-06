@@ -114,6 +114,42 @@ samplePolygon(poly, closed) := samplePolygonFREE(poly, strokeSampleRate, closed)
 
 
 
+sign(x) := if(x > 0, 1, if(x < 0, -1, 0));
+
+animatePolygon(vertices, t) := (
+    regional(n, counter, cummulativeLengths, totalLength, cummulativeTimes, endPoint);
+
+    n = length(vertices);
+    cummulativeLengths = [];
+    forall(1..n-1,
+        if(# == 1,
+            cummulativeLengths = cummulativeLengths :> dist(vertices_1, vertices_2);
+        , // else //
+            cummulativeLengths = cummulativeLengths :> cummulativeLengths_(-1) + dist(vertices_#, vertices_(#+1));
+        );
+    );
+    totalLength = cummulativeLengths_(-1);
+    cummulativeTimes = cummulativeLengths / totalLength;
+
+    counter = sum(apply(cummulativeTimes, max(0, sign(t - #))) );
+
+    println(counter);
+    if(counter == 0,
+        [];
+    , // else //
+        endPoint = lerp(vertices_counter, vertices_(counter + 1), t, cummulativeTimes_counter, cummulativeTimes_(counter + 1));
+        vertices_(1..counter) :> endPoint;
+    );
+);
+
+
+
+
+
+
+
+
+
 // ************************************************************************************************
 // Resampling via centripetal Catmull-Rom splines.
 // ************************************************************************************************

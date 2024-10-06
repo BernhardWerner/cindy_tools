@@ -9,9 +9,9 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-renderMode = RENDERMODES.STEPS;
+renderMode = RENDERMODES.REAL;
 showDebugInfo = true;
-currentTrackIndex = 3;
+currentTrackIndex = 1;
 
 // *************************************************************************
   
@@ -30,20 +30,18 @@ trackData = [
 
 // *************************************************************************
 
-// Set up objects here. Everything that should get animated via tween must go into objectSetup() below. All other things can be above.
+// Set up objects here.
 
 
 
-objectSetup() := (
 
-  circle = {
-    "center": canvasCenter,
-    "radius": 0,
-    "color": (0.8,0.2,0.3);  
-  };
-  
-  
-);
+circle = {
+  "center": canvasCenter,
+  "radius": 0,
+  "color": (0.8,0.2,0.3);  
+};
+
+
 
 
 calculation() := (
