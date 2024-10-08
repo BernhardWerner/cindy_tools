@@ -120,20 +120,15 @@ animatePolygon(vertices, t) := (
     regional(n, counter, cummulativeLengths, totalLength, cummulativeTimes, endPoint);
 
     n = length(vertices);
-    cummulativeLengths = [];
+    cummulativeLengths = [0];
     forall(1..n-1,
-        if(# == 1,
-            cummulativeLengths = cummulativeLengths :> dist(vertices_1, vertices_2);
-        , // else //
-            cummulativeLengths = cummulativeLengths :> cummulativeLengths_(-1) + dist(vertices_#, vertices_(#+1));
-        );
+        cummulativeLengths = cummulativeLengths :> cummulativeLengths_(-1) + dist(vertices_#, vertices_(#+1));
     );
     totalLength = cummulativeLengths_(-1);
     cummulativeTimes = cummulativeLengths / totalLength;
 
     counter = sum(apply(cummulativeTimes, max(0, sign(t - #))) );
 
-    println(counter);
     if(counter == 0,
         [];
     , // else //

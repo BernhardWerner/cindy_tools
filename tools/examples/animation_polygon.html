@@ -39,6 +39,7 @@ vertices = [
   [10,0],
   [13, -2],
   [15,10],
+  [14,8],
   [-1,11],
   [-2,-1]
 ];
@@ -46,19 +47,17 @@ vertices = [
 
 
 
-
-
+lastEndpoint = vertices_1;
+deltaDist = 0;
 
 
 calculation() := (
   // Do calculations here.
   // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
-
 );
 
 rendering() := (
   // Do rendering here.
-
 
   connect(animatePolygon(vertices, t1));
 
