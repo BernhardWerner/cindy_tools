@@ -22,10 +22,10 @@ startDelay = 0.5;
 // Alternating duration and pause.
 // A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
 trackData = [
-  1, 0.3,
-  1, 0.3,
-  1, 0.3,
-  1, 0.3
+  1, 0.5,  //  01    create circle 
+  1, 0.5,  //  02    move circle
+  1, 0.5,  //  03    recolor circle
+  1, 0.5   //  04    move, scale and recolor circle
 ];
 
 // *************************************************************************
@@ -34,19 +34,17 @@ trackData = [
 
 
 
-
-circle = {
-  "center": canvasCenter,
-  "radius": 0,
-  "color": (0.8,0.2,0.3);  
-};
-
-
-
-
 calculation() := (
+
   // Do calculations here.
   // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
+
+    
+  circle = {
+    "center": canvasCenter,
+    "radius": 0,
+    "color": (0.8, 0.2, 0.3);  
+  };
 
   tween(circle, "radius", 3, easeOutBack(t1));
   
@@ -58,6 +56,8 @@ calculation() := (
   tween(circle, "center", canvasCenter, easeInOutCubic(t4));
   tween(circle, "color", (0.3, 0.8, 0.2), t4);
 );
+
+
 
 rendering() := (
   // Do rendering here.
@@ -84,23 +84,6 @@ var cindy = CindyJS({
   }
 });
 </script>
-
-
-
-
-
-
-
-
-
-<script>
-  
-
-</script>
-
-
-
-
 
 
 </body>
