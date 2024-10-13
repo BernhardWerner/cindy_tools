@@ -566,6 +566,63 @@ END = 1;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+addDelimiters(string) := (
+    string = replace(string, "\begin", texDelimiters_1 + "\begin");
+    // Find first } after an \end
+    i = indexof(string, "\end");
+
+    while(i > 0,
+        j = indexof(string, "}", i);
+        string = sum(string_(1..j) ++ [texDelimiters_2] ++ string_(j+1..length(string)));
+        i = indexof(string, "\end", i + 1);
+    );
+
+    string;
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 fragmentText(string, size, family) := (
     regional(n, result, pixelsize);
 
