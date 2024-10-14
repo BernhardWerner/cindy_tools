@@ -599,8 +599,52 @@ addDelimiters(string) := (
         i = indexof(string, "\end", i + 1);
     );
 
+    i = indexof(string, "\frac");
+
+
     string;
 );
+
+
+splitTeX(string) := (
+    splitAtBegin(string);
+);
+splitAtBegin(string) := (
+    i = indexof(string, "\begin");
+    if(i == 0,
+        string;
+    , // else //
+        result = [];
+        while(i > 0,
+            j = indexof(string, "}", i);
+            front = sum(string_(1..i-1));
+            middle = sum(string_(i..j));
+            back = sum(string_(j+1..length(string)));
+            result = result ++ flatten([splitAtEnd(front), middle]);
+            string = back;
+            i = indexof(string, "\begin");
+        );
+        flatten(result :> splitAtEnd(string));
+    );
+);
+splitAtEnd(string) := (
+    i = indexof(string, "\end");
+    if(i == 0,
+        string;
+    , // else //
+        result = [];
+        while(i > 0,
+            j = indexof(string, "}", i);
+            result = result ++ [(sum(string_(1..i-1))), sum(string_(i..j))];
+            string = sum(string_(j+1..length(string)));
+            i = indexof(string, "\end");
+        );
+
+        result :> (string);
+    );
+);
+
+
 
 
 
@@ -1154,7 +1198,7 @@ findin(list, x) := (
 
 
 
-findMatchingTexDelimiter(string, startIndex) := (
+findMatchingBracket(string, startIndex, bracketA, bracketB) := (
     regional(endIndex, innerCount, foundMatch, n);
 
     endIndex = 0;
@@ -1165,8 +1209,8 @@ findMatchingTexDelimiter(string, startIndex) := (
         foundMatch = false;
         while((endIndex < n) & not(foundMatch),
             endIndex = endIndex + 1;
-            if(string_endIndex == texDelimiters_1, innerCount = innerCount + 1);
-            if(string_endIndex == texDelimiters_2, 
+            if(string_endIndex == bracketA, innerCount = innerCount + 1);
+            if(string_endIndex == bracketB, 
                 innerCount = innerCount - 1;
                 if(innerCount <= -1,
                     foundMatch = true;            
@@ -1176,7 +1220,7 @@ findMatchingTexDelimiter(string, startIndex) := (
     );
     if(foundMatch, endIndex, 0);
 );
-
+findMatchingTexDelimiter(string, startIndex) := findMatchingBracket(string, startIndex, texDelimiters_1, texDelimiters_2);
 
 
 
