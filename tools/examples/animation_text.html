@@ -47,10 +47,7 @@ trackData = [
 
 
 
-test = "$\begin{bmatrix}\sum_{i=0}^{n-1}q^{i} = \frac{1 - q^{n}}{1-q} & 1234 \\ 12^{78}_{23} & \frac{245}{2456}\end{bmatrix}$";
-
-
-println(splitTeX(test));
+test = "$1+\sqrt[7]{3} + \begin{bmatrix}\sum_{i=0}^{n-1}q^{i} = \frac{1 - q^{n}}{1-q} & 1234 \\ 12^{78}_{23} & \frac{245}{2456}\end{bmatrix}$";
 
 
 
@@ -109,6 +106,39 @@ var cindy = CindyJS({
 
 
 <script>
+
+function addDelimiters(str, A, B) {
+    // Regular expression to split the input string
+    const tokens = str.match(/\[a-zA-Z]+|[\{\}]|[^\w]|[\w]+/g);
+    
+    let result = '';
+    let inEnvironment = false;
+    
+    tokens.forEach((token, i) => {
+        if (token.startsWith('\\')) {
+            // Handle LaTeX commands like \sqrt, \frac
+            if (token === '\begin' || token === '\end') {
+                inEnvironment = !inEnvironment;
+                result += `${A}${token}${B}`;
+            } else if (['\sum', '\lim', '\sqrt', '\frac'].includes(token)) {
+                // Wrap commands with A and B
+                result += `${A}${token}`;
+            } else {
+                result += token; // Skip delimiters for certain commands
+            }
+        } else if (token === '{' || token === '}') {
+            result += token;
+        } else if (!isNaN(token) || /^[a-zA-Z]$/.test(token)) {
+            result += `${A}${token}${B}`;  // Wrap numbers and letters
+        } else {
+            result += token;  // Operators, etc.
+        }
+    });
+
+    return result;
+}
+
+console.log(addDelimiters("$1+\sqrt[7]{3} + \begin{bmatrix}\sum_{i=0}^{n-1}q^{i} = \frac{1 - q^{n}}{1-q} & 1234 \\ 12^{78}_{23} & \frac{245}{2456}\end{bmatrix}$", '@', '/'));
   
 
 </script>
