@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>KaTeX MAX</title>
+        <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+    </head>
+    <body>
+        <script id='csinit' type='text/x-cindyscript'>
+            repeat(1000, println(#));
+            string="$\displaystyle f(x)=\sum_1^{\infty}\frac{1}{x}\begin{bmatrix}\pi & \int_0^{\R} \\ \lim\limits_{\circ \to \aleph}\mathfrak{S}\rVert_{\sqrt[3]{64}} & \ell\cdots\overline{\bigwedge} \end{bmatrix}$";
+            
+        </script>
+        <script id='csdraw' type='text/x-cindyscript'>
+            fillpoly(screenbounds(), color -> (1,1,1) * 0.7);
+        </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+              canvasname: "CSCanvas",
+              scripts: "cs*",
+              use: ["katexMAX"]
+            });
+        </script>
+    </body>
+</html>
