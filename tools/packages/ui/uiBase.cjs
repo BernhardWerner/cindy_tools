@@ -91,6 +91,48 @@ mouseInButton(button) := (
 & dist(mouse().y, button.position.y) < 0.5 * button.size.y;
 );
 
+pointInRect(point, poly) := (
+  regional(a,b);
+  a = min(poly);
+  b = max(poly);
+  (a_1 <= point_1) & (point_1 <= b_1) & (a_2 <= point_2) & (point_2 <= b_2);
+);
+
+pointInRect(point, poly) := (
+  regional(a,b);
+  a = min(poly);
+  b = max(poly);
+  (a_1 <= point_1) & (point_1 <= b_1) & (a_2 <= point_2) & (point_2 <= b_2);
+);
+
+
+
+expandRect(pos, w, h, c) := (
+  regional(d, e, shift);
+
+  d     = 0.5 * [w, h];
+  e     = (d_1, -d_2);
+  shift = -compass(c);
+  shift = (0.5 * w * shift.x, 0.5 * h * shift.y);
+  apply([-d, e, d, -e], pos + # + shift); //LU, RU, RO, LO
+);
+expandRect(pos, w, h) := expandRect(pos, w, h, 1);
+expandRect(rect) := expandRect(rect.position, rect.width, rect.height, rect.anchor);
+
+compass(index) := apply(directproduct(-1..1, -1..1), reverse(#))_index;
+
+
+
+
+
+
+
+
+
+clamp(x, a, b) := min(max(x, a), b);
+
+
+
 
 
 
@@ -151,10 +193,6 @@ newButton(dict) := (
   res;
 );
 
-
-
-
-clamp(x, a, b) := min(max(x, a), b);
 
 newSlider(dict) := (
   regional(res, keys);
@@ -318,6 +356,58 @@ newSelector(dict) := (
   res;
 );
 
+newCircleToggle(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":       if(contains(keys, "position"), dict.position, [0,0]),
+    "size":           if(contains(keys, "size"), dict.size, 2),
+    "outlineSizes":   if(contains(keys, "outlineSizes"), dict.size, [1.5, 10]),
+    "label":          if(contains(keys, "label"), dict.label, "Toggle"),
+    "labelSize":      if(contains(keys, "labelSize"), dict.labelSize, 20),
+    "fillColor":      if(contains(keys, "fillColor"), dict.fillColor, 0.9 * (1,1,1)),
+    "outlineColors":  if(contains(keys, "outlineColors"), dict.outlineColor, [(0,0,0), (0,1,0)]),
+    "labelColor":     if(contains(keys, "labelColor"), dict.labelColor, (0,0,0)),
+    "pressed":        if(contains(keys, "pressed"), dict.pressed, false),
+    "fontFamily":     if(contains(keys, "fontFamily"), dict.fontFamily, 0),
+    "active":         if(contains(keys, "active"), dict.active, true),
+    "visible":        if(contains(keys, "visible"), dict.visible, true)
+  };
+
+  res.draw := (
+    if(self().visible,
+      fillcircle(self().position, self().size, color -> self().fillColor);
+      drawcircle(self().position, self().size, size -> self().outlineSizes_(if(self().pressed, 2, 1)), color -> self().outlineColors_(if(self().pressed, 2, 1)));
+      drawtext(self().position + [0, -0.013 * self().labelSize], self().label, size -> self().labelSize, color -> self().labelColor, family -> self().fontFamily, align -> "mid");
+    );
+  );
+  
+  res.onDown := ();
+  
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down" & dist(mouse().xy, self().position) < self().size,
+        self().pressed = !self().pressed;
+        self().onDown;
+      );
+    );
+  );
+
+  uiCollection = uiCollection :> res;
+
+  res;
+);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -452,118 +542,6 @@ catchDropDownMenu(obj) := (
 
 
 
-
-catchSliderRaw(slider) := (
-    regional(endPoints);
-
-    endPoints = sliderEnds(slider);
-
-    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
-      slider.value = if(slider.vertical,
-        clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
-      , // else //
-        clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
-      );
-    );
-);
-
-  catchSliderDown(slider) := (
-    regional(endPoints);
-
-    endPoints = sliderEnds(slider);
-
-    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, slider.bulbSize + 0.02 * slider.size) <= 0,
-      slider.dragging = true;
-    );
-    catchSliderDrag(slider);
-  );
-
-  catchSliderDrag(slider) := (
-    regional(endPoints);
-
-    endPoints = sliderEnds(slider);
-
-    if(slider.dragging,
-      slider.value = if(slider.vertical,
-        clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
-      , // else //
-        clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
-      );
-    );
-  );
-
-  catchSliderUp(slider) := (
-    catchSliderDrag(slider);
-    slider.dragging = false;
-  );
-
-
-selectorEnds(selector) := [selector.position, selector.position + if(selector.vertical, [0, -selector.gapSize * (length(selector.content) - 1)], [selector.gapSize * (length(selector.content) - 1), 0])];
-
-drawSelector(selector) := (
-    regional(endPoints);
-
-endPoints = selectorEnds(selector);
-
-draw(endPoints, size -> selector.size, color -> selector.outerColor);
-fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), selector.bulbSize, color -> selector.outerColor);
-fillcircle(lerp(endPoints_1, endPoints_2, selector.index, 1, length(selector.content)), 0.7 * selector.bulbSize, color -> selector.innerColor);
-
-drawimage(canvasCorners.bl, canvasCorners.br, selector.outlineTexture);
-forall(1..length(selector.content),
-    drawtext(lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)) + (0, -0.015 * selector.textSize), selector.content_#, size -> selector.textSize, align -> "mid", color -> selector.textColor, family -> selector.fontFamily);
-);
-
-
-);
-
-catchSelectorRaw(selector) := (
-    regional(endPoints, closeEntries);
-
-    endPoints = selectorEnds(selector);
-
-    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
-    closeEntries = select(1..length(selector.content),
-        dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content))) < selector.bulbSize + 0.02 * selector.size
-    );
-
-
-    if(closeEntries != [],
-        selector.index = sort(closeEntries, 
-            dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
-        )_1;
-    );
-
-  );
-);
-
-catchSelectorDown(selector) := (
-    regional(endPoints, closeEntries);
-
-    endPoints = selectorEnds(selector);
-
-    if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, selector.bulbSize + 0.02 * selector.size) <= 0,
-        selector.dragging = true;
-    );
-    catchSelectorDrag(selector);
-);
-
-
-catchSelectorDrag(selector) := (
-    regional(endPoints, closeEntries);
-
-    endPoints = selectorEnds(selector);
-
-    if(selector.dragging,
-        selector.index = sort(1..length(selector.content), 
-            dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
-        )_1;
-    );
-    <script id='csdraw' type='text/x-cindyscript'>
-      
-    </script>
-
-
     
 pointInRect(point, poly) := (
     regional(a,b);
@@ -603,15 +581,5 @@ pointInRect(point, poly) := (
     );
   );
 
-  capsuleSDF(p, start, end, radius) := (
-    regional(pa, ba, h);
-
-    pa = p - start;
-    ba = end - start;
-
-    h = clamp((pa * ba) / (ba * ba), 0, 1);
-
-    abs(pa - ba * h) - radius;
-);
 
 */

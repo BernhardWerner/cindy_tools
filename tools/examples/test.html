@@ -19,12 +19,7 @@
 
 
 <script id='csdraw' type='text/x-cindyscript'>
-string = "This is text $\sum 1234$ mixed with TeX.";
-textSize = 30;
-stringWidth = pixelsize(string, size -> textSize)_1 / screenresolution();
-box = drawtext([-5, 0], string, size -> textSize);
-draw([-5, 0], [-5 + stringWidth, 0], size -> 4, color -> (1,0,0));
-draw(box_1, box_2, size -> 4, color -> (0,0,1));
+drawtext([0,0], "Hello World", size -> 30, outlinewidth -> 10, color -> (1,1,1), outlinecolor -> (0,0,0));
 </script>
 
 
