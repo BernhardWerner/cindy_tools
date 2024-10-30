@@ -183,7 +183,7 @@ newSlider(dict) := (
     if(self().visible,
       draw(self().endPoints, size -> self().size, color -> self().color);
       fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().value), self().bulbSize, color -> self().color);
-      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().value), 0.7 * self().bulbSize, color -> self().bulbColor);
+      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().value), self().bulbSize - 0.2, color -> self().bulbColor);
     
       startOffset = if(self().vertical,
         [0, 1.2 * self().bulbSize + 0.2];
@@ -230,6 +230,88 @@ newSlider(dict) := (
       )))
     );
   );
+
+  uiCollection = uiCollection :> res;
+
+  res;
+);
+
+newSelector(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":    if(contains(keys, "position"), dict.position, [0,0]),
+    "gapSize":     if(contains(keys, "gapSize"), dict.gapSize, 2),
+    "vertical":    if(contains(keys, "vertical"), dict.vertical, false),
+    "options":     if(contains(keys, "options"), dict.options, ["A", "B", "C"]),
+    "index":       if(contains(keys, "index"), dict.index, 1),
+    "size":        if(contains(keys, "size"), dict.size, 20),
+    "color":       if(contains(keys, "color"), dict.color, 0.5 * (1,1,1)),
+    "bulbColor":  if(contains(keys, "bulbColor"), dict.bulbColor, (1,1,1)),
+    "textColor":   if(contains(keys, "textColor"), dict.textColor, (0,0,0)),
+    "textSize":    if(contains(keys, "textSize"), dict.textSize, 20),
+    "bulbSize":    if(contains(keys, "bulbSize"), dict.bulbSize, 0.7),
+    "fontFamily":  if(contains(keys, "fontFamily"), dict.fontFamily, 0),
+    "dragging":    if(contains(keys, "dragging"), dict.dragging, false),
+    "active":      if(contains(keys, "active"), dict.active, true),
+    "visible":     if(contains(keys, "visible"), dict.visible, true),
+    "endGap":      if(contains(keys, "endGap"), dict.endGap, 0.3)
+  };
+  res.endPoints = [res.position, res.position + if(res.vertical, [0, res.gapSize * (length(res.options) - 1 + 2 * res.endGap)], [res.gapSize * (length(res.options) - 1 + 2 * res.endGap), 0])];
+  res.draw := (
+    if(self().visible,
+      draw(self().endPoints, size -> self().size, color -> self().color);
+      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().index, 1 - self().endGap, self().endGap + length(self().options)), self().bulbSize, color -> self().color);
+      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().index, 1 - self().endGap, self().endGap + length(self().options)), self().bulbSize - 0.2, color -> self().bulbColor);
+    
+      startOffset = if(self().vertical,
+        [0, 1.2 * self().bulbSize + 0.2];
+      , // else //
+        [-1.2 * self().bulbSize, -0.015 * self().labelSize];
+      );
+      endOffset = if(self().vertical,
+        [0, -1.2 * self().bulbSize - 0.05 * self().labelSize];
+      , // else //
+        [1.2 * self().bulbSize, -0.015 * self().labelSize];
+      );
+      forall(1..length(self().options),
+        drawtext(lerp(self().endPoints_1, self().endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 0.3 * self().textSize, outlinecolor -> self().bulbColor);
+      );
+
+    );
+  );
+
+  res.onDown := ();
+  res.onDrag := ();
+  res.onUp := ();
+  res.updateIndex := (
+    if(self().dragging,
+      self().index = sort(1..length(self().options),
+        dist(mouse().xy, lerp(self().endPoints_1, self().endPoints_2, #, 1, length(self().options)));
+      )_1;
+    );
+  );
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down",
+        if(capsuleSDF(mouse().xy, self().endPoints_1, self().endPoints_2, self().bulbSize) <= 0,
+          self().dragging = true;
+          self().updateIndex;
+          self().onDown;
+        );
+      ,if(mouseScriptIndicator == "Drag",
+        self().updateIndex;
+        self().onDrag;
+      ,if(mouseScriptIndicator == "Up",
+        self().updateIndex;
+        self().onUp;
+        self().dragging = false;
+      )));
+    );
+  );
+
+
+  
 
   uiCollection = uiCollection :> res;
 
