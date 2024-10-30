@@ -13,10 +13,10 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-testButtonA = newButton();
-testButtonA.position = screenbounds()_1.xy + [3, -2];
-testButtonA.label = "Button";
-testButtonA.corner = 0.3;
+testButtonA = newButton({
+  "position": screenbounds()_1.xy + [3, -2],
+  "corner": 0.3
+});
 
 testButtonB = newButton({
   "position": screenbounds()_1.xy + [3, -5],
@@ -24,18 +24,15 @@ testButtonB = newButton({
   "isToggle": true
 });
 
+testSlider = newSlider({
+  "position": screenbounds()_1.xy + [8, -2]
+});
 
-
-
-
-</script>
-<script id='csdraw' type='text/x-cindyscript'>
-  
 </script>
 
 
 
-<canvas id="CSCanvas" align="left" valign="top" width="800" height="800" style="border:1px solid #000000;"></canvas>
+<canvas id="CSCanvas" align="left" valign="top" width="1024" height="768" style="border:1px solid #000000;"></canvas>
 
 
 

@@ -75,6 +75,26 @@ pointInPolygon(point, polygon) := (
 
 
 
+capsuleSDF(p, start, end, radius) := (
+  regional(pa, ba, h);
+
+  pa = p - start;
+  ba = end - start;
+
+  h = clamp((pa * ba) / (ba * ba), 0, 1);
+
+  abs(pa - ba * h) - radius;
+);
+
+mouseInButton(button) := (
+  dist(mouse().x, button.position.x) < 0.5 * button.size.x
+& dist(mouse().y, button.position.y) < 0.5 * button.size.y;
+);
+
+
+
+
+
 
 
 newButton(dict) := (
@@ -130,39 +150,111 @@ newButton(dict) := (
 
   res;
 );
-newButton() := newButton({});
 
 
 
-    /* ************************************************************************************************
-     Draws and handles buttons. They have to be a JSON with the following keys and value-types:
-     button = {
-       "position":   (2D vector),
-       "size":       (2D vector),
-       "label":      (String),
-       "textSize":   (float),
-       "colors":     (array with 3 colour vectors),
-       "corner":     (float),
-       "pressed":    (bool),
-       "fontFamily": (String)
-     };
-     ************************************************************************************************ */
 
+clamp(x, a, b) := min(max(x, a), b);
 
-    // Boilerplate code for button functionality. Call via
-    // if(mouseInButton(button),
-    // 	SOME CODE
-    // );
-    // in the mousedownscript and mouseupscript. The property button.pressed has to be set/updated manually; allowing for both switch- and toggle-buttons.
-mouseInButton(button) := (
-  dist(mouse().x, button.position.x) < 0.5 * button.size.x
-& dist(mouse().y, button.position.y) < 0.5 * button.size.y;
+newSlider(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":    if(contains(keys, "position"), dict.position, [0,0]),
+    "length":      if(contains(keys, "length"), dict.length, 10),
+    "size":        if(contains(keys, "size"), dict.size, 20),
+    "vertical":    if(contains(keys, "vertical"), dict.vertical, false),
+    "color":       if(contains(keys, "color"), dict.color, 0.5 * (1,1,1)),
+    "startLabel":  if(contains(keys, "startLabel"), dict.startLabel, ""),
+    "endLabel":    if(contains(keys, "endLabel"), dict.endLabel, ""),
+    "labelColor":  if(contains(keys, "labelColor"), dict.labelColor, (0,0,0)),
+    "labelSize":   if(contains(keys, "labelSize"), dict.labelSize, 20),
+    "value":       if(contains(keys, "value"), dict.value, 0.5),
+    "bulbSize":    if(contains(keys, "bulbSize"), dict.bulbSize, 0.7),
+    "bulbColor":   if(contains(keys, "bulbColor"), dict.bulbColor, (1,1,1)),
+    "dragging":    if(contains(keys, "dragging"), dict.dragging, false),
+    "fontFamily":  if(contains(keys, "fontFamily"), dict.fontFamily, 0),
+    "active":      if(contains(keys, "active"), dict.active, true),
+    "visible":     if(contains(keys, "visible"), dict.visible, true)
+  };
+  res.endPoints = [res.position, res.position + if(res.vertical, [0, -res.length], [res.length, 0])];
+    
+  res.draw := (
+    if(self().visible,
+      draw(self().endPoints, size -> self().size, color -> self().color);
+      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().value), self().bulbSize, color -> self().color);
+      fillcircle(lerp(self().endPoints_1, self().endPoints_2, self().value), 0.7 * self().bulbSize, color -> self().bulbColor);
+    
+      startOffset = if(self().vertical,
+        [0, 1.2 * self().bulbSize + 0.2];
+      , // else //
+        [-1.2 * self().bulbSize, -0.015 * self().labelSize];
+      );
+      endOffset = if(self().vertical,
+        [0, -1.2 * self().bulbSize - 0.05 * self().labelSize];
+      , // else //
+        [1.2 * self().bulbSize, -0.015 * self().labelSize];
+      );
+      drawtext(self().endPoints_1 + startOffset, self().startLabel, align -> if(self().vertical, "mid", "right"),  color -> self().labelColor, size -> self().labelSize, family->self().fontfamily);
+      drawtext(self().endPoints_2 + endOffset,   self().endLabel,   align -> if(self().vertical, "mid", "left"),   color -> self().labelColor, size -> self().labelSize, family->self().fontfamily);
+    );
+  );
+
+  res.onDown := ();
+  res.onDrag := ();
+  res.onUp := ();
+  res.updateValue := (
+    if(self().dragging,
+      self().value = if(self().vertical,
+        clamp(inverseLerp((self().endPoints_1).y, (self().endPoints_2).y, mouse().y), 0, 1);
+      , // else //
+        clamp(inverseLerp((self().endPoints_1).x, (self().endPoints_2).x, mouse().x), 0, 1);
+      );
+    );    
+  );
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down",
+        if(capsuleSDF(mouse().xy, self().endPoints_1, self().endPoints_2, self().bulbSize) <= 0,
+          self().dragging = true;
+          self().updateValue;
+          self().onDown;
+        );
+      ,if(mouseScriptIndicator == "Drag",
+        self().updateValue;
+        self().onDrag;
+      ,if(mouseScriptIndicator == "Up",
+        self().updateValue;
+        self().onUp;
+        self().dragging = false;
+      )))
+    );
+  );
+
+  uiCollection = uiCollection :> res;
+
+  res;
 );
 
 
 
 
-    // ************************************************************************************************
+
+
+
+
+
+
+
+// OLD STUFF BELOW
+
+
+/*
+
+
+
+
+    // ******************************************catchSlider******************************************************
     // Draws and handles toggles. They have to be a JSON with the following keys and value-types:
     // toggle = {
     //   "position":   (2D vector),
@@ -194,7 +286,7 @@ catchToggle(toggle) := if(dist(mouse().xy, toggle.position) < toggle.radius, tog
 
 
 
-/*****
+
 Dropdown menus must be JSON object of the form
 dropDown = {
   "position": [3, -3],
@@ -212,7 +304,7 @@ dropDown = {
   "gutter": 0.2
 };
 
-*****/
+
 
 drawDropDownMenu(obj) := (
     regional(height, noe, shape, angle, chevron);
@@ -249,6 +341,9 @@ animateDropDownMenu(obj, delta) := (
     obj.animationProgress = clamp(obj.animationProgress + 2 * delta, 0, 1);
     obj.open = lerp(1 - obj.animationTarget, obj.animationTarget, easeInOutCubic(obj.animationProgress));
 );
+testButtonA.label = "Button";
+testButtonA.corner = 0.3;
+testButtonA.position = screenbounds()_1.xy + [3, -2];
 
 switchDropDownMenu(obj) := (
     if(obj.animationProgress >= 1 & pointInPolygon(mouse().xy, expandrect(obj.position, 7, obj.width, obj.lineHeight)), 
@@ -274,48 +369,7 @@ catchDropDownMenu(obj) := (
       
 
 
-    /* *************************************************************************************************
-    Creates and handles slider UI element. Has to be a JSON object with the following keys and value-types.
-    slider = {
-      "position":    (2D vector),
-      "length":      (float),
-      "size":        (float),
-      "vertical":    (bool),
-      "color":       (color vector),
-      "startLabel":  (string),
-      "endLabel":    (string),
-      "labelSize":   (float),
-      "value":       (float),
-      "bulbSize":    (float),
-      "dragging":    (bool),
-      "fontFamily":  (string)
-    };
-    ************************************************************************************************* */
-    
-sliderEnds(slider) := [slider.position, slider.position + if(slider.vertical, [0, -slider.length], [slider.length, 0])];
 
-drawSlider(slider) := (
-  regional(endPoints, startOffset, endOffset);
-
-  endPoints = sliderEnds(slider);
-
-  draw(endPoints, size -> slider.size, color -> slider.outerColor);
-  fillcircle(lerp(endPoints_1, endPoints_2, slider.value), slider.bulbSize, color -> slider.outerColor);
-  fillcircle(lerp(endPoints_1, endPoints_2, slider.value), 0.7 * slider.bulbSize, color -> slider.innerColor);
-
-  startOffset = if(slider.vertical,
-    [0, 1.2 * slider.bulbSize + 0.2];
-  , // else //
-    [-1.2 * slider.bulbSize, -0.015 * slider.labelSize];
-  );
-  endOffset = if(slider.vertical,
-    [0, -1.2 * slider.bulbSize - 0.05 * slider.labelSize];
-  , // else //
-    [1.2 * slider.bulbSize, -0.015 * slider.labelSize];
-  );
-  drawtext(endPoints_1 + startOffset, slider.startLabel, align -> if(slider.vertical, "mid", "right"),  color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
-  drawtext(endPoints_2 + endOffset,   slider.endLabel,   align -> if(slider.vertical, "mid", "left"),   color -> slider.labelColor, size -> slider.labelSize, family->slider.fontfamily);
-);
 
 catchSliderRaw(slider) := (
     regional(endPoints);
@@ -362,25 +416,6 @@ catchSliderRaw(slider) := (
   );
 
 
-// MAJOR BACKWARDS COMPTATBILITY BREAK IN SELECTORS !!!!!
-/*************************************************************************************************
-    Creates and handles selector UI element. Has to be a JSON object with the following keys and value-types.
-    selector = {
-      "position":    (2D vector),
-      "gapSize":     (float),
-      "size":        (float),
-      "vertical":    (bool),
-      "outerColor":       (color vector),
-      "innerColor":       (color vector),
-      "textColor":       (color vector),
-      "textSize":    (float),
-      "content":	 (array),
-      "index":       (int),
-      "bulbSize":    (float),
-      "dragging":    (bool),
-      "fontFamily":  (String)
-    };
-*************************************************************************************************/
 selectorEnds(selector) := [selector.position, selector.position + if(selector.vertical, [0, -selector.gapSize * (length(selector.content) - 1)], [selector.gapSize * (length(selector.content) - 1), 0])];
 
 drawSelector(selector) := (
@@ -442,14 +477,9 @@ catchSelectorDrag(selector) := (
             dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(selector.content)));	
         )_1;
     );
-);
-
-catchSelectorUp(selector) := (
-    catchSelectorDrag(selector);
-    selector.dragging = false;	
-);
-
-
+    <script id='csdraw' type='text/x-cindyscript'>
+      
+    </script>
 
 
     
@@ -501,3 +531,5 @@ pointInRect(point, poly) := (
 
     abs(pa - ba * h) - radius;
 );
+
+*/
