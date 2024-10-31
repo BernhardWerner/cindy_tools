@@ -323,7 +323,7 @@ newSelector(dict) := (
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
       
       forall(1..length(self().options),
-        drawtext(lerp(self().endPoints_1, self().endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 0.3 * self().textSize, outlinecolor -> self().handleColor);
+        drawtext(lerp(self().endPoints_1, self().endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 7, outlinecolor -> self().handleColor);
       );
 
     );

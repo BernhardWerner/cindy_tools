@@ -14,27 +14,28 @@
 
     #CSCanvas {
        width: 100vw; 
-       height: 100vh; /* height:width ratio = 9/16 = .5625  */
-       /* max-height: 100vh; */
-       /* max-width: 177.78vh; */
-       /* 16/9 = 1.778 */
+       height: 100vh;
        margin: auto;
        position: absolute;
-       top:0;bottom:0; /* vertical center */
-       left:0;right:0; /* horizontal center */
+       top:0;bottom:0; 
+       left:0;right:0;
    }
   </style>
   </head>
 
 
-<body style="font-family:Palatino; margin:0; font-size:16pt">
+<body>
 
 
 
 <script id='csinit' type='text/x-cindyscript'>
-
-
-
+/*************************
+  customLayout gets automatically called when the viewport size changes. Override it to calculate your own anchor points and to update your objects.
+  
+  The responsive package provides the variable canvasCorners where you can access the top-left corner via canvasCorners.tl etc. Other variables provided
+  are canvasCenter, canvasWidth, canvasHeight -- which are hopefully self-explanatory -- as well as canvasLeft, canvasTop, canvasRight, canvasBottom, which
+  are the x-coordinate of the left and right edge of the canvas, and the y-coordinate of the top and bottom edge of the canvas, respectively.
+*************************/
 
 customLayout() := (
   points = [
@@ -44,8 +45,6 @@ customLayout() := (
     canvasCorners.bl + [1, 1]
   ];
 );
-
-
 </script>
 
 
@@ -54,29 +53,6 @@ fillpoly(canvasPoly, color -> (1,0,0));
 fillpoly(points, color -> (1,1,1));
 draw(canvasCenter, color -> (0,0,0), size -> 10);
 </script>
-
-
-<script id='cstick' type='text/x-cindyscript'>
-</script>
-
-
-<script id='csmousemove' type='text/x-cindyscript'>
-</script>
-
-
-<script id='csmousedown' type='text/x-cindyscript'>
-</script>
-
-
-<script id='csmousedrag' type='text/x-cindyscript'>
-</script>
-
-
-<script id='csmouseup' type='text/x-cindyscript'>
-</script>
-
-<!-- <script id='cskeydown' type='text/x-cindyscript'>
-</script> -->
 
 
 <canvas id="CSCanvas"></canvas>
@@ -92,7 +68,6 @@ draw(canvasCenter, color -> (0,0,0), size -> 10);
     canvasname: "CSCanvas",
     scripts:"cs*",
     import: {
-      "init": ["../single_scripts/egdod"],
       "packages": ["../packages/responsive"]
     }
   });
