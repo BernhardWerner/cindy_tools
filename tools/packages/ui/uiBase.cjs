@@ -264,7 +264,7 @@ newSlider(dict) := (
             self().handleSize;
         );
         endPoints = self().endPoints;
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, dist) <= 0,
+        if(capsuleSDF(mouse(), endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
           self().updateValue;
           self().onDown;
@@ -341,7 +341,7 @@ newOptionSlider(dict) := (
     if(self().dragging,
       endPoints = self().endPoints;
       self().index = sort(1..length(self().options),
-        dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(self().options)));
+        dist(mouse(), lerp(endPoints_1, endPoints_2, #, 1, length(self().options)));
       )_1;
       self().onIndexChange;
     );
@@ -356,7 +356,7 @@ newOptionSlider(dict) := (
             self().handleSize;
         );
         endPoints = self().endPoints;
-        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, dist) <= 0,
+        if(capsuleSDF(mouse(), endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
           self().updateIndex;
           self().onDown;
@@ -419,7 +419,7 @@ newSelector(dict) := (
   
   res.handleInput := (
     if(self().active,
-      if(mouseScriptIndicator == "Down" & if(length(self().size) == 2, pointInRect(mouse().xy, expandRect(self().position, self().size_1, self().size_2, 5)), dist(mouse().xy, self().position) < self().size),
+      if(mouseScriptIndicator == "Down" & if(length(self().size) == 2, pointInRect(mouse(), expandRect(self().position, self().size_1, self().size_2, 5)), dist(mouse(), self().position) < self().size),
         self().pressed = !self().pressed;
         self().onDown;
       );
@@ -434,8 +434,68 @@ newSelector(dict) := (
 
 
 
-  
+newCheckbox(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":       if(contains(keys, "position"), dict.position, [0,0]),
+    "size":           if(contains(keys, "size"), dict.size, 1.3),
+    "outlineSize":    if(contains(keys, "outlineSizes"), dict.size, 3),
+    "label":          if(contains(keys, "label"), dict.label, "Checkbox"),
+    "labelSize":      if(contains(keys, "labelSize"), dict.labelSize, 20),
+    "labelSide":      if(contains(keys, "labelSide"), dict.labelSide, "right"),
+    "fillColor":      if(contains(keys, "fillColor"), dict.fillColor, 0.3 * (1,1,1)),
+    "outlineColor":   if(contains(keys, "outlineColor"), dict.outlineColor, (0,0,0)),
+    "labelColor":     if(contains(keys, "labelColor"), dict.labelColor, (0,0,0)),
+    "labelGap":       if(contains(keys, "labelGap"), dict.labelGap, 0.5),
+    "pressed":        if(contains(keys, "pressed"), dict.pressed, false),
+    "fontFamily":     if(contains(keys, "fontFamily"), dict.fontFamily, 0),
+    "active":         if(contains(keys, "active"), dict.active, true),
+    "visible":        if(contains(keys, "visible"), dict.visible, true),
+    "corner":         if(contains(keys, "corner"), dict.corner, 0.3),
+    "includeLabel":   if(contains(keys, "includeLabel"), dict.includeLabel, true)
+  };
+  res.labelSign := if(self().labelSide == "left", -1, 1);
+  res.box := roundedrectangle(self().position + 0.5 * (-self().size, self().size), self().size, self().size, self().corner);
+  res.aabb := (
+    regional(labelExtends, center, width, height);
+    if(self().includeLabel,
+      labelExtends = pixelsize(self().label, size -> self().labelSize, family -> self().fontFamily) / screenresolution();
+      center = self().position + 0.5 * self().labelSign * [self().labelGap + labelExtends_1, 0];
+      width = self().labelGap + labelExtends_1 + self().size;
+      height = max(self().size, labelExtends_2 + labelExtends_3);
+      expandRect(center, width, height, 5);
+    , // else //
+      expandRect(self().position, self().size, self().size, 5);
+    );
+  );
 
+  res.draw := (
+    if(self().visible,
+      if(self().pressed,
+        draw(self().position + 0.3 * [-self().size, self().size], self().position + 0.3 * [self().size, -self().size], size -> 7, color -> self().fillColor);
+        draw(self().position + 0.3 * [-self().size, -self().size], self().position + 0.3 * [self().size, self().size], size -> 7, color -> self().fillColor);
+      );
+      draw(self().box, size -> self().outlineSize, color -> self().outlineColor);
+      drawtext(self().position + [self().labelSign * (0.5 * self().size + self().labelGap), -0.013 * self().labelSize], self().label, size -> self().labelSize, align -> if(self().labelSide == "left", "right", "left"), color -> self().labelColor, family -> self().fontFamily);
+
+    );
+  );
+
+  res.onDown := ();
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down" & pointInRect(mouse(), self().aabb),
+        self().pressed = !self().pressed;
+        self().onDown;
+      );
+    );
+  );
+
+  uiCollection = uiCollection :> res;
+
+  res;
+);
 
 
 
@@ -515,7 +575,7 @@ testButtonA.corner = 0.3;
 testButtonA.position = screenbounds()_1.xy + [3, -2];
 
 switchDropDownMenu(obj) := (
-    if(obj.animationProgress >= 1 & pointInPolygon(mouse().xy, expandrect(obj.position, 7, obj.width, obj.lineHeight)), 
+    if(obj.animationProgress >= 1 & pointInPolygon(mouse(), expandrect(obj.position, 7, obj.width, obj.lineHeight)), 
         obj.animationTarget = 1 - obj.animationTarget;
         obj.animationProgress = 0;
     );
@@ -524,7 +584,7 @@ switchDropDownMenu(obj) := (
 catchDropDownMenu(obj) := (
     if(obj.animationProgress >= 1,
         forall(1..length(obj.entries),
-        if(pointInPolygon(mouse().xy, expandrect(obj.position + [0, -# * (obj.lineHeight) - # * obj.gutter], 7, obj.width, obj.lineHeight)),
+        if(pointInPolygon(mouse(), expandrect(obj.position + [0, -# * (obj.lineHeight) - # * obj.gutter], 7, obj.width, obj.lineHeight)),
             obj.index = #;
         );
         );
