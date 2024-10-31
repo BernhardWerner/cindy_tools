@@ -30,6 +30,7 @@ testButtonA = newButton({
 
 
 
+
 testButtonB = newButton({
   "position": topLeft + [3, -5],
   "label": "Switch",
@@ -52,7 +53,7 @@ testSlider.onValueChange;
 
 
 
-testSelector = newSelector({
+testOptionSlider = newOptionSlider({
   "position": topLeft + [8, -2],
   "gapSize": 5,
   "bulbSize": 1.3,
@@ -64,19 +65,19 @@ testSelector = newSelector({
 
 
 
-testToggleA = newToggle({
+testSelectorA = newSelector({
   "position": topLeft + [3, -10],
-  "label": "Toggle A",
+  "label": "Select A",
   "outlineColors": [0.5 * white, red],
   "fillColor": 0.9 * white
 });
 
 
 
-testToggleB = newToggle({
+testSelectorB = newSelector({
   "position": topLeft + [3, -15],
   "size": [4.2, 2.4],
-  "label": "Toggle B",
+  "label": "Activate 2",
   "labelSize": 18
 });
 

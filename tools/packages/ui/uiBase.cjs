@@ -156,20 +156,22 @@ newButton(dict) := (
     "active":     if(contains(keys, "active"), dict.active, true),
     "visible":    if(contains(keys, "visible"), dict.visible, true)
   };
-  res.updateShapes :=(
-    res.shape1 = roundedrectangle(res.position + 0.5 * (-res.size.x, res.size.y), res.size.x, res.size.y, res.corner);
-    res.shape2 = roundedrectangle(res.position + 0.5 * (-res.size.x, res.size.y) + (0, -0.2), res.size.x, res.size.y, res.corner);
-  );
-  res.updateShapes;
+  res.calculateShapes := [
+    roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
+    roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner);
+  ];
+  
   res.draw := (
+    regional(shapes);
     if(self().visible,
+      shapes = self().calculateShapes;
       if(self().pressed,
-          fill(self().shape2, color -> (self().colors)_1);
-          drawtext(self().position + (0, -0.5 * self().labelSize / 35) + (0, -0.2), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
+        fill(shapes_2, color -> (self().colors)_1);
+        drawtext(self().position + (0, -0.5 * self().labelSize / 35) + (0, -0.2), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
       , // else //
-          fill(self().shape2, color -> (self().colors)_3);
-          fill(self().shape1, color -> (self().colors)_2);
-          drawtext(self().position + (0, -0.5 * self().labelSize / 35), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
+        fill(shapes_2, color -> (self().colors)_3);
+        fill(shapes_1, color -> (self().colors)_2);
+        drawtext(self().position + (0, -0.5 * self().labelSize / 35), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
       );
     );
   );
@@ -216,16 +218,16 @@ newSlider(dict) := (
     "active":            if(contains(keys, "active"), dict.active, true),
     "visible":           if(contains(keys, "visible"), dict.visible, true)
   };
-  res.updateShapes := (
-    res.endPoints = [res.position, res.position + if(res.vertical, [0, res.length], [res.length, 0])];
-  );
-  res.updateShapes;
-    
+  
+  res.endPoints := [self().position, self().position + if(self().vertical, [0, self().length], [self().length, 0])];
+  
+  
   res.draw := (
-    regional(handlePos, handleShape);
+    regional(handlePos, handleShape, endPoints);
     if(self().visible,
-      draw(self().endPoints, size -> self().size * screenresolution(), color -> self().color);
-      handlePos = lerp(self().endPoints_1, self().endPoints_2, self().value);
+      endPoints = self().endPoints;
+      draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
+      handlePos = lerp(endPoints_1, endPoints_2, self().value);
       handleShape = if(length(self().handleSize) == 2,
         roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
@@ -241,17 +243,19 @@ newSlider(dict) := (
   res.onUp := ();
   res.onValueChange := ();
   res.updateValue := (
+    regional(endPoints);
     if(self().dragging,
+      endPoints = self().endPoints;
       self().value = if(self().vertical,
-        clamp(inverseLerp((self().endPoints_1).y, (self().endPoints_2).y, mouse().y), 0, 1);
+        clamp(inverseLerp((endPoints_1).y, (endPoints_2).y, mouse().y), 0, 1);
       , // else //
-        clamp(inverseLerp((self().endPoints_1).x, (self().endPoints_2).x, mouse().x), 0, 1);
+        clamp(inverseLerp((endPoints_1).x, (endPoints_2).x, mouse().x), 0, 1);
       );
       self().onValueChange;
     );    
   );
   res.handleInput := (
-    regional(dist);
+    regional(dist, endPoints);
     if(self().active,
       if(mouseScriptIndicator == "Down",
         dist = if(length(self().handleSize) == 2, 
@@ -259,7 +263,8 @@ newSlider(dict) := (
           , // else //
             self().handleSize;
         );
-        if(capsuleSDF(mouse().xy, self().endPoints_1, self().endPoints_2, dist) <= 0,
+        endPoints = self().endPoints;
+        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
           self().updateValue;
           self().onDown;
@@ -280,7 +285,7 @@ newSlider(dict) := (
   res;
 );
 
-newSelector(dict) := (
+newOptionSlider(dict) := (
   regional(res, keys);
   keys = keys(dict);
   res = {
@@ -303,17 +308,15 @@ newSelector(dict) := (
     "visible":           if(contains(keys, "visible"), dict.visible, true),
     "endGap":            if(contains(keys, "endGap"), dict.endGap, 0.3)
   };
-  res.updateShapes := (
-    res.endPoints = [res.position, res.position + if(res.vertical, [0, res.gapSize * (length(res.options) - 1 + 2 * res.endGap)], [res.gapSize * (length(res.options) - 1 + 2 * res.endGap), 0])];
-  );
-  res.updateShapes;
 
+  res.endPoints := [self().position, self().position + if(self().vertical, [0, self().gapSize * (length(self().options) - 1 + 2 * self().endGap)], [self().gapSize * (length(self().options) - 1 + 2 * self().endGap), 0])];
 
   res.draw := (
     if(self().visible,
-      regional(handlePos, handleShape);
-      draw(self().endPoints, size -> self().size * screenresolution(), color -> self().color);
-      handlePos = lerp(self().endPoints_1, self().endPoints_2, self().index, 1 - self().endGap, length(self().options) + self().endGap);
+      regional(handlePos, handleShape, endPoints);
+      endPoints = self().endPoints;
+      draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
+      handlePos = lerp(endPoints_1, endPoints_2, self().index, 1 - self().endGap, length(self().options) + self().endGap);
       handleShape = if(length(self().handleSize) == 2,
         roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
@@ -323,7 +326,7 @@ newSelector(dict) := (
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
       
       forall(1..length(self().options),
-        drawtext(lerp(self().endPoints_1, self().endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 7, outlinecolor -> self().handleColor);
+        drawtext(lerp(endPoints_1, endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 7, outlinecolor -> self().handleColor);
       );
 
     );
@@ -334,15 +337,17 @@ newSelector(dict) := (
   res.onUp := ();
   res.onIndexChange := ();
   res.updateIndex := (
+    regional(endPoints);
     if(self().dragging,
+      endPoints = self().endPoints;
       self().index = sort(1..length(self().options),
-        dist(mouse().xy, lerp(self().endPoints_1, self().endPoints_2, #, 1, length(self().options)));
+        dist(mouse().xy, lerp(endPoints_1, endPoints_2, #, 1, length(self().options)));
       )_1;
       self().onIndexChange;
     );
   );
   res.handleInput := (
-    regional(dist);
+    regional(dist, endPoints);
     if(self().active,
       if(mouseScriptIndicator == "Down",
         dist = if(length(self().handleSize) == 2,
@@ -350,7 +355,8 @@ newSelector(dict) := (
           , // else //
             self().handleSize;
         );
-        if(capsuleSDF(mouse().xy, self().endPoints_1, self().endPoints_2, dist) <= 0,
+        endPoints = self().endPoints;
+        if(capsuleSDF(mouse().xy, endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
           self().updateIndex;
           self().onDown;
@@ -374,7 +380,7 @@ newSelector(dict) := (
   res;
 );
 
-newToggle(dict) := (
+newSelector(dict) := (
   regional(res, keys);
   keys = keys(dict);
   res = {
@@ -392,19 +398,19 @@ newToggle(dict) := (
     "visible":        if(contains(keys, "visible"), dict.visible, true),
     "corner":         if(contains(keys, "corner"), dict.corner, 0.5)
   };
-  res.updateShapes := (
-    res.shape = if(length(res.size) == 2,
-      roundedrectangle(res.position + 0.5 * (-res.size_1, res.size_2), res.size_1, res.size_2, res.corner);
+  res.shape := if(length(self().size) == 2,
+      roundedrectangle(self().position + 0.5 * (-self().size_1, self().size_2), self().size_1, self().size_2, self().corner);
     , // else //
-      circle(res.position, res.size);
-    );
+      circle(self().position, self().size);
   );
-  res.updateShapes;
+  
 
   res.draw := (
+    regional(shape);
     if(self().visible,
-      fill(self().shape, color -> self().fillColor);
-      draw(self().shape, size -> self().outlineSizes_(if(self().pressed, 2, 1)), color -> self().outlineColors_(if(self().pressed, 2, 1)));
+      shape = self().shape;
+      fill(shape, color -> self().fillColor);
+      draw(shape, size -> self().outlineSizes_(if(self().pressed, 2, 1)), color -> self().outlineColors_(if(self().pressed, 2, 1)));
       drawtext(self().position + [0, -0.013 * self().labelSize], self().label, size -> self().labelSize, color -> self().labelColor, family -> self().fontFamily, align -> "mid");
     );
   );
@@ -427,6 +433,8 @@ newToggle(dict) := (
 
 
 
+
+  
 
 
 
