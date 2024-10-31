@@ -12,35 +12,72 @@
 
 
 <script id='csinit' type='text/x-cindyscript'>
+red = (0.8, 0.1, 0.2);
+green = (0.2, 0.7, 0.1);
+blue = (0.1, 0.2, 0.8);
+white = (1, 1, 1);
+black = (0, 0, 0);
+
+
+
+topLeft = screenbounds()_1.xy;
 
 testButtonA = newButton({
-  "position": screenbounds()_1.xy + [3, -2],
+  "position": topLeft + [3, -2],
   "corner": 0.3
 });
 
+
+
+
 testButtonB = newButton({
-  "position": screenbounds()_1.xy + [3, -5],
+  "position": topLeft + [3, -5],
   "label": "Switch",
   "isToggle": true
 });
 
+
+
+
 testSlider = newSlider({
-  "position": screenbounds()_1.xy + [8, -2],
-  "value": 0.3
+  "position": topLeft + [8, -15],
+  "value": 0.3,
+  "vertical": true
 });
+testSlider.onValueChange := (
+  self().color = lerp(blue, red, self().value)
+);
+testSlider.onValueChange;
+
+
 
 
 testSelector = newSelector({
-  "position": screenbounds()_1.xy + [8, -5],
+  "position": topLeft + [8, -2],
   "gapSize": 5,
   "bulbSize": 1.3,
-  "size": 40,
+  "size": 1.3,
+  "handleSize": [3, 1.5],
   "options": ["one", "two", "three", "four"]
 });
 
-testToggleA = newCircleToggle({
-  "position": screenbounds()_1.xy + [3, -10],
-  "label": "Toggle A"
+
+
+
+testToggleA = newToggle({
+  "position": topLeft + [3, -10],
+  "label": "Toggle A",
+  "outlineColors": [0.5 * white, red],
+  "fillColor": 0.9 * white
+});
+
+
+
+testToggleB = newToggle({
+  "position": topLeft + [3, -15],
+  "size": [4.2, 2.4],
+  "label": "Toggle B",
+  "labelSize": 18
 });
 
 </script>

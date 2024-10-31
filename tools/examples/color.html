@@ -58,7 +58,7 @@ lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
 res = 500;
 thickness = 10;
 colA = (0.1, 0.2, 0.9);
-colB = (0.95, 0.9, 0);
+colB = (0.95, 0.9, 0.2);
 height = canvasHeight / 16;
 
 
@@ -76,20 +76,22 @@ forall(1..res,
   col = lerp(colA, colB, #, 1, res);
   draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
 
+  t = inverseLerp(1, res, #);
+  
   y = canvasAnchors_7.y - (1 * 3 + 1) * height;
-  col = blendRGB(colA, colB,inverseLerp(1, res, #));
+  col = blendRGB(colA, colB, t);
   draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
 
   y = canvasAnchors_7.y - (2 * 3 + 1) * height;
-  col = blendHSV(colA, colB,inverseLerp(1, res, #));
+  col = blendHSV(colA, colB, t);
   draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
 
   y = canvasAnchors_7.y - (3 * 3 + 1) * height;
-  col = blendLAB(colA, colB,inverseLerp(1, res, #));
+  col = blendLAB(colA, colB, t);
   draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
 
   y = canvasAnchors_7.y - (4 * 3 + 1) * height;
-  col = blendLCH(colA, colB,inverseLerp(1, res, #));
+  col = blendLCH(colA, colB, t);
   draw([x, y], [x, y - 2 * height], size -> thickness, color -> col);
 );
 
