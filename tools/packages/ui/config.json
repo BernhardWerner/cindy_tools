@@ -7,5 +7,6 @@
     "mousemove": [{"name": "mousemove", "place": -10000}],
     "mousedown": [{"name": "mousedown", "place": -10000}],
     "mousedrag": [{"name": "mousedrag", "place": -10000}],
-    "mouseup": [{"name": "mouseup", "place": -10000}]
+    "mouseup": [{"name": "mouseup", "place": -10000}],
+    "tick": [{"name": "tick", "place": -10000}]
 }

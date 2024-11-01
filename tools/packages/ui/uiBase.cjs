@@ -218,6 +218,7 @@ newSlider(dict) := (
     "active":            if(contains(keys, "active"), dict.active, true),
     "visible":           if(contains(keys, "visible"), dict.visible, true)
   };
+  res.animateValue = res.value;
   
   res.endPoints := [self().position, self().position + if(self().vertical, [0, self().length], [self().length, 0])];
   
@@ -227,7 +228,7 @@ newSlider(dict) := (
     if(self().visible,
       endPoints = self().endPoints;
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
-      handlePos = lerp(endPoints_1, endPoints_2, self().value);
+      handlePos = lerp(endPoints_1, endPoints_2, self().animateValue);
       handleShape = if(length(self().handleSize) == 2,
         roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
@@ -237,6 +238,10 @@ newSlider(dict) := (
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
     );
   );
+
+  res.animate := (
+    self().animateValue = lerp(self().animateValue, self().value, exp(-48 * uiDelta));
+  );  
 
   res.onDown := ();
   res.onDrag := ();
@@ -308,6 +313,7 @@ newOptionSlider(dict) := (
     "visible":           if(contains(keys, "visible"), dict.visible, true),
     "endGap":            if(contains(keys, "endGap"), dict.endGap, 0.3)
   };
+  res.animateIndex = res.index;
 
   res.endPoints := [self().position, self().position + if(self().vertical, [0, self().gapSize * (length(self().options) - 1 + 2 * self().endGap)], [self().gapSize * (length(self().options) - 1 + 2 * self().endGap), 0])];
 
@@ -316,7 +322,7 @@ newOptionSlider(dict) := (
       regional(handlePos, handleShape, endPoints);
       endPoints = self().endPoints;
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
-      handlePos = lerp(endPoints_1, endPoints_2, self().index, 1 - self().endGap, length(self().options) + self().endGap);
+      handlePos = lerp(endPoints_1, endPoints_2, self().animateIndex, 1 - self().endGap, length(self().options) + self().endGap);
       handleShape = if(length(self().handleSize) == 2,
         roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
@@ -331,6 +337,10 @@ newOptionSlider(dict) := (
 
     );
   );
+  res.animate := (
+    self().animateIndex = lerp(self().animateIndex, self().index, exp(-48 * uiDelta));
+  );
+
 
   res.onDown := ();
   res.onDrag := ();
