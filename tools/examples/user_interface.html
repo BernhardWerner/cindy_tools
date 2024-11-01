@@ -81,10 +81,32 @@ testSelectorB = newSelector({
   "labelSize": 18
 });
 
+
+
 testCheckbox = newCheckbox({
-  "position": topLeft + [10, -20],
+  "position": topLeft + [2, -18],
   "fillColor": red
 });
+
+
+
+
+checkboxGroup = apply(1..3,
+  res = newCheckbox({
+    "position": topLeft + [7, -19 - 2 * #],
+    "fillColor": green,
+    "label": "Option " + #,
+    "labelSide": "left",
+    "pressed": # == 1,
+    "symbol": "check"
+  });
+  res.onDown := (
+    forall(checkboxGroup, c, c.pressed = false);
+    self().pressed = true;
+  );
+  res;
+);
+
 
 </script>
 

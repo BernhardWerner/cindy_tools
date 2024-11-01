@@ -463,7 +463,8 @@ newCheckbox(dict) := (
     "active":         if(contains(keys, "active"), dict.active, true),
     "visible":        if(contains(keys, "visible"), dict.visible, true),
     "corner":         if(contains(keys, "corner"), dict.corner, 0.3),
-    "includeLabel":   if(contains(keys, "includeLabel"), dict.includeLabel, true)
+    "includeLabel":   if(contains(keys, "includeLabel"), dict.includeLabel, true),
+    "symbol":         if(contains(keys, "symbol"), dict.symbol, "x")
   };
   res.labelSign := if(self().labelSide == "left", -1, 1);
   res.box := roundedrectangle(self().position + 0.5 * (-self().size, self().size), self().size, self().size, self().corner);
@@ -483,8 +484,12 @@ newCheckbox(dict) := (
   res.draw := (
     if(self().visible,
       if(self().pressed,
-        draw(self().position + 0.3 * [-self().size, self().size], self().position + 0.3 * [self().size, -self().size], size -> 7, color -> self().fillColor);
-        draw(self().position + 0.3 * [-self().size, -self().size], self().position + 0.3 * [self().size, self().size], size -> 7, color -> self().fillColor);
+        if(self().symbol == "check",
+          connect([self().position + (-0.3 * self().size, -0.05 * self().size), self().position + (-0.05 * self().size, -0.3 * self().size), self().position + 0.3 * (self().size, self().size), ], size -> 7, color -> self().fillColor);
+        , // else //
+          draw(self().position + 0.3 * [-self().size, self().size], self().position + 0.3 * [self().size, -self().size], size -> 7, color -> self().fillColor);
+          draw(self().position + 0.3 * [-self().size, -self().size], self().position + 0.3 * [self().size, self().size], size -> 7, color -> self().fillColor);
+        );
       );
       draw(self().box, size -> self().outlineSize, color -> self().outlineColor);
       drawtext(self().position + [self().labelSign * (0.5 * self().size + self().labelGap), -0.013 * self().labelSize], self().label, size -> self().labelSize, align -> if(self().labelSide == "left", "right", "left"), color -> self().labelColor, family -> self().fontFamily);
