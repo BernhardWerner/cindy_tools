@@ -134,6 +134,12 @@ clamp(x, a, b) := min(max(x, a), b);
 
 
 
+rotation(alpha) := [[cos(alpha), -sin(alpha)], [sin(alpha), cos(alpha)]];
+
+
+rotate(point, alpha, center) := rotation(alpha) * (point - center) + center;
+rotate(vector, alpha) := rotate(vector, alpha, [0,0]);
+
 
 
 
@@ -514,6 +520,91 @@ newCheckbox(dict) := (
 
 
 
+newDropdown(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":        if(contains(keys, "position"), dict.position, [0,0]),
+    "width":           if(contains(keys, "width"), dict.width, 10),
+    "lineHeight":      if(contains(keys, "lineHeight"), dict.lineHeight, 1.5),
+    "options":         if(contains(keys, "options"), dict.options, ["A", "B", "C"]),
+    "index":           if(contains(keys, "index"), dict.index, 1),
+    "backColor":       if(contains(keys, "backColor"), dict.backColor, 0.3 * (1,1,1)),
+    "frontColor":      if(contains(keys, "frontColor"), dict.frontColor, 0.9 * (1,1,1)),
+    "textColor":       if(contains(keys, "textColor"), dict.textColor, (1,1,1)),
+    "textSize":        if(contains(keys, "textSize"), dict.textSize, 20),
+    "open":            if(contains(keys, "open"), dict.open, 1),
+    "corner":          if(contains(keys, "corner"), dict.corner, 0.3),
+    "gutter":          if(contains(keys, "gutter"), dict.gutter, 0.3),
+    "active":          if(contains(keys, "active"), dict.active, true),
+    "visible":         if(contains(keys, "visible"), dict.visible, true),
+    "closeOnSelect":   if(contains(keys, "closeOnSelect"), dict.closeOnSelect, false)
+  };
+  res.animateOpen = res.open;
+
+  res.draw := (
+    regional(height, n, shape, angle, chevron);
+    if(self().visible,
+      n = length(self().options);
+      height = self().lineHeight * (1 + n * self().animateOpen) + self().gutter * n * self().animateOpen;
+      shape = roundedrectangle(self().position + 0.5 * self().gutter * [-1,1], self().width + self().gutter, height + self().gutter, self().corner);
+      fill(shape, color -> self().backColor);
+      fill(roundedrectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
+      drawtext(self().position + [1, -0.5 * self().lineHeight - 0.0125 * self().textSize], self().options_(self().index), size -> self().textSize, color -> self().textColor, outlinewidth -> 5, outlinecolor -> self().backColor);
+      angle = lerp(1.5 * pi, 0.5 * pi, self().animateOpen);
+      chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [0.1, 0];
+      chevron = apply(chevron, 0.2 * self().lineHeight * rotate(#, angle) + self().position + [0.87 * self().width, - 0.5 * self().lineHeight]);
+      fillpoly(chevron, color -> self().textColor);
+      drawpoly(chevron, color -> self().textColor, size -> 3);
+      gsave();
+      clip(shape);
+      forall(1..n,
+        fill(roundedrectangle(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> if(# == self().index, 1, 0.5));
+      );
+      forall(1..n,
+        drawtext(self().position + [1, -(# + 0.5) * self().lineHeight  - # * self().gutter - 0.0125 * self().textSize], self().options_#, size -> self().textSize, color -> self().textColor, outlinewidth -> 5, outlinecolor -> self().backColor);
+      );
+      grestore();
+    );
+  );
+  res.animate := (
+    self().animateOpen = lerp(self().animateOpen, self().open, exp(-72 * uiDelta));
+  );
+  res.onDown := ();
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down",
+        if(pointInRect(mouse(), expandRect(self().position, self().width, self().lineHeight, 7)),
+          self().open = 1 - self().open;
+        , // else //
+          if(self().open == 1,
+            forall(1..length(self().options),
+              if(pointInRect(mouse(), expandRect(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, 7)),
+                self().index = #;
+                if(self().closeOnSelect, self().open = 0);
+              );
+            );
+          );
+        );
+      );
+    );
+  );
+
+
+
+  uiCollection = uiCollection :> res;
+
+  res;
+
+);
+
+
+
+
+
+
+
+
 
 
 
@@ -609,49 +700,6 @@ catchDropDownMenu(obj) := (
 
 
 
-
-      
-
-
-
-    
-pointInRect(point, poly) := (
-    regional(a,b);
-    a = min(poly);
-    b = max(poly);
-    (a_1 <= point_1) & (point_1 <= b_1) & (a_2 <= point_2) & (point_2 <= b_2);
-  );
-  
-  
-  drawCheckbox(checkbox) := (
-    regional(border, labelSize);
-  
-    border = roundedrectangle(checkbox.position + 0.5 * [-checkbox.size, checkbox.size], checkbox.size, checkbox.size, checkbox.size * 0.2);
-    if(checkbox.pressed,
-      draw([checkbox.position + 0.3 * [-checkbox.size, checkbox.size], checkbox.position + 0.3 * [checkbox.size, -checkbox.size]], color -> checkbox.color, size -> 7);
-      draw([checkbox.position + 0.3 * [-checkbox.size, -checkbox.size], checkbox.position + 0.3 * [checkbox.size, checkbox.size]], color -> checkbox.color, size -> 7);
-    );
-    draw(border, color -> (0,0,0), size -> 2);
-  
-    labelHeight = pixelsize(checkbox.label, size -> checkbox.labelSize)_2 / screenresolution();
-    
-    vOffset = 0.35 * labelHeight;
-    drawtext(checkbox.position + [-checkbox.size - checkboxLabelGap, -vOffset], checkbox.label, size -> checkbox.labelSize, color -> (0,0,0), align -> "right");
-  );
-  
-  
-  handleCheckbox(checkbox) := (
-    regional(labelAABB, w, h, poly);
-  
-    labelAABB = pixelsize(checkbox.label, size -> checkbox.labelSize) / screenresolution();
-    w = labelAABB_1;
-    h = labelAABB_2 + labelAABB_3;
-    poly = expandrect(checkbox.position + [-0.5 * checkbox.size, 0], checkbox.size + checkboxLabelGap + w, max(checkbox.size, h), 4);
-    
-    if(pointInRect(mouse(), poly),
-      checkbox.pressed = !checkbox.pressed;
-    );
-  );
 
 
 */
