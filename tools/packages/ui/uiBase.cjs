@@ -542,8 +542,10 @@ newDropdown(dict) := (
   };
   res.animateOpen = res.open;
   res.animateIndex = res.index;
-  res.moveHighlightIndex = 0;
-  res.animateMoveHighlightIndex = 0;
+  res.moveHighlightIndex = res.index;
+  //res.animateMoveHighlightIndex = res.index;
+
+  res.optionRect := expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * length(self().options) + self().gutter * (length(self().options) - 1), 7);
 
   res.draw := (
     regional(height, n, shape, angle, chevron);
@@ -555,7 +557,7 @@ newDropdown(dict) := (
       //fill(roundedrectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
       drawtext(self().position + [1, -0.5 * self().lineHeight - 0.0125 * self().textSize], self().options_(self().index), size -> self().textSize, color -> self().textColor);
       angle = lerp(1.5 * pi, 0.5 * pi, self().animateOpen);
-      chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [0.1, 0];
+      chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [-0.1, 0];
       chevron = apply(chevron, 0.2 * self().lineHeight * rotate(#, angle) + self().position + [0.87 * self().width, - 0.5 * self().lineHeight]);
       fillpoly(chevron, color -> self().frontColor);
       drawpoly(chevron, color -> self().frontColor, size -> 3);
@@ -567,8 +569,8 @@ newDropdown(dict) := (
       );
       */
       draw(roundedrectangle(self().position + [0, -self().animateIndex * (self().lineHeight) - self().animateIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 5);
-      if(pointInRect(mouse(), expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * n, 7)) & self().moveHighlightIndex != self().index,
-        draw(roundedrectangle(self().position + [0, -self().animateMoveHighlightIndex * (self().lineHeight) - self().animateMoveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
+      if(pointInRect(mouse(), self().optionRect) & self().moveHighlightIndex != self().index,
+        draw(roundedrectangle(self().position + [0, -self().moveHighlightIndex * (self().lineHeight) - self().moveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
       );
       forall(1..n,
         drawtext(self().position + [1, -(# + 0.5) * self().lineHeight  - # * self().gutter - 0.0125 * self().textSize], self().options_#, size -> self().textSize, color -> self().textColor, alpha -> 0.7);
@@ -580,21 +582,23 @@ newDropdown(dict) := (
   res.animate := (
     self().animateOpen = lerp(self().animateOpen, self().open, exp(-96 * uiDelta));
     self().animateIndex = lerp(self().animateIndex, self().index, exp(-96 * uiDelta));
-    self().animateMoveHighlightIndex = lerp(self().animateMoveHighlightIndex, self().moveHighlightIndex, exp(-32 * uiDelta));
+    //self().animateMoveHighlightIndex = lerp(self().animateMoveHighlightIndex, self().moveHighlightIndex, exp(-32 * uiDelta));
   );
   res.onDown := ();
+  res.OnIndexChange := ();
   res.handleInput := (
-    regional(n);
+    regional(oldIndex);
     if(self().active,
-      n = length(self().options);
       if(mouseScriptIndicator == "Down",
         if(pointInRect(mouse(), expandRect(self().position, self().width, self().lineHeight, 7)),
           self().open = 1 - self().open;
         , // else //
           if(self().open == 1,
-            forall(1..n,
+            forall(1..length(self().options),
               if(pointInRect(mouse(), expandRect(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, 7)),
+                oldIndex = self().index;
                 self().index = #;
+                if(oldIndex != self().index, self().OnIndexChange);
                 if(self().closeOnSelect, self().open = 0);
               );
             );
@@ -602,10 +606,8 @@ newDropdown(dict) := (
         );
       );
       if(mouseScriptIndicator == "Move",
-        if(self().open == 1 & pointInRect(mouse(), expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * n, 7)),
+        if((self().open >= 1) & pointInRect(mouse(), self().optionRect),
           self().moveHighlightIndex = sort(1..n, dist(mouse().y, self().position.y - (# + 0.5) * (self().lineHeight) - # * self().gutter))_1;
-        , // else //
-          //self().moveHighlightIndex = 0;
         );
       );
     );
