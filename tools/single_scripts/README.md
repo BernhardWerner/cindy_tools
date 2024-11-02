@@ -48,4 +48,14 @@ My legacy über-library. I'm slowly chipping away at it to seprate its code into
 
 ## SVG-to-Cindy
 
-A small Ruby script that extracts paths points from SVGs. The output is a nested array of Bézier splines, the Bézier curvesthey are composed of and individual points. Can be preprocessed, for example via `apply(listOfSplines, sampleBezierSpline(#, subSampling, strokeResolution))`, and then be animated. (`sampleBezierSpline` is part of the animation package.)
+A small Ruby script that extracts paths points from SVGs. Call it by running
+```
+ruby svg2cindy.rb --file <path_to_svg>
+```
+in a terminal. The output is a nested array of Bézier splines, the Bézier curves they are composed of and individual points. Can be preprocessed, for example via 
+```apply(listOfSplines, sampleBezierSpline(#, subSampling, strokeResolution))```
+and then be animated or used in any other way. (Where `sampleBezierSpline` is part of the animation package.)
+
+Note that the output is a .cjs file. So, you would load it just as any other CindyScript library. Moreover, the output file as well as the array stored in it get the name of the input SVG.
+
+For emphasis: CindyJS can render SVGs directly via `drawimage`. This script is only useful if you want to subsample individual paths of an SVG for animations or similar. For example, like here: [https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s](https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s)

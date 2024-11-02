@@ -75,14 +75,14 @@ end
 # Main script
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: ruby svg_parser.rb [options]"
+  opts.banner = "Usage: ruby svg2cindy.rb [options]"
   opts.on('-f', '--file FILE', 'Input SVG file') do |v|
     options[:file] = v
   end
 end.parse!
 
 if options[:file].nil?
-  puts "Usage: ruby svg_parser.rb --file <path_to_svg>"
+  puts "Usage: ruby svg2cindy.rb --file <path_to_svg>"
   exit 1
 end
 
