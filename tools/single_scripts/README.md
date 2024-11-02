@@ -40,7 +40,7 @@ It is very much encouraged to override them for your use case.
 
 ## Color
 
-Functions to translate between various colour spaces and representation as well as functions to interpolate/blend within these spaces. Most if not all things here are informed by Björn Ottosson's articles. The best starting point: [https://bottosson.github.io/posts/oklab/](https://bottosson.github.io/posts/oklab/)
+Functions to translate between various colour spaces and representation as well as functions to interpolate/blend within these spaces. Most if not all things here are informed by Björn Ottosson's articles. The best starting point: [https://bottosson.github.io/posts/oklab/](https://bottosson.github.io/posts/oklab/){: target="_blank"}
 
 ## Egdod
 
@@ -58,4 +58,4 @@ and then be animated or used in any other way. (Where `sampleBezierSpline` is pa
 
 Note that the output is a .cjs file. So, you would load it just as any other CindyScript library. Moreover, the output file as well as the array stored in it get the name of the input SVG.
 
-For emphasis: CindyJS can render SVGs directly via `drawimage`. This script is only useful if you want to subsample individual paths of an SVG for animations or similar. For example, like here: [https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s](https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s)
+For emphasis: CindyJS can render SVGs directly via `drawimage`. This script is only useful if you want to subsample individual paths of an SVG for animations or similar. For example, like here: [https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s](https://www.youtube.com/watch?v=fW_Df8bytIU&t=37s){: target="_blank"}
