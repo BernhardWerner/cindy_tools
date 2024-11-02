@@ -12,6 +12,8 @@ camera = {
 };
 */
 
+screenWidth = 1920 / screenresolution();
+screenCenter = [0, 0];
 
 
 cameraBasis(cam) := (
@@ -31,9 +33,9 @@ cameraBasis(cam) := (
 
 projectToScreen(p, camPosition, camBasis, camFOV) := (
     p = transpose(camBasis) * (p - camPosition);
-    p = - p / p.z / tan(camFOV / 2) * canvasWidth / 2;
+    p = - p / p.z / tan(camFOV / 2) * screenWidth / 2;
 
-    canvasCenter + [p.x, p.y];
+    screenCenter + [p.x, p.y];
 );
 projectToScreen(p, cam) := projectToScreen(p, cam.position, cam.basis, cam.fov);
 
@@ -44,9 +46,9 @@ projectToScreen(p, cam) := projectToScreen(p, cam.position, cam.basis, cam.fov);
 liftTo3D(p, camPosition, camBasis, camFOV) := (
     regional(t);
 
-    t = tan(camFOV / 2) * 2 / canvasWidth;
+    t = tan(camFOV / 2) * 2 / screenWidth;
 
-    p = p - canvasCenter;
+    p = p - screenCenter;
 
     camBasis * [t * p.x, t * p.y, -1] + camPosition;
 );

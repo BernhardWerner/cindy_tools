@@ -14,7 +14,7 @@ var cindy = CindyJS({
 
 ## Camera
 
-This is a simple camera controller to do 3D visualisation with the Cindy3D plugin. (Which is very good, but sometimes clunky to work with as it needs its own canvas to draw on.) All functions here assume that pass a camera object of the form
+This is a simple camera controller to do 3D visualisations without the Cindy3D plugin. (Which is very good, but sometimes clunky to work with as it needs its own canvas to draw on.) All functions here assume that pass a camera object of the form
 ```
 cam = {
     "rad": 60,
@@ -30,6 +30,13 @@ cam = {
 };
 ```
 Please call `updateCamera(cam)` when you define it and whenever you change position in order to update its position and basis (i.e. local coordinate system).
+
+Main use case will be to call `projectToScreen(point, cam)` to transform from 3D to 2D coordinates. This and other functions use the placeholder variables
+```
+screenWidth = 1920 / screenresolution();
+screenCenter = [0, 0];
+```
+It is very much encouraged to override them for your use case.
 
 ## Color
 
