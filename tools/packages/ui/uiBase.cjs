@@ -622,3 +622,86 @@ newDropdown(dict) := (
 );
 
 
+newToggle(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":       if(contains(keys, "position"), dict.position, [0,0]),
+    "size":           if(contains(keys, "size"), dict.size, 2),
+    "outlineSize":    if(contains(keys, "outlineSize"), dict.outlineSize, 3),
+    "state":          if(contains(keys, "state"), dict.state, 0),
+    "backColor":      if(contains(keys, "backColor"), dict.backColor, 0.7 * (1,1,1)),
+    "frontColor":     if(contains(keys, "frontColor"), dict.frontColor, 0.3 * (1,1,1)),
+    "active":         if(contains(keys, "active"), dict.active, true),
+    "visible":        if(contains(keys, "visible"), dict.visible, true)
+  };
+  res.animateState = res.state;
+
+  res.draw := (
+    regional(pill);
+    if(self().visible,
+      pill = roundedrectangle(self().position + (-0.5 * self().size, 0.25 * self().size), self().size, 0.5 * self().size, 0.5 * self().size);
+      fill(pill, color -> self().backColor);
+      fillcircle(self().position + [lerp(-0.25, 0.25, self().animateState) * self().size, 0], 0.25 * self().size, color -> self().frontColor);
+      draw(pill, size -> self().outlineSize, color -> self().frontColor);
+    );
+  );
+  res.animate := (
+    self().animateState = lerp(self().animateState, self().state, exp(-48 * uiDelta));
+  );
+
+  res.onDown := ();
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down" & capsuleSDF(mouse(), self().position + (-0.5 * self().size, 0), self().position + (0.5 * self().size, 0), 0.25 * self().size) <= 0,
+        self().state = 1 - self().state;
+        self().onDown;
+      );
+    );
+  );
+
+
+  uiCollection = uiCollection :> res;
+
+  res;
+);
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+drawToggle(obj) := (
+  //fillpoly(expandrect(obj.position, obj.size.x, obj.size.y, 5), color -> (0,0,0), alpha -> 0.4);
+  drawtext(obj.position + [-2, -0.015 * obj.textSize], obj.labels_1, size -> obj.textSize, color -> (1,1,1), align -> "right");
+  drawtext(obj.position + [ 2, -0.015 * obj.textSize], obj.labels_2, size -> obj.textSize, color -> (1,1,1), align -> "left");
+  backPill = roundedrectangle(obj.position + [-1, 0.5], 2, 1, 1);
+  fill(backPill, color -> sapColor.grey1);
+  fillcircle(obj.position + [lerp(-0.5, 0.5, obj.animationState), 0], 0.5, color -> sapColor.white);
+  draw(backPill, color -> sapColor.white, size -> 3);
+);
+
+catchToggle(obj) := (
+  if(pointInPolygon(mouse(), expandrect(obj.position, obj.size.x, obj.size.y, 5)),
+    obj.state = 1 - obj.state;
+  , // else //
+    if(obj.state == 0,
+      cameraActive = true;
+      currentMousePos = mouse();
+      handleCamera();
+    );
+    if(obj.state == 1,
+      pointActive = true;
+      handlePoint();
+    );
+  );
+);
+
+*/
