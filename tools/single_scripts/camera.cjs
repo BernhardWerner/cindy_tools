@@ -1,4 +1,4 @@
-/* These need a camera object  of the form
+/* These need a camera object of the form
 camera = {
     "rad": 60,
     "azimuth": 32°,
