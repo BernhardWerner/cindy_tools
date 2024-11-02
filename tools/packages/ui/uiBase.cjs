@@ -529,11 +529,11 @@ newDropdown(dict) := (
     "lineHeight":      if(contains(keys, "lineHeight"), dict.lineHeight, 1.5),
     "options":         if(contains(keys, "options"), dict.options, ["A", "B", "C"]),
     "index":           if(contains(keys, "index"), dict.index, 1),
-    "backColor":       if(contains(keys, "backColor"), dict.backColor, 0.3 * (1,1,1)),
-    "frontColor":      if(contains(keys, "frontColor"), dict.frontColor, 0.9 * (1,1,1)),
-    "textColor":       if(contains(keys, "textColor"), dict.textColor, (1,1,1)),
+    "backColor":       if(contains(keys, "backColor"), dict.backColor, 0.8 * (1,1,1)),
+    "frontColor":      if(contains(keys, "frontColor"), dict.frontColor, 0.5 * (1,1,1)),
+    "textColor":       if(contains(keys, "textColor"), dict.textColor, 0 * (1,1,1)),
     "textSize":        if(contains(keys, "textSize"), dict.textSize, 20),
-    "open":            if(contains(keys, "open"), dict.open, 1),
+    "open":            if(contains(keys, "open"), dict.open, 0),
     "corner":          if(contains(keys, "corner"), dict.corner, 0.3),
     "gutter":          if(contains(keys, "gutter"), dict.gutter, 0.3),
     "active":          if(contains(keys, "active"), dict.active, true),
@@ -541,6 +541,9 @@ newDropdown(dict) := (
     "closeOnSelect":   if(contains(keys, "closeOnSelect"), dict.closeOnSelect, false)
   };
   res.animateOpen = res.open;
+  res.animateIndex = res.index;
+  res.moveHighlightIndex = 0;
+  res.animateMoveHighlightIndex = 0;
 
   res.draw := (
     regional(height, n, shape, angle, chevron);
@@ -549,42 +552,60 @@ newDropdown(dict) := (
       height = self().lineHeight * (1 + n * self().animateOpen) + self().gutter * n * self().animateOpen;
       shape = roundedrectangle(self().position + 0.5 * self().gutter * [-1,1], self().width + self().gutter, height + self().gutter, self().corner);
       fill(shape, color -> self().backColor);
-      fill(roundedrectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
-      drawtext(self().position + [1, -0.5 * self().lineHeight - 0.0125 * self().textSize], self().options_(self().index), size -> self().textSize, color -> self().textColor, outlinewidth -> 5, outlinecolor -> self().backColor);
+      //fill(roundedrectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
+      drawtext(self().position + [1, -0.5 * self().lineHeight - 0.0125 * self().textSize], self().options_(self().index), size -> self().textSize, color -> self().textColor);
       angle = lerp(1.5 * pi, 0.5 * pi, self().animateOpen);
       chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [0.1, 0];
       chevron = apply(chevron, 0.2 * self().lineHeight * rotate(#, angle) + self().position + [0.87 * self().width, - 0.5 * self().lineHeight]);
-      fillpoly(chevron, color -> self().textColor);
-      drawpoly(chevron, color -> self().textColor, size -> 3);
+      fillpoly(chevron, color -> self().frontColor);
+      drawpoly(chevron, color -> self().frontColor, size -> 3);
       gsave();
       clip(shape);
+      /*
       forall(1..n,
-        fill(roundedrectangle(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> if(# == self().index, 1, 0.5));
+        draw(roundedrectangle(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> if(# == self().index, 3, 0.5));
+      );
+      */
+      draw(roundedrectangle(self().position + [0, -self().animateIndex * (self().lineHeight) - self().animateIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 5);
+      if(pointInRect(mouse(), expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * n, 7)) & self().moveHighlightIndex != self().index,
+        draw(roundedrectangle(self().position + [0, -self().animateMoveHighlightIndex * (self().lineHeight) - self().animateMoveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
       );
       forall(1..n,
-        drawtext(self().position + [1, -(# + 0.5) * self().lineHeight  - # * self().gutter - 0.0125 * self().textSize], self().options_#, size -> self().textSize, color -> self().textColor, outlinewidth -> 5, outlinecolor -> self().backColor);
+        drawtext(self().position + [1, -(# + 0.5) * self().lineHeight  - # * self().gutter - 0.0125 * self().textSize], self().options_#, size -> self().textSize, color -> self().textColor, alpha -> 0.7);
       );
       grestore();
     );
   );
+
   res.animate := (
-    self().animateOpen = lerp(self().animateOpen, self().open, exp(-72 * uiDelta));
+    self().animateOpen = lerp(self().animateOpen, self().open, exp(-96 * uiDelta));
+    self().animateIndex = lerp(self().animateIndex, self().index, exp(-96 * uiDelta));
+    self().animateMoveHighlightIndex = lerp(self().animateMoveHighlightIndex, self().moveHighlightIndex, exp(-32 * uiDelta));
   );
   res.onDown := ();
   res.handleInput := (
+    regional(n);
     if(self().active,
+      n = length(self().options);
       if(mouseScriptIndicator == "Down",
         if(pointInRect(mouse(), expandRect(self().position, self().width, self().lineHeight, 7)),
           self().open = 1 - self().open;
         , // else //
           if(self().open == 1,
-            forall(1..length(self().options),
+            forall(1..n,
               if(pointInRect(mouse(), expandRect(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, 7)),
                 self().index = #;
                 if(self().closeOnSelect, self().open = 0);
               );
             );
           );
+        );
+      );
+      if(mouseScriptIndicator == "Move",
+        if(self().open == 1 & pointInRect(mouse(), expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * n, 7)),
+          self().moveHighlightIndex = sort(1..n, dist(mouse().y, self().position.y - (# + 0.5) * (self().lineHeight) - # * self().gutter))_1;
+        , // else //
+          //self().moveHighlightIndex = 0;
         );
       );
     );
@@ -599,107 +620,3 @@ newDropdown(dict) := (
 );
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// OLD STUFF BELOW
-
-
-/*
-
-
-
-
-Dropdown menus must be JSON object of the form
-dropDown = {
-  "position": [3, -3],
-  "width": 10,
-  "lineHeight": 2,
-  "entries": ["This", "is", "just", "a", "test", "$\sum_{i=0}^n i^2$"],
-  "index": 1,
-  "color": toolColor.grey,
-  "textColor": (1,1,1),
-  "textSize": 20,
-  "open": 0,
-  "animationTarget": 0,
-  "animationProgress": 1,
-  "corner": 0.5,
-  "gutter": 0.2
-};
-
-
-
-drawDropDownMenu(obj) := (
-    regional(height, noe, shape, angle, chevron);
-  
-    noe = length(obj.entries);
-    height = obj.lineHeight * (1 + noe * obj.open) + obj.gutter * noe * obj.open;
-  
-    shape = roundedrectangle(obj.position + 0.5 * obj.gutter * [-1,1], obj.width + obj.gutter, height + obj.gutter, obj.corner);
-    fill(shape, color -> obj.color, alpha -> 0.5);
-    
-    fill(roundedrectangle(obj.position, obj.width, obj.lineHeight, obj.corner), color -> obj.color, alpha -> 1);
-    drawtext(obj.position + [1, -0.5 * obj.lineHeight - 0.0125 * obj.textSize], (obj.entries)_(obj.index), size -> obj.textSize, color -> obj.textColor);
-  
-    angle = lerp(1.5 * pi, 0.5 * pi, obj.open);
-    chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [0.1, 0];
-    chevron = apply(chevron, 0.2 * obj.lineHeight * rotate(#, angle) + obj.position + [0.87 * obj.width, - 0.5 * obj.lineHeight]);
-  
-    fillpoly(chevron, color -> obj.textColor);
-    drawpoly(chevron, color -> obj.textColor, size -> 3);
-  
-    gsave();
-    clip(shape);
-  
-    forall(1..noe,
-      fill(roundedrectangle(obj.position + [0, -# * (obj.lineHeight) - # * obj.gutter], obj.width, obj.lineHeight, obj.corner), color -> obj.color, alpha -> if(# == obj.index, 1, 0.5));
-    );
-    forall(1..noe,
-      drawtext(obj.position + [1, -(# + 0.5) * obj.lineHeight  - # * obj.gutter - 0.0125 * obj.textSize], obj.entries_#, size -> obj.textSize, color -> obj.textColor);
-    );
-    grestore();
-);
-
-animateDropDownMenu(obj, delta) := (
-    obj.animationProgress = clamp(obj.animationProgress + 2 * delta, 0, 1);
-    obj.open = lerp(1 - obj.animationTarget, obj.animationTarget, easeInOutCubic(obj.animationProgress));
-);
-testButtonA.label = "Button";
-testButtonA.corner = 0.3;
-testButtonA.position = screenbounds()_1.xy + [3, -2];
-
-switchDropDownMenu(obj) := (
-    if(obj.animationProgress >= 1 & pointInPolygon(mouse(), expandrect(obj.position, 7, obj.width, obj.lineHeight)), 
-        obj.animationTarget = 1 - obj.animationTarget;
-        obj.animationProgress = 0;
-    );
-);
-
-catchDropDownMenu(obj) := (
-    if(obj.animationProgress >= 1,
-        forall(1..length(obj.entries),
-        if(pointInPolygon(mouse(), expandrect(obj.position + [0, -# * (obj.lineHeight) - # * obj.gutter], 7, obj.width, obj.lineHeight)),
-            obj.index = #;
-        );
-        );
-    );
-);
-
-
-
-
-
-
-*/
