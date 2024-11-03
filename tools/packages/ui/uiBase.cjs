@@ -86,10 +86,7 @@ capsuleSDF(p, start, end, radius) := (
   abs(pa - ba * h) - radius;
 );
 
-mouseInButton(button) := (
-  dist(mouse().x, button.position.x) < 0.5 * button.size.x
-& dist(mouse().y, button.position.y) < 0.5 * button.size.y;
-);
+
 
 pointInRect(point, poly) := (
   regional(a,b);
@@ -98,12 +95,6 @@ pointInRect(point, poly) := (
   (a_1 <= point_1) & (point_1 <= b_1) & (a_2 <= point_2) & (point_2 <= b_2);
 );
 
-pointInRect(point, poly) := (
-  regional(a,b);
-  a = min(poly);
-  b = max(poly);
-  (a_1 <= point_1) & (point_1 <= b_1) & (a_2 <= point_2) & (point_2 <= b_2);
-);
 
 
 
@@ -140,6 +131,19 @@ rotation(alpha) := [[cos(alpha), -sin(alpha)], [sin(alpha), cos(alpha)]];
 rotate(point, alpha, center) := rotation(alpha) * (point - center) + center;
 rotate(vector, alpha) := rotate(vector, alpha, [0,0]);
 
+
+
+boxSDF(p, halfSize) := (
+  regional(d);
+
+  d = [abs(p.x), abs(p.y)] - halfSize;
+
+  min(max(d), 0.0) + abs([max(d.x, 0.0), max(d.y, 0.0)]);
+
+);
+
+pointInRoundedRectangle(point, tl, w, h, r) := boxSDF(point - (tl + 0.5 * [w, -h]), 0.5 * [max(0, w - 2 * r), max(0, h - 2 * r)]) <= r;
+  
 
 
 
@@ -205,13 +209,13 @@ newButton(dict) := (
   res.onUp := ();
   res.handleInput := (
     if(self().active, 
-      if(mouseScriptIndicator == "Down" & mouseInButton(self()),
+      if(mouseScriptIndicator == "Down" & pointInRoundedRectangle(mouse(), self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
         self().pressed = if(self().isToggle, !self().pressed, true);
         self().onDown;
       );
 
       if(mouseScriptIndicator == "Up", 
-        if(mouseInButton(self()), self().onUp);
+        if(pointInRoundedRectangle(mouse(), self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner), self().onUp);
         if(!self().isToggle, self().pressed = false);
       );
     );
@@ -234,9 +238,9 @@ newSlider(dict) := (
     "vertical":          if(contains(keys, "vertical"), dict.vertical, false),
     "color":             if(contains(keys, "color"), dict.color, 0.5 * (1,1,1)),
     "value":             if(contains(keys, "value"), dict.value, 0.5),
-    "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, 0.7),
+    "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, [1.4, 1.4]),
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
-    "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.3),
+    "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.7),
     "handleColor":       if(contains(keys, "handleColor"), dict.handleColor, (1,1,1)),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":            if(contains(keys, "active"), dict.active, true),
@@ -254,11 +258,7 @@ newSlider(dict) := (
       endPoints = self().endPoints;
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
       handlePos = lerp(endPoints_1, endPoints_2, self().animateValue);
-      handleShape = if(length(self().handleSize) == 2,
-        roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
-      , // else //
-        circle(handlePos, self().handleSize);
-      );
+      handleShape = roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       fill(handleShape, color -> self().handleColor);
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
     );
@@ -288,11 +288,7 @@ newSlider(dict) := (
     regional(dist, endPoints);
     if(self().active,
       if(mouseScriptIndicator == "Down",
-        dist = if(length(self().handleSize) == 2, 
-          0.5 * if(self().vertical, self().handleSize_1, self().handleSize_2);
-          , // else //
-            self().handleSize;
-        );
+        dist =  0.5 * if(self().vertical, self().handleSize_1, self().handleSize_2);
         endPoints = self().endPoints;
         if(capsuleSDF(mouse(), endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
@@ -329,9 +325,9 @@ newOptionSlider(dict) := (
     "handleColor":       if(contains(keys, "handleColor"), dict.handleColor, (1,1,1)),
     "textColor":         if(contains(keys, "textColor"), dict.textColor, (0,0,0)),
     "textSize":          if(contains(keys, "textSize"), dict.textSize, 20),
-    "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, 0.7),
+    "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, [1.4, 1.4]),
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
-    "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.3),
+    "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.7),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":            if(contains(keys, "active"), dict.active, true),
     "visible":           if(contains(keys, "visible"), dict.visible, true),
@@ -348,11 +344,7 @@ newOptionSlider(dict) := (
       endPoints = self().endPoints;
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
       handlePos = lerp(endPoints_1, endPoints_2, self().animateIndex, 1 - self().endGap, length(self().options) + self().endGap);
-      handleShape = if(length(self().handleSize) == 2,
-        roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
-      , // else //
-        circle(handlePos, self().handleSize);
-      );
+      handleShape = roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       fill(handleShape, color -> self().handleColor);
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
       
@@ -385,11 +377,7 @@ newOptionSlider(dict) := (
     regional(dist, endPoints);
     if(self().active,
       if(mouseScriptIndicator == "Down",
-        dist = if(length(self().handleSize) == 2,
-          0.5 * if(self().vertical, self().handleSize_1, self().handleSize_2);
-          , // else //
-            self().handleSize;
-        );
+        dist = 0.5 * if(self().vertical, self().handleSize_1, self().handleSize_2);
         endPoints = self().endPoints;
         if(capsuleSDF(mouse(), endPoints_1, endPoints_2, dist) <= 0,
           self().dragging = true;
@@ -420,7 +408,7 @@ newSelector(dict) := (
   keys = keys(dict);
   res = {
     "position":       if(contains(keys, "position"), dict.position, [0,0]),
-    "size":           if(contains(keys, "size"), dict.size, 2),
+    "size":           if(contains(keys, "size"), dict.size, [5, 2]),
     "outlineSizes":   if(contains(keys, "outlineSizes"), dict.size, [1.5, 10]),
     "label":          if(contains(keys, "label"), dict.label, "Toggle"),
     "labelSize":      if(contains(keys, "labelSize"), dict.labelSize, 20),
@@ -433,11 +421,7 @@ newSelector(dict) := (
     "visible":        if(contains(keys, "visible"), dict.visible, true),
     "corner":         if(contains(keys, "corner"), dict.corner, 0.5)
   };
-  res.shape := if(length(self().size) == 2,
-      roundedRectangle(self().position + 0.5 * (-self().size_1, self().size_2), self().size_1, self().size_2, self().corner);
-    , // else //
-      circle(self().position, self().size);
-  );
+  res.shape := roundedRectangle(self().position + 0.5 * (-self().size_1, self().size_2), self().size_1, self().size_2, self().corner);
   
 
   res.draw := (
@@ -454,7 +438,7 @@ newSelector(dict) := (
   
   res.handleInput := (
     if(self().active,
-      if(mouseScriptIndicator == "Down" & if(length(self().size) == 2, pointInRect(mouse(), expandRect(self().position, self().size_1, self().size_2, 5)), dist(mouse(), self().position) < self().size),
+      if(mouseScriptIndicator == "Down" & pointInRoundedRectangle(mouse(), self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
         self().pressed = !self().pressed;
         self().onDown;
       );
@@ -564,7 +548,7 @@ newDropdown(dict) := (
   res.moveHighlightIndex = res.index;
   //res.animateMoveHighlightIndex = res.index;
 
-  res.optionRect := expandRect(self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * length(self().options) + self().gutter * (length(self().options) - 1), 7);
+  
 
   res.draw := (
     regional(height, n, shape, angle, chevron);
@@ -588,7 +572,7 @@ newDropdown(dict) := (
       );
       */
       draw(roundedRectangle(self().position + [0, -self().animateIndex * (self().lineHeight) - self().animateIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 5);
-      if(pointInRect(mouse(), self().optionRect) & self().moveHighlightIndex != self().index,
+      if(pointInRoundedRectangle(mouse(), self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * length(self().options) + self().gutter * (length(self().options) - 1), self().corner) & self().moveHighlightIndex != self().index,
         draw(roundedRectangle(self().position + [0, -self().moveHighlightIndex * (self().lineHeight) - self().moveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
       );
       forall(1..n,
@@ -614,7 +598,8 @@ newDropdown(dict) := (
         , // else //
           if(self().open == 1,
             forall(1..length(self().options),
-              if(pointInRect(mouse(), expandRect(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, 7)),
+              //if(pointInRect(mouse(), expandRect(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, 7)),
+              if(pointInRoundedRectangle(mouse(), self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner),
                 oldIndex = self().index;
                 self().index = #;
                 if(oldIndex != self().index, self().OnIndexChange);
@@ -625,7 +610,7 @@ newDropdown(dict) := (
         );
       );
       if(mouseScriptIndicator == "Move",
-        if((self().open >= 1) & pointInRect(mouse(), self().optionRect),
+        if((self().open >= 1) & pointInRoundedRectangle(mouse(), self().position + [0, -self().lineHeight - self().gutter], self().width, self().lineHeight * length(self().options) + self().gutter * (length(self().options) - 1), self().corner),
           self().moveHighlightIndex = sort(1..n, dist(mouse().y, self().position.y - (# + 0.5) * (self().lineHeight) - # * self().gutter))_1;
         );
       );
@@ -717,7 +702,7 @@ newDragBucket(dict) := (
   res.onUp := ();
   res.handleInput := (
     if(self().active,
-      if(mouseScriptIndicator == "Down" & pointInRect(mouse(), expandRect(self().position, self().size.x, self().size.y, 5)),
+      if(mouseScriptIndicator == "Down" & pointInRoundedRectangle(mouse(), self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
         self().dragging = true;
         self().dragStart = mouse();
         self().onDown;
