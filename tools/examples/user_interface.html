@@ -122,10 +122,10 @@ toggle = newToggle({
 
 
 dragBucket = newDragBucket({
-  "position": topLeft + [15, -5]
+  "position": topLeft + [15, -6]
 });
 dragBucket.onDrag := (
-  draggedNumber = self().dragProgress;
+  draggedNumber = draggedNumber + self().dragDelta.x;
 );
 draggedNumber = 0;
 

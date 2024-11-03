@@ -145,6 +145,25 @@ rotate(vector, alpha) := rotate(vector, alpha, [0,0]);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 newButton(dict) := (
   regional(res, keys);
   keys = keys(dict);
@@ -219,11 +238,11 @@ newSlider(dict) := (
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
     "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.3),
     "handleColor":       if(contains(keys, "handleColor"), dict.handleColor, (1,1,1)),
-    "dragging":          if(contains(keys, "dragging"), dict.dragging, false),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":            if(contains(keys, "active"), dict.active, true),
     "visible":           if(contains(keys, "visible"), dict.visible, true)
   };
+  res.dragging = false;
   res.animateValue = res.value;
   
   res.endPoints := [self().position, self().position + if(self().vertical, [0, self().length], [self().length, 0])];
@@ -314,11 +333,11 @@ newOptionSlider(dict) := (
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
     "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.3),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
-    "dragging":          if(contains(keys, "dragging"), dict.dragging, false),
     "active":            if(contains(keys, "active"), dict.active, true),
     "visible":           if(contains(keys, "visible"), dict.visible, true),
     "endGap":            if(contains(keys, "endGap"), dict.endGap, 0.3)
   };
+  res.dragging = false;
   res.animateIndex = res.index;
 
   res.endPoints := [self().position, self().position + if(self().vertical, [0, self().gapSize * (length(self().options) - 1 + 2 * self().endGap)], [self().gapSize * (length(self().options) - 1 + 2 * self().endGap), 0])];
@@ -678,11 +697,11 @@ newDragBucket(dict) := (
     "outlineSize":    if(contains(keys, "outlineSize"), dict.outlineSize, 3),
     "color":          if(contains(keys, "color"), dict.color, 0.5 * (1,1,1)),
     "active":         if(contains(keys, "active"), dict.active, true),
-    "visible":        if(contains(keys, "visible"), dict.visible, true),
-    "verticalDrag":   if(contains(keys, "verticalDrag"), dict.verticalDrag, false)
+    "visible":        if(contains(keys, "visible"), dict.visible, true)
   };
+  res.dragging = false;
   res.dragStart = 0;
-  res.dragProgress = 0;
+  res.dragDelta = 0;
 
 
   res.draw := (
@@ -699,16 +718,19 @@ newDragBucket(dict) := (
   res.handleInput := (
     if(self().active,
       if(mouseScriptIndicator == "Down" & pointInRect(mouse(), expandRect(self().position, self().size.x, self().size.y, 5)),
-        self().dragStart = if(self().verticalDrag, mouse().y, mouse().x);
+        self().dragging = true;
+        self().dragStart = mouse();
         self().onDown;
       );
-      if(mouseScriptIndicator == "Drag",
-        self().dragProgress = if(self().verticalDrag, mouse().y, mouse().x) - self().dragStart;
+      if(self().dragging & mouseScriptIndicator == "Drag",
+        self().dragDelta = mouse() - self().dragStart;
+        self().dragStart = mouse();
         self().onDrag;
       );
-      if(mouseScriptIndicator == "Up",
+      if(self().dragging & mouseScriptIndicator == "Up",
         self().dragStart = 0;
-        self().dragProgress = 0;
+        self().dragDelta = 0;
+        self().dragging = false;
         self().onUp;
       );
     );
