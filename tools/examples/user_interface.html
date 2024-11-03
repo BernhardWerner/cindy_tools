@@ -120,11 +120,20 @@ toggle = newToggle({
   "position": topLeft + [15, -10]
 });
 
+
+dragBucket = newDragBucket({
+  "position": topLeft + [15, -5]
+});
+dragBucket.onDrag := (
+  draggedNumber = self().dragProgress;
+);
+draggedNumber = 0;
+
 </script>
 
 
 <script id='csdraw' type='text/x-cindyscript'>
-
+drawtext(dragBucket.position + [0, - 0.013 * 20], format(draggedNumber, 2, truncate -> false), size -> 20, align -> "mid");
 </script>
 
 

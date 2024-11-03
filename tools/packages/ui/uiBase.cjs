@@ -2,8 +2,8 @@
 // ************************************************************************************************
 // Draws a rectangle with rounded corners.
 // ************************************************************************************************
-roundedrectangle(tl, w, h, r) := roundedrectangle(tl, tl + [w,-h], r);
-roundedrectangle(tl, br, r) := (
+roundedRectangle(tl, w, h, r) := roundedRectangle(tl, tl + [w,-h], r);
+roundedRectangle(tl, br, r) := (
     regional(tr, bl);
     tr = [br.x, tl.y];
     bl = [tl.x, br.y];
@@ -163,8 +163,8 @@ newButton(dict) := (
     "visible":    if(contains(keys, "visible"), dict.visible, true)
   };
   res.calculateShapes := [
-    roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
-    roundedrectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner);
+    roundedRectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
+    roundedRectangle(self().position + 0.5 * (-self().size.x, self().size.y) + (0, -0.2), self().size.x, self().size.y, self().corner);
   ];
   
   res.draw := (
@@ -236,7 +236,7 @@ newSlider(dict) := (
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
       handlePos = lerp(endPoints_1, endPoints_2, self().animateValue);
       handleShape = if(length(self().handleSize) == 2,
-        roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
+        roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
         circle(handlePos, self().handleSize);
       );
@@ -330,7 +330,7 @@ newOptionSlider(dict) := (
       draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
       handlePos = lerp(endPoints_1, endPoints_2, self().animateIndex, 1 - self().endGap, length(self().options) + self().endGap);
       handleShape = if(length(self().handleSize) == 2,
-        roundedrectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
+        roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       , // else //
         circle(handlePos, self().handleSize);
       );
@@ -415,7 +415,7 @@ newSelector(dict) := (
     "corner":         if(contains(keys, "corner"), dict.corner, 0.5)
   };
   res.shape := if(length(self().size) == 2,
-      roundedrectangle(self().position + 0.5 * (-self().size_1, self().size_2), self().size_1, self().size_2, self().corner);
+      roundedRectangle(self().position + 0.5 * (-self().size_1, self().size_2), self().size_1, self().size_2, self().corner);
     , // else //
       circle(self().position, self().size);
   );
@@ -473,7 +473,7 @@ newCheckbox(dict) := (
     "symbol":         if(contains(keys, "symbol"), dict.symbol, "x")
   };
   res.labelSign := if(self().labelSide == "left", -1, 1);
-  res.box := roundedrectangle(self().position + 0.5 * (-self().size, self().size), self().size, self().size, self().corner);
+  res.box := roundedRectangle(self().position + 0.5 * (-self().size, self().size), self().size, self().size, self().corner);
   res.aabb := (
     regional(labelExtends, center, width, height);
     if(self().includeLabel,
@@ -552,9 +552,9 @@ newDropdown(dict) := (
     if(self().visible,
       n = length(self().options);
       height = self().lineHeight * (1 + n * self().animateOpen) + self().gutter * n * self().animateOpen;
-      shape = roundedrectangle(self().position + 0.5 * self().gutter * [-1,1], self().width + self().gutter, height + self().gutter, self().corner);
+      shape = roundedRectangle(self().position + 0.5 * self().gutter * [-1,1], self().width + self().gutter, height + self().gutter, self().corner);
       fill(shape, color -> self().backColor);
-      //fill(roundedrectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
+      //fill(roundedRectangle(self().position, self().width, self().lineHeight, self().corner), color -> self().frontColor, alpha -> 1);
       drawtext(self().position + [1, -0.5 * self().lineHeight - 0.0125 * self().textSize], self().options_(self().index), size -> self().textSize, color -> self().textColor);
       angle = lerp(1.5 * pi, 0.5 * pi, self().animateOpen);
       chevron = apply(-1..1, [cos(2 * pi * # / 3), sin(2 * pi * # / 3)]) :> [-0.1, 0];
@@ -565,12 +565,12 @@ newDropdown(dict) := (
       clip(shape);
       /*
       forall(1..n,
-        draw(roundedrectangle(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> if(# == self().index, 3, 0.5));
+        draw(roundedRectangle(self().position + [0, -# * (self().lineHeight) - # * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> if(# == self().index, 3, 0.5));
       );
       */
-      draw(roundedrectangle(self().position + [0, -self().animateIndex * (self().lineHeight) - self().animateIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 5);
+      draw(roundedRectangle(self().position + [0, -self().animateIndex * (self().lineHeight) - self().animateIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 5);
       if(pointInRect(mouse(), self().optionRect) & self().moveHighlightIndex != self().index,
-        draw(roundedrectangle(self().position + [0, -self().moveHighlightIndex * (self().lineHeight) - self().moveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
+        draw(roundedRectangle(self().position + [0, -self().moveHighlightIndex * (self().lineHeight) - self().moveHighlightIndex * self().gutter], self().width, self().lineHeight, self().corner), color -> self().frontColor, size -> 3, alpha -> 0.7);
       );
       forall(1..n,
         drawtext(self().position + [1, -(# + 0.5) * self().lineHeight  - # * self().gutter - 0.0125 * self().textSize], self().options_#, size -> self().textSize, color -> self().textColor, alpha -> 0.7);
@@ -640,7 +640,7 @@ newToggle(dict) := (
   res.draw := (
     regional(pill);
     if(self().visible,
-      pill = roundedrectangle(self().position + (-0.5 * self().size, 0.25 * self().size), self().size, 0.5 * self().size, 0.5 * self().size);
+      pill = roundedRectangle(self().position + (-0.5 * self().size, 0.25 * self().size), self().size, 0.5 * self().size, 0.5 * self().size);
       fill(pill, color -> self().backColor);
       fillcircle(self().position + [lerp(-0.25, 0.25, self().animateState) * self().size, 0], 0.25 * self().size, color -> self().frontColor);
       draw(pill, size -> self().outlineSize, color -> self().frontColor);
@@ -668,40 +668,53 @@ newToggle(dict) := (
 
 
 
+newDragBucket(dict) := (
+  regional(res, keys);
+  keys = keys(dict);
+  res = {
+    "position":       if(contains(keys, "position"), dict.position, [0,0]),
+    "size":           if(contains(keys, "size"), dict.size, [2.5, 2]),
+    "corner":         if(contains(keys, "corner"), dict.corner, 0.3),
+    "outlineSize":    if(contains(keys, "outlineSize"), dict.outlineSize, 3),
+    "color":          if(contains(keys, "color"), dict.color, 0.5 * (1,1,1)),
+    "active":         if(contains(keys, "active"), dict.active, true),
+    "visible":        if(contains(keys, "visible"), dict.visible, true),
+    "verticalDrag":   if(contains(keys, "verticalDrag"), dict.verticalDrag, false)
+  };
+  res.dragStart = 0;
+  res.dragProgress = 0;
 
 
-
-
-
-
-/*
-
-
-
-drawToggle(obj) := (
-  //fillpoly(expandrect(obj.position, obj.size.x, obj.size.y, 5), color -> (0,0,0), alpha -> 0.4);
-  drawtext(obj.position + [-2, -0.015 * obj.textSize], obj.labels_1, size -> obj.textSize, color -> (1,1,1), align -> "right");
-  drawtext(obj.position + [ 2, -0.015 * obj.textSize], obj.labels_2, size -> obj.textSize, color -> (1,1,1), align -> "left");
-  backPill = roundedrectangle(obj.position + [-1, 0.5], 2, 1, 1);
-  fill(backPill, color -> sapColor.grey1);
-  fillcircle(obj.position + [lerp(-0.5, 0.5, obj.animationState), 0], 0.5, color -> sapColor.white);
-  draw(backPill, color -> sapColor.white, size -> 3);
-);
-
-catchToggle(obj) := (
-  if(pointInPolygon(mouse(), expandrect(obj.position, obj.size.x, obj.size.y, 5)),
-    obj.state = 1 - obj.state;
-  , // else //
-    if(obj.state == 0,
-      cameraActive = true;
-      currentMousePos = mouse();
-      handleCamera();
-    );
-    if(obj.state == 1,
-      pointActive = true;
-      handlePoint();
+  res.draw := (
+    regional(pill);
+    if(self().visible,
+      draw(roundedRectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner), size -> self().outlineSize, color -> self().color);
     );
   );
-);
 
-*/
+
+  res.onDown := ();
+  res.onDrag := ();
+  res.onUp := ();
+  res.handleInput := (
+    if(self().active,
+      if(mouseScriptIndicator == "Down" & pointInRect(mouse(), expandRect(self().position, self().size.x, self().size.y, 5)),
+        self().dragStart = if(self().verticalDrag, mouse().y, mouse().x);
+        self().onDown;
+      );
+      if(mouseScriptIndicator == "Drag",
+        self().dragProgress = if(self().verticalDrag, mouse().y, mouse().x) - self().dragStart;
+        self().onDrag;
+      );
+      if(mouseScriptIndicator == "Up",
+        self().dragStart = 0;
+        self().dragProgress = 0;
+        self().onUp;
+      );
+    );
+  );
+
+  uiCollection = uiCollection :> res;
+  
+  res;
+);
