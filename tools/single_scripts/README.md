@@ -41,6 +41,10 @@ It is very much encouraged to override them for your use case.
 
 Functions to translate between various colour spaces and representation as well as functions to interpolate/blend within these spaces. Most if not all things here are informed by Björn Ottosson's articles. The best starting point for these topics: [https://bottosson.github.io/posts/oklab/](https://bottosson.github.io/posts/oklab/)
 
+## Corvis
+
+A shorter, leaner, more focussed version of Egdod, see below.
+
 ## Egdod
 
 My legacy über-library. I'm slowly chipping away at it to seprate its code into more meaningful chunks. These are exactly the single scripts and package found in this repository. This script only exists for reference.
