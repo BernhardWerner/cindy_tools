@@ -16,6 +16,11 @@ screenWidth = 1920 / screenresolution();
 screenCenter = [0, 0];
 
 
+sphericalCoordinates(radius, azimuth, polar) := radius * [cos(azimuth) * sin(polar), sin(azimuth) * sin(polar), cos(polar)];
+
+
+
+
 cameraBasis(cam) := (
     regional(backward, right);
 
