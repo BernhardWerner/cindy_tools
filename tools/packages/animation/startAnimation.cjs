@@ -36,7 +36,5 @@ if(renderMode == RENDERMODES.STEPS,
     setupTime();
     playanimation();
     calculate(0);
-
-
 );
 

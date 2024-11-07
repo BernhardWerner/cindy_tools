@@ -654,7 +654,7 @@ fragmentTex(string, size) := fragmentTex(string, size, 0);
 
 
 fragment(string, size, family) := (
-    regional(split, res, bufferWidth, n);
+    regional(split, res, bufferWidth, n, chunk);
 
     split = tokenize(string, "$");
     res = apply(split, s, index,
@@ -668,7 +668,12 @@ fragment(string, size, family) := (
     n = length(res);
     if(n > 1,
         forall(2..n, index,
-            bufferWidth = bufferWidth + pixelsize(if(mod(index, 2) == 0, "$" + split_(index - 1) + "$", split_(index - 1)), size -> size, family -> family)_1 / screenresolution();
+            chunk = if(mod(index, 2) == 1, 
+                "$" + replace(replace(split_(index - 1), texDelimiters_1, ""), texDelimiters_2, "") + "$";
+            , // else //
+                split_(index - 1)
+            );
+            bufferWidth = bufferWidth + pixelsize(chunk, size -> size, family -> family)_1 / screenresolution();
             res_index.offsets = apply(res_index.offsets, # + bufferWidth);
         );
     );
@@ -699,9 +704,6 @@ drawFragments(pos, listOfDicts, time, mode, modifs) := (
 
 );
 drawFragments(pos, listOfDicts, time, mode) := drawFragments(pos, listOfDicts, time, mode, {});
-
-
-
 
 
 
@@ -775,7 +777,7 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
         );
         
 
-        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size -> dict.size * size, color -> col, alpha -> modifs.alpha * alpha, family -> dict.family);
+        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size -> dict.size * size, color -> col, alpha -> modifs.alpha * alpha, family -> dict.family, outlinewidth -> modifs.outlinewidth, outlinecolor -> modifs.outlinecolor);
     );
 );
 drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
