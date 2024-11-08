@@ -22,7 +22,7 @@ showDebugInfo = true;
 
 // Configure timelines.
   
-startDelay = 0.5;
+startDelay = 1;
 
 // Alternating duration and pause.
 // A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
@@ -61,7 +61,10 @@ rendering() := (
 
   connect(animatePolygon(vertices, t1));
 
-  drawall(vertices);
+  forall(vertices, v, index,
+    draw(v);
+    drawtext(v + [0, 0.5], index, size -> 20)
+  );
   
 );
 
@@ -79,8 +82,7 @@ var cindy = CindyJS({
   scripts:"cs*",
   use: ["katex"],
   import: {
-    "packages": ["../packages/animation"],
-    "init": ["../single_scripts/color"]
+    "packages": ["../packages/animation"]
   }
 });
 </script>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Animation bent arrow</title>
+        <script type="text/javascript" src="https://cindyjs.org/dist/latest/Cindy.js"></script>
+    </head>
+    <body>
+        <script id='csinit' type='text/x-cindyscript'>
+            renderMode = RENDERMODES.REAL;
+
+            startDelay = 0.5;
+            trackData = [
+              2, 0.5
+            ];
+        
+            stroke = sampleBezierCurve([[-3, 7], [-1, 1], [5, 10]], 128);
+            
+            calculation() := (
+                strokeIndex = round(lerp(1, 128, easeInOutCubic(t1)));
+                if(strokeIndex >= 3,
+                    tip = arrowTip(stroke_strokeIndex, stroke_strokeIndex - stroke_(strokeIndex - 2), 0.7 * t1);
+                );
+            );
+            
+            rendering() := (
+              connect(stroke_(1..strokeIndex), size -> 5 * easeOutCirc(t1));
+              if(strokeIndex >= 3,
+                    connect(tip, size -> 5 * easeOutCirc(t1));
+              );
+              
+            );
+        </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Line animation</title>
+        <script type="text/javascript" src="https://cindyjs.org/dist/latest/Cindy.js"></script>
+    </head>
+    <body>
+        <script id='csinit' type='text/x-cindyscript'>
+            renderMode = RENDERMODES.REAL;
+
+            startDelay = 0.5;
+            trackData = [
+              2, 0.5
+            ];
+        
+            a = [-3, 7];
+            b = [5, 10];
+            
+            calculation() := (
+              endPoint = lerp(a, b, easeInOutCubic(t1));
+            );
+            
+            rendering() := (
+              draw(a, endPoint, size -> 10 * easeOutCirc(t1));
+              draw(a, size -> 10, color -> (1,1,1));
+              draw(b, size -> 10, color -> (1,1,1));
+            );
+        </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+

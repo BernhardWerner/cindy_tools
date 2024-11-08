@@ -171,18 +171,6 @@ bezier(controls, t) := (
 
 
 
-
-sampleBezierCurve(controls) := (
-    regional(t, sr);
-
-    sr = strokeSampleRate;
-    apply(0..sr - 1, 
-        t = # / (sr - 1);
-
-        bezier(controls, t);
-    );
-);
-
 // ************************************************************************************************
 // Discrete derivative of a discrete curve
 // ************************************************************************************************
@@ -1253,11 +1241,11 @@ bezier(controls, t) := (
 
 
 
-sampleBezierCurve(controls, sr) := (
+sampleBezierCurve(controls, n) := (
     regional(t);
 
-    apply(0..sr - 1, 
-        t = # / (sr - 1);
+    apply(0..n - 1, 
+        t = # / (n - 1);
 
         bezier(controls, t);
     );
