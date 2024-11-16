@@ -559,8 +559,69 @@ END = 1;
 
 
 
+/*
+\Xmatrix{}{}{}
+\cases{}{}{}
+\frac{}{}
+\sqrt[]{}
+_{}
+^{}
 
 
+\command 
+*/
+
+
+space = " ";
+backslash = "\";
+abc = tokenize("abcdefghijklmnopqrstuvwxyz", "");
+
+NYKA := {
+    "TYPES": {
+        "IGNORE": 0,
+        "ENVSTART": 1,
+        "ENVEND": 2,
+        "BASE": 9
+    },
+    "IGNORABLES": {
+        "CHARACTERS": [space],
+        "COMMANDS": ["displaymode", ",", "!"],
+        "FUNCTIONS": ["phantom"]
+    } 
+};
+
+
+
+nyka2katex(string) := (
+    regional(leftoverString, splitString, char);
+
+    splitString = [];
+    leftoverString = string;
+
+    while(length(leftoverString) > 0,
+        char = string_1;
+        if(char == backslash, 
+            // DO STUFF
+        , // else //
+        splitString = splitString :> [char, if(contains(NYKA.IGNORABLES.CHARACTERS, char), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+        leftoverString = sum(bite(leftoverString));
+        );
+    );
+
+    sum(apply(splitString,
+        if(#_2 == NYKA.TYPES.IGNORE, 
+            #_1;
+        ,if(#_2 == NYKA.TYPES.ENVSTART,
+            texDelimiters_1 + #_1;
+        ,if(#_2 == NYKA.TYPES.ENVEND, 
+            #_1 + texDelimiters_2;
+        ,if(#_2 == NYKA.TYPES.BASE, 
+            texDelimiters_1 + #_1 + texDelimiters_2;
+        ))));
+    ));
+
+);
+parseNyka(string) := sum(apply(tokenize(string, "$"), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
 
 
 

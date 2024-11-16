@@ -14,7 +14,10 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-  
+trackData = [1,1];
+
+nykaString = "This is a test $\bmatrix{\sum_{k = 1}^{n}q^k = \frac{1 - q^{n + 1}}{1 - q} & \lim\limits_{n\to\infty}\sin(nx)}{\sqrt[3]{1\cdot\sqrt{2}} & \big(\alpha\beta\big)} \leadsto \Big\{\Big\}$";
+println(parseNyka(nykaString));
 </script>
 
 
@@ -76,7 +79,10 @@ var cindy = CindyJS({
   canvasname:"CSCanvas",
   scripts:"cs*",
   images: {},
-  use: ["katex", "CindyGL"]
+  use: ["katex", "CindyGL"],
+  import: {
+    "packages": ["../packages/animation"]
+  }
 });
 
 
