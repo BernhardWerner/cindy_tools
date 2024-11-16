@@ -590,10 +590,28 @@ NYKA := {
     } 
 };
 
+getChunkOfLetters(string, index) := (
+    regional(result, done);
+
+    result = "";
+    done = false;
+    forall(index..length(string), i,
+        if(!done,
+            if(contains(abc, string_i),
+                result = result + string_i;
+            , // else //
+                done = true;
+            );
+        );
+    );
+
+    result;
+);
+getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 nyka2katex(string) := (
-    regional(leftoverString, splitString, char);
+    regional(leftoverString, splitString, char, command, indexA);
 
     splitString = [];
     leftoverString = string;
@@ -601,7 +619,15 @@ nyka2katex(string) := (
     while(length(leftoverString) > 0,
         char = string_1;
         if(char == backslash, 
-            // DO STUFF
+
+            if(contains(abc, string_2),
+                splitString = splitString :> [backslash + string_2, if(contains(NYKA.IGNORABLES.COMMANDS, string_2), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+                leftoverString = bite(leftoverString, 2);
+            , // else //
+                command = getChunkOfLetters(leftoverString, 2);
+                indexA = length(command) + 2;
+                // DO STUFF
+            )
         , // else //
         splitString = splitString :> [char, if(contains(NYKA.IGNORABLES.CHARACTERS, char), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
         leftoverString = sum(bite(leftoverString));

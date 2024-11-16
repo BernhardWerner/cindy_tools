@@ -1,0 +1,81 @@
+{
+    "scopeName": "source.cindyscript",
+    "patterns": [
+        {
+            "name": "comment.line.double-slash.cindyscript",
+            "match": "//.*$"
+        },
+        {
+            "name": "comment.block.cindyscript",
+            "begin": "/\\*",
+            "end": "\\*/"
+        },
+        {
+            "name": "constant.numeric.cindyscript",
+            "match": "\\b\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b"
+        },
+        {
+            "name": "string.quoted.double.cindyscript",
+            "begin": "\"",
+            "end": "\""
+        },
+        {
+            "name": "variable.other.cindyscript",
+            "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        },
+        {
+            "name": "keyword.operator.arithmetic.cindyscript",
+            "match": "\\+|-|\\*|/|×|÷|∕|∶"
+        },
+        {
+            "name": "keyword.operator.comparison.cindyscript",
+            "match": "==|!=|<=|>=|<|>|≈|~!=|~>|~<|≠|≤|≥"
+        },
+        {
+            "name": "keyword.operator.assignment.cindyscript",
+            "match": ":=|::=|:=_|="
+        },
+        {
+            "name": "keyword.control.flow.cindyscript",
+            "match": "\\b(if|else|for|while|do|return)\\b"
+        },
+        {
+            "name": "keyword.operator.other.cindyscript",
+            "match": "\\^|√|°|:|_|;|\\.|∈|∉"
+        },
+        {
+            "name": "punctuation.definition.group.cindyscript",
+            "match": "[\\(\\)\\[\\]\\{\\}|,]"
+        }
+    ],
+    "repository": {
+        "function": {
+            "patterns": [
+                {
+                    "name": "support.function.cindyscript",
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                }
+            ]
+        },
+        "list": {
+            "patterns": [
+                {
+                    "name": "meta.bracket.list.cindyscript",
+                    "begin": "\\[",
+                    "end": "\\]"
+                }
+            ]
+        },
+        "vector": {
+            "patterns": [
+                {
+                    "name": "meta.bracket.vector.cindyscript",
+                    "begin": "\\(",
+                    "end": "\\)"
+                }
+            ]
+        }
+    },
+    "scopeName": "source.cindyscript",
+    "fileTypes": ["cjs"]
+}
