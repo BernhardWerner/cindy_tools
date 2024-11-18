@@ -567,6 +567,10 @@ END = 1;
 _{}
 ^{}
 
+\big(
+
+\sum[k=1][n]{q^k} instead of \sum_{k=1}^n q^k
+\sum[n\in\bN]{2^{-n}}
 
 \command 
 */
@@ -611,28 +615,42 @@ getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 nyka2katex(string) := (
-    regional(leftoverString, splitString, char, command, indexA);
+    regional(leftoverString, splitString, char, command, indexAfterCommand, curlyIndices);
 
     splitString = [];
     leftoverString = string;
 
     while(length(leftoverString) > 0,
-        char = string_1;
-        if(char == backslash, 
-
-            if(contains(abc, string_2),
+        char = leftoverString_1;
+        if(char == backslash, // Check if it is any form of command
+            if(contains(abc, string_2), // Check if it is a proper word command
+                command = getChunkOfLetters(leftoverString, 2);
+                indexAfterCommand = length(command) + 2;
+                if(sum(bite(command)) == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
+                    // DO STUFF
+                ,if(command == "sum", // Check if it is a sum command. Must be followed by [][]{} or {}.
+                    // DO STUFF
+                ,if(command == "lim", // Check if it is a limit command. Must be followed by []{} or {}.
+                    //DO STUFF
+                ,if(command == "sqrt", // Check if it is a square root command. Must be followed by []{} or {}.
+                    // DO STUFF
+                ,if(string_(indexAfterCommand) == "{", // Check if the command is followed by an argument.
+                // DO STUFF,
+                , // else // Command is not followed by arguments and can be isolated
+                    splitString = splitString :> [backslash + command, if(contains(NYKA.IGNORABLES.COMMANDS, command), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+                    leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                )))));
+            , // else // It must be a command like \% \, or \
                 splitString = splitString :> [backslash + string_2, if(contains(NYKA.IGNORABLES.COMMANDS, string_2), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
                 leftoverString = bite(leftoverString, 2);
-            , // else //
-                command = getChunkOfLetters(leftoverString, 2);
-                indexA = length(command) + 2;
-                // DO STUFF
             )
-        , // else //
-        splitString = splitString :> [char, if(contains(NYKA.IGNORABLES.CHARACTERS, char), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
-        leftoverString = sum(bite(leftoverString));
+        , // else // Assume it is a single character that can be isolated. // TODO: Check for _ and ^ here
+            splitString = splitString :> [char, if(contains(NYKA.IGNORABLES.CHARACTERS, char), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+            leftoverString = sum(bite(leftoverString));
         );
     );
+
+    println(splitString);
 
     sum(apply(splitString,
         if(#_2 == NYKA.TYPES.IGNORE, 
@@ -933,6 +951,29 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
     );
 );
 drawFragmentedTex(pos, dict, time, mode) := drawFragmentedTex(pos, dict, time, mode, {});
+
+
+rgb2hex(vec) := (
+    regional(a, b);
+    vec = round(255 * vec);
+
+    sum(apply(vec,
+        a = mod(#, 16);
+        b = (# - a) / 16;
+        deca2hexa(b) + deca2hexa(a);
+    ));			
+);
+
+alpha2hex(x) := (
+    regional(a,b);
+
+    x = round(x * 255);
+    a = mod(x, 16);
+    b = (x - a) / 16;
+    deca2hexa(b) + deca2hexa(a);
+);
+
+deca2hexa(digit) := ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]_(digit + 1);
 
 
 
