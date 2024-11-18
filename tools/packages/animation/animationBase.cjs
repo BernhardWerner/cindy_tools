@@ -578,6 +578,7 @@ _{}
 
 space = " ";
 backslash = "\";
+errorTofu = unicode("FFFD");
 abc = tokenize("abcdefghijklmnopqrstuvwxyz", "");
 
 NYKA := {
@@ -589,7 +590,7 @@ NYKA := {
     },
     "IGNORABLES": {
         "CHARACTERS": [space],
-        "COMMANDS": ["displaymode", ",", "!"],
+        "COMMANDS": ["displaystyle", ",", "!"],
         "FUNCTIONS": ["phantom"]
     } 
 };
@@ -599,10 +600,10 @@ getChunkOfLetters(string, index) := (
 
     result = "";
     done = false;
-    forall(index..length(string), i,
+    forall(index..length(string),
         if(!done,
-            if(contains(abc, string_i),
-                result = result + string_i;
+            if(contains(abc, string_#),
+                result = result + string_#;
             , // else //
                 done = true;
             );
@@ -615,33 +616,72 @@ getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 nyka2katex(string) := (
-    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i);
+    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, k);
 
     result = "";
     leftoverString = string;
-
     while(length(leftoverString) > 0,
         char = leftoverString_1;
         if(char == backslash, // Check if it is any form of command
-            if(contains(abc, string_2), // Check if it is a proper word command
+            if(contains(abc, leftoverString_2), // Check if it is a proper word command
                 command = getChunkOfLetters(leftoverString, 2);
                 indexAfterCommand = length(command) + 2;
                 if(sum(bite(command)) == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
                     // TODO DO STUFF
-                ,if(command == "sum", // Check if it is a sum command. Must be followed by [][]{} or {}.
-                    // TODO DO STUFF
-                ,if(command == "lim", // Check if it is a limit command. Must be followed by []{} or {}.
-                    // TODO DO STUFF
+                ,if(command == "sum" % command == "prod" % command == "int", // Check if it is a sum, prod or int command. Must be followed by [][] or nothing.
+                    if(leftoverString_indexAfterCommand == "[",
+                        i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
+                        if(leftoverString_(i+1) == "[",
+                            j = findMatchingBracket(leftoverString, i + 1, "[", "]");
+                            result = result + texDelimiters_1 + backslash + command + "_{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}^{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
+                            leftoverString = bite(leftoverString, j);
+                        , // else //
+                            println("Nyka Parsing Error: Sum command must be followed by [...][...] or nothing.");
+                            result = result :> errorTofu;
+                            leftoverString = "";
+                        );
+                    , // else //
+                        result = result + texDelimiters_1 + backslash + command + texDelimiters_2;
+                        leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                    );
+                ,if(command == "lim", // Check if it is a limit command. Can be followed by [].
+                    if(leftoverString_indexAfterCommand == "[",
+                        i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
+                        result = result + texDelimiters_1 + "\lim\limits_{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
+                        leftoverString = bite(leftoverString, i);
+                    , // else //
+                        result = result + texDelimiters_1 + "\lim" + texDelimiters_2;
+                        leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                    );
                 ,if(command == "sqrt", // Check if it is a square root command. Must be followed by []{} or {}.
-                    // TODO DO STUFF
+                    if(leftoverString_indexAfterCommand == "[",
+                        i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
+                        if(leftoverString_(i+1) == "{",
+                            j = findMatchingBracket(leftoverString, i + 1, "{", "}");
+                            result = result + texDelimiters_1 + "\sqrt[" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "]{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
+                            leftoverString = bite(leftoverString, j);
+                        , // else //
+                            println("Nyka Parsing Error: Square root command must be followed by [...]{...} or {...}.");
+                            result = result :> errorTofu;
+                            leftoverString = "";
+                        );
+                    ,if(leftoverString_indexAfterCommand == "{",
+                        i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
+                        result = result + texDelimiters_1 + "\sqrt{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
+                        leftoverString = bite(leftoverString, i);
+                    , // else //
+                        println("Nyka Parsing Error: Square root command must be followed by [...]{...} or {...}.");
+                        result = result :> errorTofu;
+                        leftoverString = "";
+                    ));
                 ,if(string_(indexAfterCommand) == "{", // Check if the command is followed by an argument.
-                    // TODO DO STUFF,
+                    // TODO DO STUFF
                 , // else // Command is not followed by arguments and can be isolated
                     result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + command + texDelimiters_2);
                     leftoverString = bite(leftoverString, indexAfterCommand - 1);
                 )))));
             , // else // It must be a command like \% \, or \
-                result = result + if(contains(NYKA.IGNORABLES.COMMANDS, string_2), backslash + string_2, texDelimiters_1 + backslash + string_2 + texDelimiters_2);
+                result = result + if(contains(NYKA.IGNORABLES.COMMANDS, leftoverString_2), backslash + leftoverString_2, texDelimiters_1 + backslash + leftoverString_2 + texDelimiters_2);
                 leftoverString = bite(leftoverString, 2);
             )
         ,if(char == "_" % char == "^", // Check if it is subscript or superscript
@@ -659,7 +699,8 @@ nyka2katex(string) := (
 
 
 parseNyka(string) := sum(apply(tokenize(string, "$"), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
-
+fragmentNyka(string, size, family) := fragment(parseNyka(string), size, family);
+fragmentNyka(string, size) := fragmentNyka(string, size, 0);
 
 
 
