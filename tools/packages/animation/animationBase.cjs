@@ -615,9 +615,9 @@ getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 nyka2katex(string) := (
-    regional(leftoverString, splitString, char, command, indexAfterCommand, curlyIndices);
+    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i);
 
-    splitString = [];
+    result = "";
     leftoverString = string;
 
     while(length(leftoverString) > 0,
@@ -627,44 +627,37 @@ nyka2katex(string) := (
                 command = getChunkOfLetters(leftoverString, 2);
                 indexAfterCommand = length(command) + 2;
                 if(sum(bite(command)) == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
-                    // DO STUFF
+                    // TODO DO STUFF
                 ,if(command == "sum", // Check if it is a sum command. Must be followed by [][]{} or {}.
-                    // DO STUFF
+                    // TODO DO STUFF
                 ,if(command == "lim", // Check if it is a limit command. Must be followed by []{} or {}.
-                    //DO STUFF
+                    // TODO DO STUFF
                 ,if(command == "sqrt", // Check if it is a square root command. Must be followed by []{} or {}.
-                    // DO STUFF
+                    // TODO DO STUFF
                 ,if(string_(indexAfterCommand) == "{", // Check if the command is followed by an argument.
-                // DO STUFF,
+                    // TODO DO STUFF,
                 , // else // Command is not followed by arguments and can be isolated
-                    splitString = splitString :> [backslash + command, if(contains(NYKA.IGNORABLES.COMMANDS, command), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+                    result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + command + texDelimiters_2);
                     leftoverString = bite(leftoverString, indexAfterCommand - 1);
                 )))));
             , // else // It must be a command like \% \, or \
-                splitString = splitString :> [backslash + string_2, if(contains(NYKA.IGNORABLES.COMMANDS, string_2), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+                result = result + if(contains(NYKA.IGNORABLES.COMMANDS, string_2), backslash + string_2, texDelimiters_1 + backslash + string_2 + texDelimiters_2);
                 leftoverString = bite(leftoverString, 2);
             )
-        , // else // Assume it is a single character that can be isolated. // TODO: Check for _ and ^ here
-            splitString = splitString :> [char, if(contains(NYKA.IGNORABLES.CHARACTERS, char), NYKA.TYPES.IGNORE, NYKA.TYPES.BASE)];
+        ,if(char == "_" % char == "^", // Check if it is subscript or superscript
+            i = findMatchingBracket(leftoverString, 2, "{", "}");
+            result = result + char + "{" + nyka2katex(leftoverString_(3..i-1)) + "}";
+            leftoverString = bite(leftoverString, i);
+        , // else // Assume it is a single character that can be isolated.
+            result = result + if(contains(NYKA.IGNORABLES.CHARACTERS, char), char, texDelimiters_1 + char + texDelimiters_2);
             leftoverString = sum(bite(leftoverString));
-        );
+        ));
     );
 
-    println(splitString);
-
-    sum(apply(splitString,
-        if(#_2 == NYKA.TYPES.IGNORE, 
-            #_1;
-        ,if(#_2 == NYKA.TYPES.ENVSTART,
-            texDelimiters_1 + #_1;
-        ,if(#_2 == NYKA.TYPES.ENVEND, 
-            #_1 + texDelimiters_2;
-        ,if(#_2 == NYKA.TYPES.BASE, 
-            texDelimiters_1 + #_1 + texDelimiters_2;
-        ))));
-    ));
-
+    result;
 );
+
+
 parseNyka(string) := sum(apply(tokenize(string, "$"), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
 
 
