@@ -1,3 +1,9 @@
+// Force KaTeX to load fonts:
+katexForceString = "$\begin{bmatrix}\frac{1+e}{\pi \oplus 1} & \prod_{k=3}^{\mathbb{A}\mathfrak{B}\mathscr{D}\mathcal{E}} 123 \\ \big(\bigg)\Big(\Bigg) & \lim\limits_{x\to\infty} \alpha^{2} \\ \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6\end{bmatrix}$";
+katexLoaded = false;
+
+// ************************************************************
+
 RENDERMODES := {
     "REAL": 0,
     "FRAMES": 1,
@@ -33,8 +39,8 @@ stepRenderState = STEPRENDERSTATES.WAITING;
 
 STEPBACKWARDS = "A";
 STEPFORWARDS = "D";
-SKIPFORWARDS = "X";
-SKIPBACKWARDS = "Q";
+SKIPFORWARDS = "W";
+SKIPBACKWARDS = "S";
 
 STEPMODES := {
     "KEYBOARD": 0,
@@ -81,6 +87,7 @@ timeScale = 1;
 
 fpsBuffer = [0];
 
+fragmentingTeX() := ();
 calculation() := ();
 rendering() := ();
 

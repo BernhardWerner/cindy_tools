@@ -559,17 +559,6 @@ END = 1;
 
 
 
-/*
-\Xmatrix{}{}{}
-\cases{}{}{}
-
-\big parantheses
-
-\command{char}
-\command{string}
-
-
-*/
 
 
 space = " ";
@@ -585,8 +574,8 @@ NYKA := {
         "BASE": 9
     },
     "IGNORABLES": {
-        "CHARACTERS": [space],
-        "COMMANDS": ["displaystyle", ",", "!"],
+        "CHARACTERS": [space, "&"],
+        "COMMANDS": ["displaystyle", ",", "!", "enspace", "quad", "qquad"],
         "FUNCTIONS": ["phantom"]
     },
     "REPLACEMENTS": {
@@ -642,6 +631,58 @@ NYKA := {
         "fX": "mathfrak{X}",
         "fY": "mathfrak{Y}",
         "fZ": "mathfrak{Z}",
+        "fa": "mathfrak{a}",
+        "fb": "mathfrak{b}",
+        "fc": "mathfrak{c}",
+        "fd": "mathfrak{d}",
+        "fe": "mathfrak{e}",
+        "ff": "mathfrak{f}",
+        "fg": "mathfrak{g}",
+        "fh": "mathfrak{h}",
+        "fi": "mathfrak{i}",
+        "fj": "mathfrak{j}",
+        "fk": "mathfrak{k}",
+        "fl": "mathfrak{l}",
+        "fm": "mathfrak{m}",
+        "fn": "mathfrak{n}",
+        "fo": "mathfrak{o}",
+        "fp": "mathfrak{p}",
+        "fq": "mathfrak{q}",
+        "fr": "mathfrak{r}",
+        "fs": "mathfrak{s}",
+        "ft": "mathfrak{t}",
+        "fu": "mathfrak{u}",
+        "fv": "mathfrak{v}",
+        "fw": "mathfrak{w}",
+        "fx": "mathfrak{x}",
+        "fy": "mathfrak{y}",
+        "fz": "mathfrak{z}",
+        "sA": "mathscr{A}",
+        "sB": "mathscr{B}",
+        "sC": "mathscr{C}",
+        "sD": "mathscr{D}",
+        "sE": "mathscr{E}",
+        "sF": "mathscr{F}",
+        "sG": "mathscr{G}",
+        "sH": "mathscr{H}",
+        "sI": "mathscr{I}",
+        "sJ": "mathscr{J}",
+        "sK": "mathscr{K}",
+        "sL": "mathscr{L}",
+        "sM": "mathscr{M}",
+        "sN": "mathscr{N}",
+        "sO": "mathscr{O}",
+        "sP": "mathscr{P}",
+        "sQ": "mathscr{Q}",
+        "sR": "mathscr{R}",
+        "sS": "mathscr{S}",
+        "sT": "mathscr{T}",
+        "sU": "mathscr{U}",
+        "sV": "mathscr{V}",
+        "sW": "mathscr{W}",
+        "sX": "mathscr{X}",
+        "sY": "mathscr{Y}",
+        "sZ": "mathscr{Z}",
         "cA": "mathcal{A}",
         "cB": "mathcal{B}",
         "cC": "mathcal{C}",
@@ -693,8 +734,24 @@ getChunkOfLetters(string, index) := (
 getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
+
+/*
+\Xmatrix{}{}{}
+\cases{}{}{}
+
+\big parantheses
+
+\command{char}
+\command{string}
+
+
+*/
+
+
+
+
 nyka2katex(string) := (
-    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, k);
+    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, searching);
 
     result = "";
     leftoverString = string;
@@ -704,8 +761,37 @@ nyka2katex(string) := (
             if(contains(abc, leftoverString_2), // Check if it is a proper word command
                 command = getChunkOfLetters(leftoverString, 2);
                 indexAfterCommand = length(command) + 2;
-                if(sum(bite(command)) == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
-                    // TODO DO STUFF
+                if(sum(bite(command)) == "matrix" % command == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
+                    curlyIndices = [];
+                    i = indexAfterCommand;
+                    searching = (i < length(leftoverString)) & (leftoverString_i == "{");
+                    while(searching,
+                        j = findMatchingBracket(leftoverString, i, "{", "}");
+                        if(j == 0, // No closing } found.
+                            leftoverString = "";
+                            i = 999;
+                        , // else //
+                            curlyIndices = curlyIndices :> [i, j];
+                            i = j + 1;
+                            if(i < length(leftoverString),
+                                searching = leftoverString_i == "{";
+                            , // else //
+                                searching = false;
+                            );
+                        );
+                    );
+                    if(length(curlyIndices) > 0,
+                        result = result + texDelimiters_1 + "\begin{" + command + "}";
+                        forall(curlyIndices, pair, index,
+                            result = result + if(index != 1, " \\ ", "") + nyka2katex(leftoverString_(pair_1 + 1..pair_2 - 1));
+                        );
+                        result = result + "\end{" + command + "}" + texDelimiters_2;
+                        leftoverString = bite(leftoverString, curlyIndices_(-1)_2);
+                    , // else //
+                        println("Nyka Parsing Error: " + command + " environment must be followed by one or more {...}.");
+                        result = result :> errorTofu;
+                        leftoverString = "";
+                    );
                 ,if(command == "frac",
                     if(leftoverString_indexAfterCommand == "{",
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");

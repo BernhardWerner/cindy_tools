@@ -18,15 +18,15 @@ trackData = [1,1];
 
 SX := screenMouse().x;
 
-oldString = fragment("$\displaystyle @\sum_{@k/@=/@1/}^{@n/}/$", 30);
+nykaStringB = "This is a  $\displaystyle \bmatrix{\frac{1+e}{\pi \oplus 1} & \prod[k=3][\bA\fB\fc\sD\cE] 123}{3 & \lim[x\to\infty] \alpha^{2}}{\sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6}$  test test";
 
-nykaStringA = "test $\displaystyle \frac{1+e}{\pi \oplus 1}\cdot\lim[x\to\infty] \alpha^{2} + \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} = \prod[k=3][\bZ\fQ\cR] 123$ test";
-//nykaStringB = "This is a test $\bmatrix{\sum_{k = 1}^{n}q^k = \frac{1 - q^{n + 1}}{1 - q} & \lim\limits_{n\to\infty}\sin(nx)}{\sqrt[3]{1\cdot\sqrt{2}} & \big(\alpha\beta\big)} \leadsto \Big\{\Big\}$";
+parsed = parseNyka(nykaStringB);
 
-println(parseNyka(nykaStringA));
+fragmentingTeX() := (
+  fragments = fragment(parsed, 30);
+);
 
-println(nykaReplace("bQ"));
-println(nykaReplace("oplus"));
+
 </script>
 
 
@@ -34,8 +34,10 @@ println(nykaReplace("oplus"));
 
 <script id='csdraw' type='text/x-cindyscript'>
 //drawFragments([0,0], oldString, SX, "up");
-drawFragments([-8,0], fragmentNyka(nykaStringA, 30), SX, "up");
-//drawtext([5,5], "$\square$", size -> 50 );
+drawFragments([-8,0], fragments, SX, "up");
+
+
+
 </script>
 
 
@@ -50,6 +52,8 @@ drawFragments([-8,0], fragmentNyka(nykaStringA, 30), SX, "up");
 <script id='csmousemove' type='text/x-cindyscript'>
 
 </script>
+
+
 
 
 
@@ -78,7 +82,7 @@ drawFragments([-8,0], fragmentNyka(nykaStringA, 30), SX, "up");
 </script> -->
 
 
-<canvas id="CSCanvas" align="left" valign="top" width="800" height="600" style="border:1px solid #000000;"></canvas>
+<canvas id="CSCanvas" align="left" valign="top" width="1000" height="700" style="border:1px solid #000000;"></canvas>
 
 
 
