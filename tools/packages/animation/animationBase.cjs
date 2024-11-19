@@ -562,24 +562,20 @@ END = 1;
 /*
 \Xmatrix{}{}{}
 \cases{}{}{}
-\frac{}{}
-\sqrt[]{}
-_{}
-^{}
 
-\big(
+\big parantheses
 
-\sum[k=1][n]{q^k} instead of \sum_{k=1}^n q^k
-\sum[n\in\bN]{2^{-n}}
+\command{char}
+\command{string}
 
-\command 
+
 */
 
 
 space = " ";
 backslash = "\";
 errorTofu = unicode("FFFD");
-abc = tokenize("abcdefghijklmnopqrstuvwxyz", "");
+abc = tokenize("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", "");
 
 NYKA := {
     "TYPES": {
@@ -592,8 +588,90 @@ NYKA := {
         "CHARACTERS": [space],
         "COMMANDS": ["displaystyle", ",", "!"],
         "FUNCTIONS": ["phantom"]
-    } 
+    },
+    "REPLACEMENTS": {
+        "bA": "mathbb{A}",
+        "bB": "mathbb{B}",
+        "bC": "mathbb{C}",
+        "bD": "mathbb{D}",
+        "bE": "mathbb{E}",
+        "bF": "mathbb{F}",
+        "bG": "mathbb{G}",
+        "bH": "mathbb{H}",
+        "bI": "mathbb{I}",
+        "bJ": "mathbb{J}",
+        "bK": "mathbb{K}",
+        "bL": "mathbb{L}",
+        "bM": "mathbb{M}",
+        "bN": "mathbb{N}",
+        "bO": "mathbb{O}",
+        "bP": "mathbb{P}",
+        "bQ": "mathbb{Q}",
+        "bR": "mathbb{R}",
+        "bS": "mathbb{S}",
+        "bT": "mathbb{T}",
+        "bU": "mathbb{U}",
+        "bV": "mathbb{V}",
+        "bW": "mathbb{W}",
+        "bX": "mathbb{X}",
+        "bY": "mathbb{Y}",
+        "bZ": "mathbb{Z}",
+        "fA": "mathfrak{A}",
+        "fB": "mathfrak{B}",
+        "fC": "mathfrak{C}",
+        "fD": "mathfrak{D}",
+        "fE": "mathfrak{E}",
+        "fF": "mathfrak{F}",
+        "fG": "mathfrak{G}",
+        "fH": "mathfrak{H}",
+        "fI": "mathfrak{I}",
+        "fJ": "mathfrak{J}",
+        "fK": "mathfrak{K}",
+        "fL": "mathfrak{L}",
+        "fM": "mathfrak{M}",
+        "fN": "mathfrak{N}",
+        "fO": "mathfrak{O}",
+        "fP": "mathfrak{P}",
+        "fQ": "mathfrak{Q}",
+        "fR": "mathfrak{R}",
+        "fS": "mathfrak{S}",
+        "fT": "mathfrak{T}",
+        "fU": "mathfrak{U}",
+        "fV": "mathfrak{V}",
+        "fW": "mathfrak{W}",
+        "fX": "mathfrak{X}",
+        "fY": "mathfrak{Y}",
+        "fZ": "mathfrak{Z}",
+        "cA": "mathcal{A}",
+        "cB": "mathcal{B}",
+        "cC": "mathcal{C}",
+        "cD": "mathcal{D}",
+        "cE": "mathcal{E}",
+        "cF": "mathcal{F}",
+        "cG": "mathcal{G}",
+        "cH": "mathcal{H}",
+        "cI": "mathcal{I}",
+        "cJ": "mathcal{J}",
+        "cK": "mathcal{K}",
+        "cL": "mathcal{L}",
+        "cM": "mathcal{M}",
+        "cN": "mathcal{N}",
+        "cO": "mathcal{O}",
+        "cP": "mathcal{P}",
+        "cQ": "mathcal{Q}",
+        "cR": "mathcal{R}",
+        "cS": "mathcal{S}",
+        "cT": "mathcal{T}",
+        "cU": "mathcal{U}",
+        "cV": "mathcal{V}",
+        "cW": "mathcal{W}",
+        "cX": "mathcal{X}",
+        "cY": "mathcal{Y}",
+        "cZ": "mathcal{Z}"
+    }
 };
+
+nykaReplace(command) := if(contains(keys(NYKA.REPLACEMENTS), command), NYKA.REPLACEMENTS_command, command);
 
 getChunkOfLetters(string, index) := (
     regional(result, done);
@@ -628,6 +706,23 @@ nyka2katex(string) := (
                 indexAfterCommand = length(command) + 2;
                 if(sum(bite(command)) == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
                     // TODO DO STUFF
+                ,if(command == "frac",
+                    if(leftoverString_indexAfterCommand == "{",
+                        i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
+                        if(leftoverString_(i+1) == "{",
+                            j = findMatchingBracket(leftoverString, i + 1, "{", "}");
+                            result = result + texDelimiters_1 + "\frac{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
+                            leftoverString = bite(leftoverString, j);
+                        , // else //
+                            println("Nyka Parsing Error: frac command must be followed by {...}{...}.");
+                            result = result :> errorTofu;
+                            leftoverString = "";
+                        );
+                    , // else //
+                        println("Nyka Parsing Error: frac command must be followed by {...}{...}.");
+                        result = result :> errorTofu;
+                        leftoverString = "";
+                    );
                 ,if(command == "sum" % command == "prod" % command == "int", // Check if it is a sum, prod or int command. Must be followed by [][] or nothing.
                     if(leftoverString_indexAfterCommand == "[",
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
@@ -636,7 +731,7 @@ nyka2katex(string) := (
                             result = result + texDelimiters_1 + backslash + command + "_{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}^{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
                             leftoverString = bite(leftoverString, j);
                         , // else //
-                            println("Nyka Parsing Error: Sum command must be followed by [...][...] or nothing.");
+                            println("Nyka Parsing Error: " + command + " command must be followed by [...][...] or nothing.");
                             result = result :> errorTofu;
                             leftoverString = "";
                         );
@@ -661,7 +756,7 @@ nyka2katex(string) := (
                             result = result + texDelimiters_1 + "\sqrt[" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "]{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
                             leftoverString = bite(leftoverString, j);
                         , // else //
-                            println("Nyka Parsing Error: Square root command must be followed by [...]{...} or {...}.");
+                            println("Nyka Parsing Error: sqrt command must be followed by [...]{...} or {...}.");
                             result = result :> errorTofu;
                             leftoverString = "";
                         );
@@ -670,16 +765,16 @@ nyka2katex(string) := (
                         result = result + texDelimiters_1 + "\sqrt{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
                         leftoverString = bite(leftoverString, i);
                     , // else //
-                        println("Nyka Parsing Error: Square root command must be followed by [...]{...} or {...}.");
+                        println("Nyka Parsing Error: sqrt command must be followed by [...]{...} or {...}.");
                         result = result :> errorTofu;
                         leftoverString = "";
                     ));
                 ,if(string_(indexAfterCommand) == "{", // Check if the command is followed by an argument.
                     // TODO DO STUFF
                 , // else // Command is not followed by arguments and can be isolated
-                    result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + command + texDelimiters_2);
+                    result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + nykaReplace(command) + texDelimiters_2);
                     leftoverString = bite(leftoverString, indexAfterCommand - 1);
-                )))));
+                ))))));
             , // else // It must be a command like \% \, or \
                 result = result + if(contains(NYKA.IGNORABLES.COMMANDS, leftoverString_2), backslash + leftoverString_2, texDelimiters_1 + backslash + leftoverString_2 + texDelimiters_2);
                 leftoverString = bite(leftoverString, 2);

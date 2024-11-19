@@ -20,12 +20,13 @@ SX := screenMouse().x;
 
 oldString = fragment("$\displaystyle @\sum_{@k/@=/@1/}^{@n/}/$", 30);
 
-nykaStringA = "test $\displaystyle \lim[x\to\infty] \alpha^{2} + \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} = \prod[k=3][\Z\Q\R] 123$ test";
+nykaStringA = "test $\displaystyle \frac{1+e}{\pi \oplus 1}\cdot\lim[x\to\infty] \alpha^{2} + \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} = \prod[k=3][\bZ\fQ\cR] 123$ test";
 //nykaStringB = "This is a test $\bmatrix{\sum_{k = 1}^{n}q^k = \frac{1 - q^{n + 1}}{1 - q} & \lim\limits_{n\to\infty}\sin(nx)}{\sqrt[3]{1\cdot\sqrt{2}} & \big(\alpha\beta\big)} \leadsto \Big\{\Big\}$";
 
 println(parseNyka(nykaStringA));
 
-
+println(nykaReplace("bQ"));
+println(nykaReplace("oplus"));
 </script>
 
 
