@@ -735,23 +735,10 @@ getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 
-/*
-\Xmatrix{}{}{}
-\cases{}{}{}
-
-\big parantheses
-
-\command{char}
-\command{string}
-
-
-*/
-
-
 
 
 nyka2katex(string) := (
-    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, searching);
+    regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, searching, followup);
 
     result = "";
     leftoverString = string;
@@ -761,7 +748,21 @@ nyka2katex(string) := (
             if(contains(abc, leftoverString_2), // Check if it is a proper word command
                 command = getChunkOfLetters(leftoverString, 2);
                 indexAfterCommand = length(command) + 2;
-                if(sum(bite(command)) == "matrix" % command == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
+                if(command == "big" % command == "bigg" % command == "Big" % command == "Bigg", // Check if it is a big parantheses command.
+                    if(leftoverString_indexAfterCommand == backslash, // Check if followed by command, e.g. \{ or \lvert.
+                        if(contains(abc, leftoverString_(indexAfterCommand + 1)), // Check if it is a proper word command.
+                            followup = getChunkOfLetters(leftoverString, indexAfterCommand + 1);
+                            result = result + texDelimiters_1 + backslash + command + backslash + followup + texDelimiters_2;
+                            leftoverString = bite(leftoverString, indexAfterCommand + length(followup));
+                        , // else // Must be single char command like \{
+                            result = result + texDelimiters_1 + backslash + command + backslash + leftoverString_(indexAfterCommand + 1) + texDelimiters_2;
+                            leftoverString = bite(leftoverString, indexAfterCommand + 2);
+                        );
+                    , // else // Followup is single character
+                        result = result + texDelimiters_1 + backslash + command + leftoverString_indexAfterCommand + texDelimiters_2;
+                        leftoverString = bite(leftoverString, indexAfterCommand);
+                    );
+                ,if(sum(bite(command)) == "matrix" % command == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
                     curlyIndices = [];
                     i = indexAfterCommand;
                     searching = (i < length(leftoverString)) & (leftoverString_i == "{");
@@ -855,12 +856,18 @@ nyka2katex(string) := (
                         result = result :> errorTofu;
                         leftoverString = "";
                     ));
-                ,if(string_(indexAfterCommand) == "{", // Check if the command is followed by an argument.
-                    // TODO DO STUFF
+                ,if(leftoverString_indexAfterCommand == "{", // Check if the command is followed by an argument.
+                    i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
+                    if(contains(NYKA.IGNORABLES.FUNCTIONS, command),
+                        result = result + backslash + command + sum(leftoverString_(indexAfterCommand..i));
+                    , // else //
+                        result = result + texDelimiters_1 + backslash + nykaReplace(command) + "{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
+                    );
+                    leftoverString = bite(leftoverString, i);
                 , // else // Command is not followed by arguments and can be isolated
                     result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + nykaReplace(command) + texDelimiters_2);
                     leftoverString = bite(leftoverString, indexAfterCommand - 1);
-                ))))));
+                )))))));
             , // else // It must be a command like \% \, or \
                 result = result + if(contains(NYKA.IGNORABLES.COMMANDS, leftoverString_2), backslash + leftoverString_2, texDelimiters_1 + backslash + leftoverString_2 + texDelimiters_2);
                 leftoverString = bite(leftoverString, 2);
@@ -879,14 +886,14 @@ nyka2katex(string) := (
 );
 
 
-parseNyka(string) := sum(apply(tokenize(string, "$"), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
-fragmentNyka(string, size, family) := fragment(parseNyka(string), size, family);
-fragmentNyka(string, size) := fragmentNyka(string, size, 0);
+parseNyka(string) := sum(apply(tokenize(string, "$", autoconvert -> false), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
+fragment(string, size, family) := fragmentMixed(parseNyka(string), size, family);
+fragment(string, size) := fragment(string, size, 0);
 
 
 
 
-
+fragmentLength(listOfDicts) := sum(apply(listOfDicts, #.length));
 
 
 
@@ -961,7 +968,7 @@ fragmentTex(string, size) := fragmentTex(string, size, 0);
 
 
 
-fragment(string, size, family) := (
+fragmentMixed(string, size, family) := (
     regional(split, res, bufferWidth, n, chunk);
 
     split = tokenize(string, "$");
@@ -988,7 +995,7 @@ fragment(string, size, family) := (
 
     res;
 );
-fragment(string, size) := fragment(string, size, 0);
+fragmentMixed(string, size) := fragmentMixed(string, size, 0);
 
 
 

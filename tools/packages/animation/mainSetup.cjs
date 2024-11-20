@@ -87,7 +87,7 @@ timeScale = 1;
 
 fpsBuffer = [0];
 
-fragmentingTeX() := ();
+setupAfterKatex() := ();
 calculation() := ();
 rendering() := ();
 

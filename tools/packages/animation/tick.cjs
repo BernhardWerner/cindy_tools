@@ -44,8 +44,8 @@ if(katexLoaded,
 , // else //
     if(pixelsize(katexForceString)_1 < 10000,
         katexLoaded = true;
-        fragmentingTeX();
+        setupAfterKatex();
     , // else //
-        fragmentingTeX();
+        setupAfterKatex();
     );
 );

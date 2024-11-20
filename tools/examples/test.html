@@ -14,18 +14,6 @@
 
 <script id='csinit' type='text/x-cindyscript'>
 
-trackData = [1,1];
-
-SX := screenMouse().x;
-
-nykaStringB = "This is a  $\displaystyle \bmatrix{\frac{1+e}{\pi \oplus 1} & \prod[k=3][\bA\fB\fc\sD\cE] 123}{3 & \lim[x\to\infty] \alpha^{2}}{\sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6}$  test test";
-
-parsed = parseNyka(nykaStringB);
-
-fragmentingTeX() := (
-  fragments = fragment(parsed, 30);
-);
-
 
 </script>
 
@@ -33,9 +21,6 @@ fragmentingTeX() := (
 
 
 <script id='csdraw' type='text/x-cindyscript'>
-//drawFragments([0,0], oldString, SX, "up");
-drawFragments([-8,0], fragments, SX, "up");
-
 
 
 </script>
@@ -96,7 +81,7 @@ var cindy = CindyJS({
   images: {},
   use: ["katex", "CindyGL"],
   import: {
-    "packages": ["../packages/animation"]
+    //"packages": ["../packages/animation"]
   }
 });
 
