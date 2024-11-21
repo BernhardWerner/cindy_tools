@@ -1,6 +1,7 @@
 // Force KaTeX to load fonts:
 katexForceString = "$\begin{bmatrix}\frac{1+e}{\pi \oplus 1} & \prod_{k=3}^{\mathbb{A}\mathfrak{B}\mathscr{D}\mathcal{E}} 123 \\ \big(\bigg)\Big(\Bigg) & \lim\limits_{x\to\infty} \alpha^{2} \\ \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6\end{bmatrix}$";
 katexLoaded = false;
+pixelsize(katexForceString);
 
 // ************************************************************
 
@@ -101,9 +102,19 @@ delta = 0;
 // ************************************************************
 
 tick(d) := (
-    if(frameCount < maxFrames,
-        calculate(d);
-        frameRenderState = FRAMERENDERSTATES.RENDERING;
+    if(katexLoaded,
+        if(frameCount < maxFrames,
+            calculate(d);
+            frameRenderState = FRAMERENDERSTATES.RENDERING;
+        );
+    , // else //
+        if(pixelsize(katexForceString)_1 < 10000,
+            katexLoaded = true;
+            setupAfterKatex();
+        , // else //
+            setupAfterKatex();
+            tick(1/60);
+        );
     );
 );
 
