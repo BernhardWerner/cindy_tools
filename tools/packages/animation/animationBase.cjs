@@ -873,9 +873,20 @@ nyka2katex(string) := (
                 leftoverString = bite(leftoverString, 2);
             )
         ,if(char == "_" % char == "^", // Check if it is subscript or superscript
-            i = findMatchingBracket(leftoverString, 2, "{", "}");
-            result = result + char + "{" + nyka2katex(leftoverString_(3..i-1)) + "}";
-            leftoverString = bite(leftoverString, i);
+            if(leftoverString_2 == "{", // Followed by block
+                i = findMatchingBracket(leftoverString, 2, "{", "}");
+                result = result + char + "{" + nyka2katex(leftoverString_(3..i-1)) + "}";
+                leftoverString = bite(leftoverString, i);
+            ,if(leftoverString_2 == backslash, // Followed by command
+                command = getChunkOfLetters(leftoverString, 3);
+                result = result + char + "{" + texDelimiters_1 + backslash + nykaReplace(command) + texDelimiters_2 + "}";
+                leftoverString = bite(leftoverString, 2 + length(command));
+            , // else // Foloowed by single character
+                result = result + char + "{" + texDelimiters_1 + leftoverString_2 + texDelimiters_2 + "}";
+                leftoverString = bite(leftoverString, 2);
+            ));
+
+
         , // else // Assume it is a single character that can be isolated.
             result = result + if(contains(NYKA.IGNORABLES.CHARACTERS, char), char, texDelimiters_1 + char + texDelimiters_2);
             leftoverString = sum(bite(leftoverString));
