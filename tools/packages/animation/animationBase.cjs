@@ -1339,21 +1339,6 @@ sampleBezierSpline(spline, sampleRate, strokeResolution) := (
 
 
 
-bezier(controls, t) := (
-    regional(n);
-
-    n = length(controls);
-
-    if(n == 1,
-        controls_1;
-    , // else //
-        (1 - t) * bezier(pop(controls), t) + t * bezier(bite(controls), t);
-    );
-  );
-
-
-
-
 sampleBezierCurve(controls, n) := (
     regional(t);
 
