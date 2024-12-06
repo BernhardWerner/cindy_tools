@@ -183,7 +183,8 @@ newButton(dict) := (
     "pressed":    if(contains(keys, "pressed"), dict.pressed, false),
     "fontFamily": if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":     if(contains(keys, "active"), dict.active, true),
-    "visible":    if(contains(keys, "visible"), dict.visible, true)
+    "visible":    if(contains(keys, "visible"), dict.visible, true),
+    "outlineSize": if(contains(keys, "outlineSize"), dict.outlineSize, 0)
   };
   res.calculateShapes := [
     roundedRectangle(self().position + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner),
@@ -196,10 +197,15 @@ newButton(dict) := (
       shapes = self().calculateShapes;
       if(self().pressed,
         fill(shapes_2, color -> (self().colors)_1);
+        if(self().outlineSize > 0, draw(shapes_2, size -> self().outlineSize, color -> (self().colors)_3));
         drawtext(self().position + (0, -0.5 * self().labelSize / 35) + (0, -0.2), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
+
       , // else //
         fill(shapes_2, color -> (self().colors)_3);
+        if(self().outlineSize > 0, draw(shapes_2, size -> self().outlineSize, color -> (self().colors)_3));
         fill(shapes_1, color -> (self().colors)_2);
+        if(self().outlineSize > 0, draw(shapes_1, size -> self().outlineSize, color -> (self().colors)_3));
+
         drawtext(self().position + (0, -0.5 * self().labelSize / 35), self().label, align->"mid", size->self().labelSize, color->self().labelColor, bold->true, family->self().fontFamily);
       );
     );
