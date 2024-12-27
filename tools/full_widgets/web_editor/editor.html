@@ -20,16 +20,40 @@
     <div class="container">
         <div class="column left-column">
           <div class="row top-row">
-            <div class="content">Top Row Content</div>
+            <div class="content">
+                
+                <div class="import-header">
+                    <h3>Import:</h3>
+                    <div><input type="checkbox" name="Animation" id="animationCheckbox"><label for="animationCheckbox">Animation</label></div>
+                    <div><input type="checkbox" name="UI" id="uiCheckbox"><label for="uiCheckbox">UI</label></div>
+                    <div><input type="checkbox" name="Color" id="colorCheckbox"><label for="colorCheckbox">Color</label></div>
+                    <div><input type="checkbox" name="Camera" id="cameraCheckbox"><label for="cameraCheckbox">3D Camera</label></div>
+                    
+                </div>
+                <div class="tab-container"></div>
+                <div class="button-array">
+                    <button class="button" id="runButton">Run</button>
+                    <button class="button" id="deleteButton">Delete all scripts</button>
+                    <button class="button" id="exportButton">Export</button>
+                </div>
+            </div>
           </div>
           <div class="row-resizer"></div>
           <div class="row bottom-row">
-            <div class="content">Bottom Row Content</div>
+            <div class="content">
+                <div class="console-header">
+                    <h3>Console:</h3>
+                    <button class="button" id="clearButton">Clear</button>
+                </div>
+                <div id="console-output"></div>
+            </div>
           </div>
         </div>
         <div class="column-resizer"></div>
         <div class="column right-column">
-          <div class="content">Right Column Content</div>
+          <div class="content">
+            <canvas id="CSCanvas"></canvas>
+          </div>
         </div>
       </div>
 

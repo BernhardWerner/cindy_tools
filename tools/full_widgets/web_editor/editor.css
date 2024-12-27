@@ -18,15 +18,19 @@ html, body {
 }
 
 .left-column {
-  width: 50%;
+  width: 45%;
   display: flex;
   flex-direction: column;
 }
 
 .right-column {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
   background-color: #e0e0e0;
+  height: 100%;
 }
+
 
 .column-resizer {
   width: 10px;
@@ -39,13 +43,15 @@ html, body {
 }
 
 .top-row {
-  height: 50%;
+  height: 75%;
   background-color: #f0f0f0;
 }
 
 .bottom-row {
   flex-grow: 1;
   background-color: #d0d0d0;
+  display: flex;
+  flex-direction: column;
 }
 
 .row-resizer {
@@ -55,5 +61,67 @@ html, body {
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 15px;
+}
+
+#console-output {
+  background-color: white;
+  color: black;
+  border: solid 1px black;
+  font-family: monospace;
   padding: 20px;
+  overflow-y: auto;
+  height: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+#CSCanvas {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  border: 1px solid #000000;
+}
+
+
+.console-header {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between; 
+  
+  
+}
+
+.import-header {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between; 
+}
+
+
+.button-array {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between; 
+}
+
+
+.button {
+  min-width: 90px;
+  min-height: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
+  
+}
+
+.tab-container {
+  height: 100%;
+  background-color: white;
+  border: solid 1px black;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
