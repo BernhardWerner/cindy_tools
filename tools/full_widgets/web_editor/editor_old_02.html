@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web editor</title>
+    <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.js"></script>
+
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100% - 20px);
+            margin: 10px;
+            position: relative;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .resizable {
+            position: absolute;
+            background: #ccc;
+            z-index: 1;
+        }
+
+        .resizer-vertical {
+            width: 5px;
+            cursor: ew-resize;
+            position: relative;
+            /* right: 0; */
+            /* top: 0; */
+            /* bottom: 0; */
+        }
+
+        .resizer-horizontal {
+            height: 5px;
+            cursor: ns-resize;
+            position: relative;
+            /* bottom: 0; */
+            /* left: 0; */
+            /* right: 0; */
+        }
+
+        .tabs {
+            font-family: Arial, sans-serif;
+        }
+
+        .tab-links {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        .tab-links li {
+            margin-right: 5px;
+        }
+
+        .tab-links a {
+            text-decoration: none;
+            padding: 10px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            color: #333;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-links a:hover {
+            background-color: #e0e0e0;
+        }
+
+        .tab-links li.active a,
+        .tab-links a:active {
+            background-color: #fff;
+            border-bottom: none;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            flex: 1;
+            overflow: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        textarea {
+            font: 'Courier New', monospace;
+            resize: none;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        #console-output {
+            overflow-y: scroll;
+            border: #000000 1px solid;
+            height: 200px;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        #CSCanvas {
+            border: 1px solid #000000;
+            width: 100%;
+            height: 100%;
+        }
+
+        .editor-form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body style="font-family:Palatino; font-size:16pt">
+
+<script id='csinit' type='text/x-cindyscript'></script>
+<script id='csdraw' type='text/x-cindyscript'></script>
+<script id='cstick' type='text/x-cindyscript'></script>
+<script id='csmousemove' type='text/x-cindyscript'></script>
+<script id='csmousedown' type='text/x-cindyscript'></script>
+<script id='csmousedrag' type='text/x-cindyscript'></script>
+<script id='csmouseup' type='text/x-cindyscript'></script>
+
+<div class="container">
+    <div class="column" id="left-column">
+        <form id="code-editor" action="/submit-your-text" method="post" class="editor-form">
+            <div class="editor-form">
+                <ul class="tab-links">
+                    <li class="active"><a href="#tab-init" role="tab" aria-controls="tab-init" aria-selected="true">Init</a></li>
+                    <li><a href="#tab-draw" role="tab" aria-controls="tab-draw" aria-selected="false">Draw</a></li>
+                    <li><a href="#tab-tick" role="tab" aria-controls="tab-tick" aria-selected="false">Tick</a></li>
+                    <li><a href="#tab-mousemove" role="tab" aria-controls="tab-mousemove" aria-selected="false">Mouse Move</a></li>
+                    <li><a href="#tab-mousedown" role="tab" aria-controls="tab-mousedown" aria-selected="false">Mouse Down</a></li>
+                    <li><a href="#tab-mousedrag" role="tab" aria-controls="tab-mousedrag" aria-selected="false">Mouse Drag</a></li>
+                    <li><a href="#tab-mouseup" role="tab" aria-controls="tab-mouseup" aria-selected="false">Mouse Up</a></li>
+                </ul>
+
+                <div id="tab-init" class="tab-content active">
+                    <h3>Init Script:</h3>
+                    <textarea id="textEditArea-init" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-draw" class="tab-content">
+                    <h3>Draw Script:</h3>
+                    <textarea id="textEditArea-draw" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-tick" class="tab-content">
+                    <h3>Tick Script:</h3>
+                    <textarea id="textEditArea-tick" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-mousemove" class="tab-content">
+                    <h3>Mouse Move Script:</h3>
+                    <textarea id="textEditArea-mousemove" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-mousedown" class="tab-content">
+                    <h3>Mouse Down Script:</h3>
+                    <textarea id="textEditArea-mousedown" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-mousedrag" class="tab-content">
+                    <h3>Mouse Drag Script:</h3>
+                    <textarea id="textEditArea-mousedrag" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+                <div id="tab-mouseup" class="tab-content">
+                    <h3>Mouse Up Script:</h3>
+                    <textarea id="textEditArea-mouseup" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                </div>
+            </div>
+            <div>
+              <input type="submit" value="Run">
+              <button type="button" id="clear-console-btn">Clear Console</button>
+              <button type="button" id="delete-all-scripts-btn">Delete All Scripts</button>
+            </div>
+
+            <div class="resizer-horizontal resizable" id="horizontal-resizer"></div>
+
+
+            <div id="console-output"></div>
+            
+        </form>
+        
+
+    </div>
+    <div class="resizer-vertical resizable" id="vertical-resizer"></div>
+
+
+    <div class="column" id="right-column">
+        <canvas id="CSCanvas"></canvas>
+    </div>
+
+</div>
+
+<script>
+    var textareas = document.querySelectorAll('textarea');
+    textareas.forEach(function(textarea) {
+        CodeMirror.fromTextArea(textarea, {
+            lineNumbers: true,
+            lineWrapping: true,
+        });
+    });
+    var codeMirrors = document.querySelectorAll('.CodeMirror');
+    window.addEventListener('resize', function () {
+        codeMirrors.forEach(function (cm) {
+            cm.CodeMirror.setSize(null, document.getElementById('left-column').clientHeight);
+        });
+    });
+    let cindy;
+    let consoleOutput = document.getElementById('console-output');
+    let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
+
+    function update_textareas() {
+        for (let i = 0; i < scriptList.length; i++) {
+            let scriptElement = document.getElementById('cs' + scriptList[i]);
+            let script = scriptElement.textContent;
+            let textarea = document.getElementById('textEditArea-' + scriptList[i]);
+            let codeMirrorInstance = textarea.nextElementSibling.CodeMirror;
+
+            if (codeMirrorInstance) {
+                codeMirrorInstance.setValue(script);
+            } else {
+                console.log("CodeMirror instance not found for " + scriptList[i]);
+            }
+        }
+    }
+
+    function startCindy() {
+        consoleOutput.innerHTML = '';
+
+        let params = {
+            canvasname: "CSCanvas",
+            scripts: "cs*",
+            images: {},
+            import: {},
+            oninit: update_textareas,
+        };
+
+        // const queryParams = new URLSearchParams(window.location.search);
+        // const loadParam = queryParams.get('load');
+        // if (loadParam) {
+        //     params.import = {"init": [loadParam]};
+        // }
+
+        cindy = CindyJS(params);
+    }
+
+    function displayConsoleMessage(message) {
+        var textNode = document.createTextNode(message);
+        var lineBreak = document.createElement('br');
+        consoleOutput.appendChild(textNode);
+        consoleOutput.appendChild(lineBreak);
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    (function() {
+        var oldLog = console.log;
+        console.log = function(message) {
+            displayConsoleMessage(message);
+            oldLog.apply(console, arguments);
+        };
+    })();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('code-editor');
+        form.onsubmit = function(event) {
+            event.preventDefault();
+            for (let i = 0; i < scriptList.length; i++) {
+                let script = document.getElementById('textEditArea-' + scriptList[i]).value;
+                let scriptElement = document.getElementById('cs' + scriptList[i]);
+                scriptElement.textContent = script;
+            }
+            startCindy();
+        };
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var tabs = document.querySelectorAll('.tab-links a');
+        var panels = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                tabs.forEach(function(t) { t.parentElement.classList.remove('active'); });
+                panels.forEach(function(p) { p.classList.remove('active'); });
+
+                tab.parentElement.classList.add('active');
+                var panel = document.querySelector(tab.getAttribute('href'));
+                panel.classList.add('active');
+                var codeMirrors = panel.querySelectorAll('.CodeMirror');
+                codeMirrors.forEach(function(cm) {
+                    cm.CodeMirror.refresh();
+                });
+            });
+        });
+    });
+
+    function replaceTab(event) {
+        var keyCode = event.keyCode || event.which;
+        if (keyCode === 9) {
+            event.preventDefault();
+            var textarea = event.target;
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var tabSpaces = '    ';
+            textarea.value = textarea.value.substring(0, start) + tabSpaces + textarea.value.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + tabSpaces.length;
+        }
+    }
+
+    function makeResizableColumn(resizer, column1, column2) {
+        resizer.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+
+            function onMouseMove(e) {
+                let containerWidth = document.querySelector('.container').getBoundingClientRect().width;
+                let newWidth = ((e.clientX - resizer.offsetWidth / 2) / containerWidth) * 100;
+                column1.style.flexBasis = `${newWidth}%`;
+                column2.style.flexBasis = `${100 - newWidth}%`;
+            }
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        });
+    }
+
+    function makeResizableRow(resizer, panel1, panel2) {
+    resizer.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        function onMouseMove(e) {
+            let containerHeight = panel1.parentElement.getBoundingClientRect().height;
+            let newHeightPercentage = ((e.clientY - 218 - resizer.offsetHeight / 2) / containerHeight) * 100;
+
+            panel1.style.height = `${newHeightPercentage}%`;
+            panel2.style.height = `${100 - newHeightPercentage}%`;
+
+            adjustCodeMirrorHeight(newHeightPercentage * containerHeight / 100);  // Adjust CodeMirror height whenever the panel is resized
+        }
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    });
+}
+
+
+    function adjustCodeMirrorHeight(height) {
+    var codeMirrors = document.querySelectorAll('.CodeMirror');
+    codeMirrors.forEach(function(cm) {
+        cm.CodeMirror.setSize(null, height); // Adjust height dynamically; subtract some space for padding and margins
+    });
+}
+
+function saveToSessionStorage() {
+    scriptList.forEach(function (scriptName) {
+        let scriptContent = document.getElementById('textEditArea-' + scriptName).value;
+        sessionStorage.setItem(scriptName, scriptContent);
+    });
+}
+
+window.addEventListener('beforeunload', saveToSessionStorage);
+
+function loadFromSessionStorage() {
+    scriptList.forEach(function (scriptName) {
+        let scriptContent = sessionStorage.getItem(scriptName);
+        if (scriptContent) {
+            document.getElementById('textEditArea-' + scriptName).value = scriptContent;
+        }
+        // update code mirrors:
+        let codeMirrorInstance = document.getElementById('textEditArea-' + scriptName).nextElementSibling.CodeMirror;
+        if (codeMirrorInstance) {
+            codeMirrorInstance.setValue(scriptContent);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadFromSessionStorage);
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('code-editor');
+    var clearConsoleBtn = document.getElementById('clear-console-btn');
+    var deleteAllScriptsBtn = document.getElementById('delete-all-scripts-btn');
+    var consoleOutput = document.getElementById('console-output');
+    var scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
+
+    // Handle form submission (Run button)
+    form.onsubmit = function(event) {
+        event.preventDefault();
+        for (let i = 0; i < scriptList.length; i++) {
+            let script = document.getElementById('textEditArea-' + scriptList[i]).value;
+            let scriptElement = document.getElementById('cs' + scriptList[i]);
+            scriptElement.textContent = script;
+        }
+        startCindy();
+    };
+
+    // Handle Clear Console button
+    clearConsoleBtn.addEventListener('click', function() {
+        consoleOutput.innerHTML = ''; // Clear the console output
+    });
+
+    // Handle Delete All Scripts button
+    deleteAllScriptsBtn.addEventListener('click', function() {
+        // Show a confirmation dialog
+        var confirmation = confirm("Are you sure you want to delete all scripts? This action cannot be undone.");
+
+        // If the user confirms (clicks "Yes")
+        if (confirmation) {
+            scriptList.forEach(function(scriptName) {
+                // Clear the content of the textarea
+                let textarea = document.getElementById('textEditArea-' + scriptName);
+                textarea.value = '';
+
+                // Update the CodeMirror instance if it exists
+                let codeMirrorInstance = textarea.nextElementSibling.CodeMirror;
+                if (codeMirrorInstance) {
+                    codeMirrorInstance.setValue(''); // Clear the CodeMirror content
+                }
+
+                // Remove the corresponding entry from localStorage
+                localStorage.removeItem(scriptName);
+            });
+
+        } else {
+            // Nothing
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+        const verticalResizer = document.getElementById('vertical-resizer');
+        const horizontalResizer = document.getElementById('horizontal-resizer');
+        const leftColumn = document.getElementById('left-column');
+        const rightColumn = document.getElementById('right-column');
+        const form = document.getElementById('code-editor');
+        const consoleOutput = document.getElementById('console-output');
+
+        makeResizableColumn(verticalResizer, leftColumn, rightColumn);
+        makeResizableRow(horizontalResizer, form, consoleOutput);
+    });
+
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const loadParam = queryParams.get('load');
+    if(loadParam) {
+        fetch(loadParam + ".cjs")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('textEditArea-init').value = data;
+                document.getElementById('csinit').textContent = data;
+                // update code mirror:
+                let codeMirrorInstance = document.getElementById('textEditArea-init').nextElementSibling.CodeMirror;
+                if (codeMirrorInstance) {
+                    codeMirrorInstance.setValue(data);
+                }
+                startCindy();
+            });
+    } else {
+        startCindy();
+    }
+
+
+</script>
+
+</body>
+</html>

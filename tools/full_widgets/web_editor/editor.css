@@ -1,0 +1,59 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+
+
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.column {
+  overflow: hidden;
+}
+
+.left-column {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-column {
+  flex-grow: 1;
+  background-color: #e0e0e0;
+}
+
+.column-resizer {
+  width: 10px;
+  background-color: #ccc;
+  cursor: col-resize;
+}
+
+.row {
+  overflow: hidden;
+}
+
+.top-row {
+  height: 50%;
+  background-color: #f0f0f0;
+}
+
+.bottom-row {
+  flex-grow: 1;
+  background-color: #d0d0d0;
+}
+
+.row-resizer {
+  height: 10px;
+  background-color: #bbb;
+  cursor: row-resize;
+}
+
+.content {
+  padding: 20px;
+}
