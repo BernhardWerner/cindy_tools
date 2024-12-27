@@ -16,6 +16,14 @@
 </head>
 
 <body>
+    <script id='csinit' type='text/x-cindyscript'></script>
+    <script id='csdraw' type='text/x-cindyscript'></script>
+    <script id='cstick' type='text/x-cindyscript'></script>
+    <script id='csmousemove' type='text/x-cindyscript'></script>
+    <script id='csmousedown' type='text/x-cindyscript'></script>
+    <script id='csmousedrag' type='text/x-cindyscript'></script>
+    <script id='csmouseup' type='text/x-cindyscript'></script>
+
 
     <div class="container">
         <div class="column left-column">
@@ -27,12 +35,65 @@
                     <div><input type="checkbox" name="Animation" id="animationCheckbox"><label for="animationCheckbox">Animation</label></div>
                     <div><input type="checkbox" name="UI" id="uiCheckbox"><label for="uiCheckbox">UI</label></div>
                     <div><input type="checkbox" name="Color" id="colorCheckbox"><label for="colorCheckbox">Color</label></div>
-                    <div><input type="checkbox" name="Camera" id="cameraCheckbox"><label for="cameraCheckbox">3D Camera</label></div>
-                    
+                    <div><input type="checkbox" name="Camera" id="cameraCheckbox"><label for="cameraCheckbox">3D Camera</label></div>    
                 </div>
-                <div class="tab-container"></div>
+
+
+
+
+
+
+
+                <div class="tab-container">
+                    <ul class="tab-links">
+                        <li class="active"><a href="#tab-init" role="tab" aria-controls="tab-init" aria-selected="true">Init</a></li>
+                        <li><a href="#tab-draw" role="tab" aria-controls="tab-draw" aria-selected="false">Draw</a></li>
+                        <li><a href="#tab-tick" role="tab" aria-controls="tab-tick" aria-selected="false">Tick</a></li>
+                        <li><a href="#tab-mousemove" role="tab" aria-controls="tab-mousemove" aria-selected="false">Mouse Move</a></li>
+                        <li><a href="#tab-mousedown" role="tab" aria-controls="tab-mousedown" aria-selected="false">Mouse Down</a></li>
+                        <li><a href="#tab-mousedrag" role="tab" aria-controls="tab-mousedrag" aria-selected="false">Mouse Drag</a></li>
+                        <li><a href="#tab-mouseup" role="tab" aria-controls="tab-mouseup" aria-selected="false">Mouse Up</a></li>
+                    </ul>
+    
+                    <div id="tab-init" class="tab-content active">
+                        <h3>Init:</h3>
+                        <textarea id="textEditArea-init" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-draw" class="tab-content">
+                        <h3>Draw:</h3>
+                        <textarea id="textEditArea-draw" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-tick" class="tab-content">
+                        <h3>Tick:</h3>
+                        <textarea id="textEditArea-tick" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-mousemove" class="tab-content">
+                        <h3>Mouse Move:</h3>
+                        <textarea id="textEditArea-mousemove" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-mousedown" class="tab-content">
+                        <h3>Mouse Down:</h3>
+                        <textarea id="textEditArea-mousedown" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-mousedrag" class="tab-content">
+                        <h3>Mouse Drag:</h3>
+                        <textarea id="textEditArea-mousedrag" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                    <div id="tab-mouseup" class="tab-content">
+                        <h3>Mouse Up:</h3>
+                        <textarea id="textEditArea-mouseup" rows="30" cols="100" onkeydown="replaceTab(event)"></textarea>
+                    </div>
+                </div>
+    
+
+
+
+
+
+
+
                 <div class="button-array">
-                    <button class="button" id="runButton">Run</button>
+                    <button class="button" id="runButton" onclick="run()">Run</button>
                     <button class="button" id="deleteButton">Delete all scripts</button>
                     <button class="button" id="exportButton">Export</button>
                 </div>
