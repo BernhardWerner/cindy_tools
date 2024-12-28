@@ -1,30 +1,12 @@
-
-
-
-
+const scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
+const importList = ["animation", "ui", "color", "camera"];
 
 let cindy;
-let consoleOutput = document.getElementById('console-output');
-let scriptList = ["init", "draw", "tick", "mousemove", "mousedown", "mousedrag", "mouseup"];
-let importList = ["animation", "ui", "color", "camera"];
-let runButton = document.getElementById('runButton');
+let consoleOutput;
+let runButton;
 
-
-// function update_textareas() {
-//     for (let i = 0; i < scriptList.length; i++) {
-//         let scriptElement = document.getElementById('cs' + scriptList[i]);
-//         let script = scriptElement.textContent;
-//         let textarea = document.getElementById('textEditArea-' + scriptList[i]);
-//         let codeMirrorInstance = textarea.nextElementSibling.CodeMirror;
-
-//         if (codeMirrorInstance) {
-//             codeMirrorInstance.setValue(script);
-//         } else {
-//             console.log("CodeMirror instance not found for " + scriptList[i]);
-//         }
-//     }
-// }
-
+// Object to store CodeMirror instances
+let codeMirrors = {};
 
 function startCindy() {
     consoleOutput.innerHTML = '';
@@ -34,9 +16,7 @@ function startCindy() {
         scripts: "cs*",
         images: {},
         import: {}
-        // oninit: update_textareas,
     };
-
 
     cindy = CindyJS(params);
 }
@@ -57,108 +37,97 @@ function displayConsoleMessage(message) {
     };
 })();
 
-
-
-
-function saveToSessionStorage() {
+function saveToLocalStorage() {
     scriptList.forEach(function (scriptName) {
-        let scriptContent = document.getElementById('textEditArea-' + scriptName).value;
-        sessionStorage.setItem(scriptName, scriptContent);
+        let scriptContent = codeMirrors[scriptName].getValue(); // Get content from CodeMirror
+        localStorage.setItem(scriptName, scriptContent);
     });
     importList.forEach(function (importName) {
         let importContent = document.getElementById(importName + 'Checkbox').checked;
-        sessionStorage.setItem(importName, importContent);
+        localStorage.setItem(importName, importContent);
     });
 }
-window.addEventListener('beforeunload', saveToSessionStorage);
+window.addEventListener('beforeunload', saveToLocalStorage);
 
+function initializeCheckboxStates() {
+    let urlParams = new URLSearchParams(window.location.search);
 
-function loadFromSessionStorage() {
-    scriptList.forEach(function (scriptName) {
-        let scriptContent = sessionStorage.getItem(scriptName);
-        if (scriptContent) {
-            document.getElementById('textEditArea-' + scriptName).value = scriptContent;
+    importList.forEach(function(importName) {
+        let checkbox = document.getElementById(importName + 'Checkbox');
+        if (checkbox) {
+            // Check URL parameters first
+            if (urlParams.has(importName)) {
+                checkbox.checked = true;
+            } else {
+                // Fallback to session storage
+                let sessionValue = localStorage.getItem(importName);
+                if (sessionValue !== null) {
+                    checkbox.checked = sessionValue === 'true';
+                } else {
+                    checkbox.checked = false;
+                }
+            }
         }
     });
-    importList.forEach(function (importName) {
-        let importContent = sessionStorage.getItem(importName);
-        if (importContent) {
-            document.getElementById(importName + 'Checkbox').checked = importContent === 'true';
+}
+async function initializeTextAreas() {
+    let urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('prefill')) {
+        let prefill = urlParams.get('prefill');
+        for (let scriptName of scriptList) {
+            let scriptContent = localStorage.getItem(scriptName);
+            let path = './prefills/' + prefill + '/' + scriptName + '.cjs';
+            if (scriptContent === null) {
+                try {
+                    let response = await fetch(path);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch ${scriptName}: ${response.statusText}`);
+                    }
+                    let data = await response.text();
+                    codeMirrors[scriptName].setValue(data);
+                } catch (error) {
+                    console.error('File not found: ' + error.message);
+                }
+            } else {
+                console.log('Loading from local storage: ' + path);
+                console.log(scriptContent);
+                codeMirrors[scriptName].setValue(scriptContent);
+            }
         }
-    });
-}
-window.addEventListener('DOMContentLoaded', loadFromSessionStorage);
-
-
-
-
-
-
-
-
-
-function replaceTab(event) {
-    var keyCode = event.keyCode || event.which;
-    if (keyCode === 9) {
-        event.preventDefault();
-        var textarea = event.target;
-        var start = textarea.selectionStart;
-        var end = textarea.selectionEnd;
-        var tabSpaces = '    ';
-        textarea.value = textarea.value.substring(0, start) + tabSpaces + textarea.value.substring(end);
-        textarea.selectionStart = textarea.selectionEnd = start + tabSpaces.length;
     }
 }
-document.addEventListener("keydown", function(event) {
-    if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-        saveToSessionStorage();
-    }
-
-    if (event.shiftKey && event.key === 'Enter') {
-        run();
-    }
-});
-
-function run() {
-    saveToSessionStorage();
-
-    for (let i = 0; i < scriptList.length; i++) {
-        let script = document.getElementById('textEditArea-' + scriptList[i]).value;
-        let scriptElement = document.getElementById('cs' + scriptList[i]);
-        scriptElement.textContent = script;
-    }
-    startCindy();
-}
 
 
 
 
-// ************************************************************
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    var textareas = document.querySelectorAll('textarea');
-    textareas.forEach(function(textarea) {
-        CodeMirror.fromTextArea(textarea, {
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', async function() {
+    consoleOutput = document.getElementById('console-output');
+    runButton = document.getElementById('runButton');
+
+    document.querySelectorAll('textarea').forEach(function(textarea) {
+        let scriptName = textarea.id.replace('textEditArea-', '');
+        codeMirrors[scriptName] = CodeMirror.fromTextArea(textarea, {
             lineNumbers: true,
             lineWrapping: true,
         });
     });
-    var codeMirrors = document.querySelectorAll('.CodeMirror');
+
     window.addEventListener('resize', function () {
-        codeMirrors.forEach(function (cm) {
-            cm.CodeMirror.setSize(null, document.getElementsByClassName('left-column').clientHeight);
+        Object.values(codeMirrors).forEach(function(cm) {
+            cm.setSize(null, document.querySelector('.left-column').clientHeight);
         });
     });
 
-
-
-
-
-    var tabs = document.querySelectorAll('.tab-links a');
-    var panels = document.querySelectorAll('.tab-content');
+    const tabs = document.querySelectorAll('.tab-links a');
+    const panels = document.querySelectorAll('.tab-content');
 
     tabs.forEach(function(tab) {
         tab.addEventListener('click', function(e) {
@@ -169,13 +138,18 @@ document.addEventListener('DOMContentLoaded', function() {
             tab.parentElement.classList.add('active');
             var panel = document.querySelector(tab.getAttribute('href'));
             panel.classList.add('active');
-            var codeMirrors = panel.querySelectorAll('.CodeMirror');
-            codeMirrors.forEach(function(cm) {
+            var cmInstances = panel.querySelectorAll('.CodeMirror');
+            cmInstances.forEach(function(cm) {
                 cm.CodeMirror.refresh();
             });
         });
     });
-    
+
+    runButton.addEventListener('click', run);
+
+    initializeCheckboxStates();
+    await initializeTextAreas();
+
     const columnResizer = document.querySelector('.column-resizer');
     const rowResizer = document.querySelector('.row-resizer');
     const leftColumn = document.querySelector('.left-column');
@@ -184,46 +158,45 @@ document.addEventListener('DOMContentLoaded', function() {
   
     let isResizingColumn = false;
     let isResizingRow = false;
-  
-    // Prevent text selection
+
     document.addEventListener('mousedown', function(e) {
       if (e.target.classList.contains('column-resizer') || e.target.classList.contains('row-resizer')) {
         e.preventDefault();
       }
     });
-  
+
     document.addEventListener('mousemove', function(e) {
       if (isResizingColumn || isResizingRow) {
         e.preventDefault();
       }
     });
-  
+
     columnResizer.addEventListener('mousedown', function(e) {
       isResizingColumn = true;
       document.addEventListener('mousemove', handleColumnResize);
       document.addEventListener('mouseup', stopResizing);
     });
-  
+
     rowResizer.addEventListener('mousedown', function(e) {
       isResizingRow = true;
       document.addEventListener('mousemove', handleRowResize);
       document.addEventListener('mouseup', stopResizing);
     });
-  
+
     function handleColumnResize(e) {
       if (!isResizingColumn) return;
       const containerRect = container.getBoundingClientRect();
       const newWidth = e.clientX - containerRect.left;
       leftColumn.style.width = `${newWidth}px`;
     }
-  
+
     function handleRowResize(e) {
       if (!isResizingRow) return;
       const leftColumnRect = leftColumn.getBoundingClientRect();
       const newHeight = e.clientY - leftColumnRect.top;
       topRow.style.height = `${newHeight}px`;
     }
-  
+
     function stopResizing() {
       isResizingColumn = false;
       isResizingRow = false;
@@ -231,5 +204,27 @@ document.addEventListener('DOMContentLoaded', function() {
       document.removeEventListener('mousemove', handleRowResize);
       document.removeEventListener('mouseup', stopResizing);
     }
-  });
-  
+});
+
+document.addEventListener("keydown", function(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        saveToLocalStorage();
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        run();
+    }
+});
+
+function run() {
+    saveToLocalStorage();
+
+    for (let i = 0; i < scriptList.length; i++) {
+        let scriptName = scriptList[i];
+        let script = codeMirrors[scriptName].getValue(); // Get content from CodeMirror
+        let scriptElement = document.getElementById('cs' + scriptName);
+        scriptElement.textContent = script;
+    }
+    startCindy();
+}
