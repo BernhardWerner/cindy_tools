@@ -72,7 +72,7 @@ html, body {
   border: solid 1px black;
   font-family: monospace;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: hidden;
   height: 100%;
   margin-left: 0;
   margin-right: 0;

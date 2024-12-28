@@ -4,18 +4,32 @@ const importList = ["animation", "ui", "color", "camera"];
 let cindy;
 let consoleOutput;
 let runButton;
+let animationCheckbox;
+let uiCheckbox;
+let colorCheckbox;
+let cameraCheckbox;
 
 // Object to store CodeMirror instances
 let codeMirrors = {};
 
 function startCindy() {
     consoleOutput.innerHTML = '';
+    let packagesToImport = [];
+    let singletsToImport = [];
+    if(animationCheckbox.checked) packagesToImport.push("animation");
+    if(uiCheckbox.checked) packagesToImport.push("ui");
+    if(colorCheckbox.checked) singletsToImport.push("color");
+    if(cameraCheckbox.checked) singletsToImport.push("camera");
+
 
     let params = {
         canvasname: "CSCanvas",
         scripts: "cs*",
         images: {},
-        import: {}
+        import: {
+            "packages": packagesToImport,
+            "init": singletsToImport
+        }
     };
 
     cindy = CindyJS(params);
@@ -40,14 +54,15 @@ function displayConsoleMessage(message) {
 function saveToLocalStorage() {
     scriptList.forEach(function (scriptName) {
         let scriptContent = codeMirrors[scriptName].getValue(); // Get content from CodeMirror
-        localStorage.setItem(scriptName, scriptContent);
+        if(scriptContent != "") {
+            localStorage.setItem(scriptName, scriptContent);
+        }
     });
     importList.forEach(function (importName) {
         let importContent = document.getElementById(importName + 'Checkbox').checked;
         localStorage.setItem(importName, importContent);
     });
 }
-window.addEventListener('beforeunload', saveToLocalStorage);
 
 function initializeCheckboxStates() {
     let urlParams = new URLSearchParams(window.location.search);
@@ -83,14 +98,13 @@ async function initializeTextAreas() {
                     if (!response.ok) {
                         throw new Error(`Failed to fetch ${scriptName}: ${response.statusText}`);
                     }
+                    console.log('Loading from: ' + path);
                     let data = await response.text();
                     codeMirrors[scriptName].setValue(data);
                 } catch (error) {
                     console.error('File not found: ' + error.message);
                 }
             } else {
-                console.log('Loading from local storage: ' + path);
-                console.log(scriptContent);
                 codeMirrors[scriptName].setValue(scriptContent);
             }
         }
@@ -110,7 +124,15 @@ async function initializeTextAreas() {
 
 document.addEventListener('DOMContentLoaded', async function() {
     consoleOutput = document.getElementById('console-output');
+    
     runButton = document.getElementById('runButton');
+    resetButton = document.getElementById('resetButton');
+    exportButton = document.getElementById('exportButton');
+
+    animationCheckbox = document.getElementById('animationCheckbox');
+    uiCheckbox = document.getElementById('uiCheckbox');
+    colorCheckbox = document.getElementById('colorCheckbox');
+    cameraCheckbox = document.getElementById('cameraCheckbox');
 
     document.querySelectorAll('textarea').forEach(function(textarea) {
         let scriptName = textarea.id.replace('textEditArea-', '');
@@ -146,6 +168,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     runButton.addEventListener('click', run);
+    resetButton.addEventListener('click', resetEditor);
+    exportButton.addEventListener('click', exportScripts);
 
     initializeCheckboxStates();
     await initializeTextAreas();
@@ -206,6 +230,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 document.addEventListener("keydown", function(event) {
     if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
@@ -227,4 +264,20 @@ function run() {
         scriptElement.textContent = script;
     }
     startCindy();
+}
+
+function resetEditor() {
+    for(let i = 0; i < scriptList.length; i++) {
+        codeMirrors[scriptList[i]].setValue('');
+    }
+    // for(let i = 0; i < importList.length; i++) {
+    //     document.getElementById(importList[i] + 'Checkbox').checked = false;
+    // }
+
+    localStorage.clear();
+}
+
+
+function exportScripts() {
+    // PLACEHOLDER
 }

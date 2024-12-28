@@ -1,0 +1,1 @@
+forall(uiCollection, #.draw);

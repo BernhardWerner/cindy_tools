@@ -1,0 +1,11 @@
+{
+    "init": [
+        {"name": "animationBase.cjs", "place": -12},
+        {"name": "mainSetup.cjs", "place": -11},
+        {"name": "startAnimation.cjs", "place": 11}
+    ],
+    "draw": [{"name": "draw.cjs", "place": 10}],
+    "tick": ["tick.cjs"],
+    "mousedown": ["mousedown.cjs"],
+    "keydown": ["keydown.cjs"]
+}
