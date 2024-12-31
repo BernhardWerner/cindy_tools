@@ -36,10 +36,12 @@ function startCindy() {
 }
 
 function displayConsoleMessage(message) {
+    var height = console.clientHeight
     var textNode = document.createTextNode(message);
     var lineBreak = document.createElement('br');
     consoleOutput.appendChild(textNode);
     consoleOutput.appendChild(lineBreak);
+    console.clientHeight = height;
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
 }
 
