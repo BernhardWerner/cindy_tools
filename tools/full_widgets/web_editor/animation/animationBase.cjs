@@ -69,12 +69,9 @@ roundedRectangleStroke(center, w, h, cornerRadius) := (
 // ************************************************************************************************
 // Creates stroke around a polygon.
 // ************************************************************************************************
-samplePolygonFREE(poly, nop, closed) := (
+samplePolygonCurveFREE(poly, nop) := (
     regional(pairs, dists, totalDist, effectiveNumber, splitNumbers, stepSize, index, sr);
     
-    if(closed, 
-        poly = poly :> poly_1;
-    );
     
     sr = if(length(poly) == 2, strokeSampleRate, nop);
     
@@ -106,10 +103,9 @@ samplePolygonFREE(poly, nop, closed) := (
     flatten(apply(1..length(pairs), pop(subDivideSegment(pairs_#_1, pairs_#_2, splitNumbers_# + 2)) )) :> poly_(-1);
 
 );
-samplePolygonFREE(poly, nop) :=	samplePolygonFREE(poly, nop, true);
 
-samplePolygon(poly) := samplePolygonFREE(poly, strokeSampleRate);
-samplePolygon(poly, closed) := samplePolygonFREE(poly, strokeSampleRate, closed);
+samplePolygonCurve(poly) := samplePolygonFREE(poly, strokeSampleRate);
+
 
 
 
