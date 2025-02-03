@@ -88,7 +88,7 @@ timeScale = 1;
 
 fpsBuffer = [0];
 
-setupAfterKatex() := ();
+delayedSetup() := ();
 calculation() := ();
 rendering() := ();
 
@@ -110,9 +110,9 @@ tick(d) := (
     , // else //
         if(pixelsize(katexForceString)_1 < 10000,
             katexLoaded = true;
-            setupAfterKatex();
+            delayedSetup();
         , // else //
-            setupAfterKatex();
+            delayedSetup();
             tick(1/60);
         );
     );
