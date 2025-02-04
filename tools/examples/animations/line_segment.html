@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Animation bent arrow</title>
-        <script type="text/javascript" src="https://cindyjs.org/dist/latest/Cindy.js"></script>
+        <title>Line animation</title>
+        <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
     </head>
     <body>
         <script id='csinit' type='text/x-cindyscript'>
@@ -13,21 +13,15 @@
               2, 0.5
             ];
         
-            stroke = sampleBezierCurve([[-3, 7], [-1, 1], [5, 10]], 128);
+            a = [-3, 7];
+            b = [5, 10];
             
             calculation() := (
-                strokeIndex = round(lerp(1, 128, easeInOutCubic(t1)));
-                if(strokeIndex >= 3,
-                    tip = arrowTip(stroke_strokeIndex, stroke_strokeIndex - stroke_(strokeIndex - 2), 0.7 * t1);
-                );
+              endPoint = lerp(a, b, easeInOutCubic(t1));
             );
             
             rendering() := (
-              connect(stroke_(1..strokeIndex), size -> 5 * easeOutCirc(t1));
-              if(strokeIndex >= 3,
-                    connect(tip, size -> 5 * easeOutCirc(t1));
-              );
-              
+              draw(a, endPoint, size -> 10 * easeOutCirc(t1));
             );
         </script>
         
@@ -38,7 +32,7 @@
                 canvasname: "CSCanvas",
                 scripts: "cs*",
                 import: {
-                    "packages": ["../packages/animation"]
+                    "packages": ["../../packages/animation"]
                 }
             });
         </script>

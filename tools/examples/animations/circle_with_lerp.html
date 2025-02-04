@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Animation</title>
-  <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+  <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
 </head>
 
 <body>
@@ -48,7 +48,7 @@ calculation() := (
 
   circle.radius = lerp(circle.radius, 3, easeOutBack(t1));
   
-  circle.center = lerp(circle.center, canvasCenter + [5,0], easeInOutCubic(t2));
+  circle.center = lerp(circle.center, canvasCenter + [10,0], easeInOutCubic(t2));
   
   circle.color = lerp(circle.color, (0.3, 0.2, 0.8), t3);
   
@@ -78,7 +78,7 @@ var cindy = CindyJS({
   canvasname:"CSCanvas",
   scripts:"cs*",
   import: {
-    "packages": ["../packages/animation"]
+    "packages": ["../../packages/animation"]
   }
 });
 </script>

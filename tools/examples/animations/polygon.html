@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Animation</title>
-  <script type="text/javascript" src="../../cindy/Cindy.js"></script>
+  <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
 </head>
 
 <body>
@@ -16,15 +16,8 @@ showDebugInfo = true;
 
 // *************************************************************************
 
-textSize = 40;
-
-textA = fragmentText("This is just a test.", textSize);
-texB = fragmentTeX("$\displaystyle @\sum_{@i/@=/@0/}^{@n/@-/@1/}@q/^{@i/}/ @=/ @\frac{@1/ @-/ @q/^{@n/}}{@1/@-/@q/}/$", textSize);
-stringC = "This is text $@\sum/ @1/@2/@3/@4/$ mixed with TeX.";
-bothC = fragment(stringC, textSize);
 
 
-typingSpeed = 10;
 
 
 // Configure timelines.
@@ -34,10 +27,7 @@ startDelay = 1;
 // Alternating duration and pause.
 // A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
 trackData = [
-  textA.length / typingSpeed, 0.3,
-  texB.length / typingSpeed, 0.3,
-  0.5, 0.3,
-  sum(apply(bothC, #.length)) / typingSpeed, 0.3
+  5, 0.3
 ];
 
 // *************************************************************************
@@ -45,36 +35,36 @@ trackData = [
 // Set up objects here.
 
 
+vertices = [
+  [10,0],
+  [13, -2],
+  [15,10],
+  [14,8],
+  [-1,11],
+  [-2,-1]
+];
 
 
+
+
+lastEndpoint = vertices_1;
+deltaDist = 0;
 
 
 calculation() := (
   // Do calculations here.
   // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
-
-  if(totalTime < startDelay,
-    bothC = fragment(stringC, textSize);
-  );
-
 );
 
 rendering() := (
   // Do rendering here.
 
-  drawFragmentedText([-5, 7], textA, t1, "pop", {"outlinecolor": (0.2, 0.3, 0.8), "outlinewidth": 6, "color": (1, 1, 1)});
-  drawFragmentedTeX([0, 0], texB, t2, "up", {
-    "color": (0,0,0),
-    "colorMap": [[12..15, lerp((0,0,0), (0.3, 0.8, 0.2), t3)]]
-  });
-  drawFragments([-2, 10], bothC, t4, "down", {"color": (0.8, 0.2, 0.3)});
+  connect(animatePolygon(vertices, t1));
 
-
-
-
-
-
-
+  forall(vertices, v, index,
+    draw(v);
+    drawtext(v + [0, 0.5], index, size -> 20)
+  );
   
 );
 
@@ -92,14 +82,23 @@ var cindy = CindyJS({
   scripts:"cs*",
   use: ["katex"],
   import: {
-    "packages": ["../packages/animation"],
-    "init": ["../single_scripts/color"]
+    "packages": ["../../packages/animation"]
   }
 });
 </script>
 
 
 
+
+
+
+
+
+
+<script>
+  
+
+</script>
 
 
 
