@@ -42,9 +42,9 @@ if(renderMode == RENDERMODES.FRAMES,
     , // else //
         if(pixelsize(katexForceString)_1 < 10000,
             katexLoaded = true;
-            setupAfterKatex();
+            delayedSetup();
         , // else //
-            setupAfterKatex();
+        delayedSetup();
         );
     );
 );

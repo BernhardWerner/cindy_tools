@@ -5,7 +5,7 @@ trackData = [
     1, pause
 ];
 
-setupAfterKatex() := (
+delayedSetup() := (
 
 );
 
