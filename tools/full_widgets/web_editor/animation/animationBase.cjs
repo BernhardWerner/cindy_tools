@@ -475,18 +475,7 @@ setupAnimationTrack(s, e) := (
 ); 
 
 
-setupMultiAnimationTracks(start, listOfDurations, pause) := (
-    regional(t, res);
 
-    res = [];
-    t = start;
-    forall(listOfDurations, d,
-        res = res :> setupAnimationTrack(t, t + d);
-        t = t + d + pause;
-    );
-
-    res;
-);
 
 // times must be of the form [startPause, duration 1, endPause 1, duration 2, endPause 2, ...]
 setupMultiAnimationTracks(times) := (
