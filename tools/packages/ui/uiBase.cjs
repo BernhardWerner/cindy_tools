@@ -333,6 +333,7 @@ newOptionSlider(dict) := (
     "textSize":          if(contains(keys, "textSize"), dict.textSize, 20),
     "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, [1.4, 1.4]),
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
+    "textOutlineWidth":  if(contains(keys, "textOutlineWidth"), dict.textOutlineWidth, 5),
     "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.7),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":            if(contains(keys, "active"), dict.active, true),
@@ -355,7 +356,7 @@ newOptionSlider(dict) := (
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
       
       forall(1..length(self().options),
-        drawtext(lerp(endPoints_1, endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 7, outlinecolor -> self().handleColor);
+        drawtext(lerp(endPoints_1, endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> self().textOutlineWidth, outlinecolor -> self().handleColor);
       );
 
     );
@@ -363,6 +364,8 @@ newOptionSlider(dict) := (
   res.animate := (
     self().animateIndex = lerp(self().animateIndex, self().index, exp(-48 * uiDelta));
   );
+
+  res.currentOption := self().options_(self().index);
 
 
   res.onDown := ();
