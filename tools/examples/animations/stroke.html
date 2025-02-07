@@ -10,25 +10,23 @@
 
             startDelay = 0.5;
             trackData = [
-              2, 0.5
+              1.5, 0.5
             ];
-        
-            stroke = sampleBezierCurve([[-3, 7], [-1, 1], [5, 10]], 128);
+            
+            resolution = 256;
+            stroke = sampleBezierCurve([[-3, 2], [4, -5], [10, 5]], resolution);
             
             calculation() := (
-                strokeIndex = round(lerp(1, 128, easeInOutCubic(t1)));
-                if(strokeIndex >= 3,
-                    tip = arrowTip(stroke_strokeIndex, stroke_strokeIndex - stroke_(strokeIndex - 2), 0.7 * t1);
-                );
+                strokeIndex = round(lerp(1, resolution, easeInOutCubic(t1)));
             );
             
             rendering() := (
               connect(stroke_(1..strokeIndex), size -> 5 * easeOutCirc(t1));
-              if(strokeIndex >= 3,
-                    connect(tip, size -> 5 * easeOutCirc(t1));
+              if(strokeIndex >= 2,
+                draw(stroke_(strokeIndex - 1), stroke_strokeIndex, size -> 5 * easeOutCirc(t1), arrow -> true, arrowsize -> 2 * t1);
               );
-              
             );
+
         </script>
         
         <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>

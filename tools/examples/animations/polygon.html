@@ -14,31 +14,20 @@ showDebugInfo = true;
 
 
 
-// *************************************************************************
 
-
-
-
-
-// Configure timelines.
   
 startDelay = 1;
 
-// Alternating duration and pause.
-// A trailing comma will make the rendering of individual frames not run at all, but there won't be any error messages.
 trackData = [
   5, 0.3
 ];
 
-// *************************************************************************
-
-// Set up objects here.
 
 
 vertices = [
   [10,0],
-  [13, -2],
-  [15,10],
+  [15, -2],
+  [20,10],
   [14,8],
   [-1,11],
   [-2,-1]
@@ -47,17 +36,11 @@ vertices = [
 
 
 
-lastEndpoint = vertices_1;
-deltaDist = 0;
-
-
 calculation() := (
-  // Do calculations here.
-  // You can use shorthand variables for track progress: Instead of tracks_1.progress you can use t1.
+
 );
 
 rendering() := (
-  // Do rendering here.
 
   connect(animatePolygon(vertices, t1));
 

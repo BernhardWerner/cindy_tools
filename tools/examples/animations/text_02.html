@@ -8,7 +8,7 @@
 <body>
 
 <script id='csinit' type='text/x-cindyscript'>
-textSize = 30;
+textSize = 40;
 typingSpeed = 10;
 
 string = "This is $\displaystyle \sum[i=0][\infty] q^i = \frac{1}{1-q}$ plus text.";
@@ -26,7 +26,7 @@ delayedSetup() := (
 );
 
 rendering() := (
-  drawFragments([-7, 12], fragmentedString, t1, "up", {"color": (0.8, 0.2, 0.3)});  
+  drawFragments(canvasCenter + [-15, 0], fragmentedString, t1, "up", {"color": (0.8, 0.2, 0.3)});  
 );
 </script>
 

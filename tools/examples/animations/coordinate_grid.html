@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Coordinate grid animation</title>
+        <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+    </head>
+    <body>
+    <script id='csinit' type='text/x-cindyscript'>
+        renderMode = RENDERMODES.REAL;
+
+        startDelay = 0.5;
+        trackData = [
+            2, 0.5
+        ];
+    
+        scale = 1.5;
+        origin = canvasAnchors_2 + [-5, 5];
+
+        grid2cindy(p) := p * scale + origin;
+
+        xRange = -3..8;
+        yRange = -2..5;
+
+        horiLines = apply(yRange,
+            [grid2cindy([xRange_1, #]), grid2cindy([xRange_(-1), #])];
+        );
+        vertLines = apply(xRange,
+            [grid2cindy([#, yRange_1]), grid2cindy([#, yRange_(-1)])];
+        );
+
+        
+        timeBuffer = 0.3;
+        overshoot = 0.5;
+
+        h = length(xRange);
+        v = length(yRange);
+
+        calculation() := (
+            horiCustomTimes = apply(1..v,
+                timeOffset(t1,
+                    lerp(0, timeBuffer, #, 1, v),
+                    lerp(1 - timeBuffer, 1, #, 1, v)
+                );
+            );
+            horiEndPoints = apply(horiLines, line, index,
+                lerp(line_1, line_2, easeInOutCubic(horiCustomTimes_index));
+            );
+            vertCustomTimes = apply(1..h,
+                timeOffset(t1,
+                    lerp(0, timeBuffer, #, 1, h),
+                    lerp(1 - timeBuffer, 1, #, 1, h)
+                );
+            );
+            vertEndPoints = apply(vertLines, line, index,
+                lerp(line_1, line_2, easeInOutCubic(vertCustomTimes_index));
+            );
+        );
+        
+        rendering() := (
+            forall(horiLines, line, index,
+                isAxis = yRange_index == 0;
+                time = horiCustomTimes_index;
+                draw(line_1 + [-overshoot, 0], horiEndPoints_index + [time * overshoot * if(isAxis, 3, 1), 0], size -> if(isAxis, 5, 1.5) * easeOutCirc(time), color -> 0.5 * (1,1,1), arrow -> isAxis & time > 0, arrowsize -> 1.5 * time);
+            );
+            forall(vertLines, line, index,
+                isAxis = xRange_index == 0;
+                time = vertCustomTimes_index;
+                draw(line_1 + [0, -overshoot], vertEndPoints_index + [0, time * overshoot * if(isAxis, 3, 1)], size -> if(isAxis, 5, 1.5) * easeOutCirc(time), color -> 0.5 * (1,1,1), arrow -> isAxis & time > 0, arrowsize -> 1.5 * time);
+            );
+        );
+    </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+
