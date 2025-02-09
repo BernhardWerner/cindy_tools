@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unwrap circle animation</title>
+        <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+    </head>
+    <body>
+    <script id='csinit' type='text/x-cindyscript'>
+        renderMode = RENDERMODES.REAL;
+
+        startDelay = 0.5;
+        trackData = [
+            3, 0.5,   //  01  type text, draw circle and line
+            2, 0.5    //  02  morph stroke
+        ];
+
+        black = [0, 0, 0];
+        blue = [0.2, 0.3, 0.8];
+    
+        text = "Every circle can be parametrized by the unit interval.";
+        fragmentedText = fragment(text, 30);
+        
+        circleCenter = canvasAnchors_4 + [8, 1];
+        circleRadius = 5;
+        circleStroke = apply(sampleCircle(circleRadius), rotate(#, pi) + circleCenter);
+
+        intervalBottom = canvasAnchors_6 + [-7, -5];
+        intervalTop = canvasAnchors_6 + [-7, 7];
+        intervalStroke = subdivideSegment(intervalBottom, intervalTop);
+
+        calculation() := (
+            a1 = timeOffset(t1, 0, 2/3);
+            b1 = timeOffset(t1, 1/3, 1);
+            
+            strokeIndex = round(lerp(1, strokeSampleRate, easeInOutCubic(a1)));
+            stroke = lerp(circleStroke, intervalStroke, easeInOutCubic(t2));
+            stroke = stroke_(1..strokeIndex);
+
+            intervalEndPoint = lerp(intervalBottom, intervalTop, easeInOutCubic(b1));
+        );
+        
+        rendering() := (
+            drawFragments(canvasAnchors_1 + [1, 1.5], fragmentedText, t1, "up");
+
+            draw(intervalBottom, intervalEndPoint, size -> 1, color -> black);
+
+            if(t2 > 0,
+                drawcircle(circleCenter, circleRadius, size -> 1, color -> black);
+            );
+            connect(stroke, color -> blue, size -> 8 * easeOutCirc(a1));
+        );
+    </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+

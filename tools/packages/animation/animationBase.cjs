@@ -246,7 +246,7 @@ sampleCatmullRomSpline(points)               := sampleCatmullRomSplineGeneralFRE
 
 
 subdivideSegment(p, q, n) := apply(1..n, lerp(p, q, #, 1, n));
-
+subdivideSegment(p, q) := subdivideSegment(p, q, strokeSampleRate);
 
 
 
