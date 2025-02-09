@@ -38,21 +38,22 @@
             
             strokeIndex = round(lerp(1, strokeSampleRate, easeInOutCubic(a1)));
             stroke = circleStroke;
+
+            shift = [3, 0] * easeInCubic(timeOffset(t2, 0.5, 1));
+            stroke = apply(stroke, # + shift);
             
             if(t2 > 0,
-                uncoilIndex = round(lerp(1, 0.5 * strokeSampleRate, t2));
+                uncoilIndex = round(lerp(1, 0.5 * strokeSampleRate, easeInOutQuad(t2)));
                 detachPointA = stroke_uncoilIndex;
                 detachPointB = stroke_(-uncoilIndex);
-                detachDirectionB = perp((detachPointB - circleCenter) / circleRadius);
+                detachDirectionB = perp((detachPointB - circleCenter - shift) / circleRadius);
                 detachDirectionA = [detachDirectionB.x, -detachDirectionB.y];
                 forall(1..uncoilIndex,
                     stroke_# = detachPointA + lerp(uncoilIndex - 1, 0, #, 1, uncoilIndex) * (2 * pi * circleRadius / strokeSampleRate) * detachDirectionA;
                     stroke_(-#) = detachPointB + lerp(uncoilIndex - 1, 0, #, 1, uncoilIndex) * (2 * pi * circleRadius / strokeSampleRate) * detachDirectionB;
                 );
             );
-            if(t2 > 0.5,
-                stroke = apply(stroke, # + 60 * [delta, 0] * easeInQuad(timeOffset(t2, 0.5, 1)));
-            );
+
 
             stroke = lerp(stroke, intervalStroke, easeOutCubic(t3));
 
