@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unwrap circle animation</title>
+        <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+    </head>
+    <body>
+    <script id='csinit' type='text/x-cindyscript'>
+        renderMode = RENDERMODES.REAL;
+
+        startDelay = 0.5;
+        trackData = [
+            1, 0.5,   //  01   draw axes
+            1, 0.5,   //  02   draw bars, party labels and percentage labels
+            2, 5,    //  03   start wiggle bar heights and percentage labels
+            2, 0.5    //  04   stop wiggle
+        ];
+
+
+        red = (0.8, 0.2, 0.3);
+        green = (0.3, 0.8, 0.2);
+        blue = (0.2, 0.3, 0.8);
+        gray = 0.4 * (1,1,1);
+
+
+        origin = canvasAnchors_1 + (6, 5);
+        xStep = 5;
+        yStep = 10;
+
+        pixelSize = 1 / screenresolution();
+
+        calculation() := (
+            wiggleA = lerp(-20, 25, perlinNoise2D(0.3 * now() * [2, 1]));
+            wiggleC = lerp(-6, 25, perlinNoise2D(0.5 * now() * [-1, 2]));
+
+            percentageA = 34 + wiggleA * easeInOutCubic(t3) * easeInOutCubic(1 - t4);
+            percentageC = 8 + wiggleC * easeInOutCubic(t3) * easeInOutCubic(1 - t4);
+            percentageB := 100 - percentageA - percentageC;
+
+            heightA(time) := 0.01 * percentageA * yStep * time;
+            heightB(time) := 0.01 * percentageB * yStep * time;
+            heightC(time) := 0.01 * percentageC * yStep * time;
+
+            rectA(time) := expandRect(origin + [0.5 * xStep, 1 * pixelSize], 0.3 * xStep, heightA(time), 2)_[2,3,4,1]; // By default order as bottom-left, bottom-right, top-right, top-left. Reorder to draw easier as stroke.
+            rectB(time) := expandRect(origin + [1.5 * xStep, 1 * pixelSize], 0.3 * xStep, heightB(time), 2)_[2,3,4,1];
+            rectC(time) := expandRect(origin + [2.5 * xStep, 1 * pixelSize], 0.3 * xStep, heightC(time), 2)_[2,3,4,1];
+
+
+        );
+        
+        rendering() := (
+            if(t2 > 0,
+                rect = rectA(easeInOutCubic(t2));
+                fillpoly(rect, color -> red, alpha -> 0.5);
+                connect(rect, color -> red, size -> 4 * easeOutCirc(t2));
+                drawtext(origin + [0.5 * xStep, -1 + easeInCubic(1 - t2) * 0.3], "Party A", size -> 20, bold -> true, align -> "mid", color -> red, alpha -> easeInCirc(t2));
+                drawtext(origin + [0.5 * xStep, heightA(easeInOutCubic(t2)) + 0.3 - easeInCubic(1 - t2) * 0.3], format(percentageA, 0) + "%", size -> 20, bold -> true, align -> "mid", color -> red, alpha -> easeInCirc(t2));
+                
+                
+                rect = rectB(easeInOutCubic(t2));
+                fillpoly(rect, color -> green, alpha -> 0.5);
+                connect(rect, color -> green, size -> 4 * easeInCubic(t2));
+                drawtext(origin + [1.5 * xStep, -1 + easeInCubic(1 - t2) * 0.3], "Party 2", size -> 20, bold -> true, align -> "mid", color -> green, alpha -> easeInCirc(t2));
+                drawtext(origin + [1.5 * xStep, heightB(easeInOutCubic(t2)) + 0.3 - easeInCubic(1 - t2) * 0.3], format(percentageB, 0) + "%", size -> 20, bold -> true, align -> "mid", color -> green, alpha -> easeInCirc(t2));
+
+                rect = rectC(easeInOutCubic(t2));
+                fillpoly(rect, color -> blue, alpha -> 0.5);
+                connect(rect, color -> blue, size -> 4 * easeInCubic(t2));
+                drawtext(origin + [2.5 * xStep, -1 + easeInCubic(1 - t2) * 0.3], "Party $\gamma$", size -> 20, bold -> true, align -> "mid", color -> blue, alpha -> easeInCirc(t2));
+                drawtext(origin + [2.5 * xStep, heightC(easeInOutCubic(t2)) + 0.3 - easeInCubic(1 - t2) * 0.3], format(percentageC, 0) + "%", size -> 20, bold -> true, align -> "mid", color -> blue, alpha -> easeInCirc(t2));
+            );
+
+            draw(origin, origin + easeInOutCubic(t1) * [3 * xStep, 0], size -> 3 * easeInCubic(t1), color -> gray);
+            draw(origin, origin + easeInOutCubic(t1) * [0, 1.2 * yStep], size -> 3 * easeInCubic(t1), color -> gray, arrow -> t1 > 0, arrowsize -> 1.5 * t1);
+        );
+    </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+

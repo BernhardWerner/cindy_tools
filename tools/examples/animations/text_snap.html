@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unwrap circle animation</title>
+        <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+    </head>
+    <body>
+    <script id='csinit' type='text/x-cindyscript'>
+        renderMode = RENDERMODES.REAL;
+
+        startDelay = 0.5;
+        trackData = [
+            0.5, 0.5,
+            0.5, 0.5,
+            0.5, 0.5
+        ];
+
+        string1 = "Welcome to this lecture!";
+        string2 = "Lorem ipsum.";
+        string3 = "We know that $\displaystyle \sum_{i=0}^{\infty}q^i = \frac{1}{1-q}.$";
+
+        calculation() := (
+
+        );
+        
+        rendering() := (
+            drawtext(canvasCenter + [-10,  3 - easeOutCirc(1 - t1) * 1], string1, size -> 30, alpha -> easeInCirc(t1));
+            drawtext(canvasCenter + [-10,  0 - easeOutCirc(1 - t2) * 1], string2, size -> 30, alpha -> easeInCirc(t2));
+            drawtext(canvasCenter + [-10, -3 - easeOutCirc(1 - t3) * 1], string3, size -> 30, alpha -> easeInCirc(t3));
+        );
+    </script>
+        
+        <canvas id="CSCanvas" width="800" height="600" style="border:1px solid black;"></canvas>
+        
+        <script>
+            var cindy = CindyJS({
+                canvasname: "CSCanvas",
+                scripts: "cs*",
+                import: {
+                    "packages": ["../../packages/animation"]
+                }
+            });
+        </script>
+    </body>
+</html>
+
