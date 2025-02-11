@@ -4,6 +4,7 @@ const importList = ["animation", "ui", "color", "camera"];
 let cindy;
 let consoleOutput;
 let runButton;
+let clearButton;
 let animationCheckbox;
 let uiCheckbox;
 let colorCheckbox;
@@ -116,20 +117,13 @@ async function initializeTextAreas() {
 
 
 
-
-
-
-
-
-
-
-
 document.addEventListener('DOMContentLoaded', async function() {
     consoleOutput = document.getElementById('console-output');
     
     runButton = document.getElementById('runButton');
     resetButton = document.getElementById('resetButton');
     exportButton = document.getElementById('exportButton');
+    clearButton = document.getElementById('clearButton');
 
     animationCheckbox = document.getElementById('animationCheckbox');
     uiCheckbox = document.getElementById('uiCheckbox');
@@ -144,10 +138,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
-    window.addEventListener('resize', function () {
-        Object.values(codeMirrors).forEach(function(cm) {
-            cm.setSize(null, document.querySelector('.left-column').clientHeight);
-        });
+    window.addEventListener('resize', function() {
+        adjustCodeMirrorSizes(topRow.clientHeight);
+        adjustConsoleSize(bottomRow.clientHeight);
+
+
     });
 
     const tabs = document.querySelectorAll('.tab-links a');
@@ -172,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     runButton.addEventListener('click', run);
     resetButton.addEventListener('click', resetEditor);
     exportButton.addEventListener('click', exportScripts);
+    clearButton.addEventListener('click', clearConsole);
 
     initializeCheckboxStates();
     await initializeTextAreas();
@@ -180,55 +176,68 @@ document.addEventListener('DOMContentLoaded', async function() {
     const rowResizer = document.querySelector('.row-resizer');
     const leftColumn = document.querySelector('.left-column');
     const topRow = document.querySelector('.top-row');
+    const bottomRow = document.querySelector('.bottom-row');
+    const consoleHeader = document.querySelector('.console-header');
     const container = document.querySelector('.container');
-  
+
     let isResizingColumn = false;
     let isResizingRow = false;
 
     document.addEventListener('mousedown', function(e) {
-      if (e.target.classList.contains('column-resizer') || e.target.classList.contains('row-resizer')) {
-        e.preventDefault();
-      }
+        if (e.target.classList.contains('column-resizer') || e.target.classList.contains('row-resizer')) {
+            e.preventDefault();
+        }
     });
 
     document.addEventListener('mousemove', function(e) {
-      if (isResizingColumn || isResizingRow) {
-        e.preventDefault();
-      }
+        if (isResizingColumn || isResizingRow) {
+            e.preventDefault();
+        }
     });
 
     columnResizer.addEventListener('mousedown', function(e) {
-      isResizingColumn = true;
-      document.addEventListener('mousemove', handleColumnResize);
-      document.addEventListener('mouseup', stopResizing);
+        isResizingColumn = true;
+        document.addEventListener('mousemove', handleColumnResize);
+        document.addEventListener('mouseup', stopResizing);
     });
 
     rowResizer.addEventListener('mousedown', function(e) {
-      isResizingRow = true;
-      document.addEventListener('mousemove', handleRowResize);
-      document.addEventListener('mouseup', stopResizing);
-    });
+        isResizingRow = true;
+        document.addEventListener('mousemove', handleRowResize);
+        document.addEventListener('mouseup', stopResizing);
+    });        
+    
+    adjustCodeMirrorSizes(topRow.clientHeight);
+    adjustConsoleSize(bottomRow.clientHeight);
+
+
+
+
+
 
     function handleColumnResize(e) {
-      if (!isResizingColumn) return;
-      const containerRect = container.getBoundingClientRect();
-      const newWidth = e.clientX - containerRect.left;
-      leftColumn.style.width = `${newWidth}px`;
+        if (!isResizingColumn) return;
+        const containerRect = container.getBoundingClientRect();
+        const newWidth = e.clientX - containerRect.left;
+        leftColumn.style.width = `${newWidth}px`;
     }
 
     function handleRowResize(e) {
-      if (!isResizingRow) return;
-      const leftColumnRect = leftColumn.getBoundingClientRect();
-      const newHeight = e.clientY - leftColumnRect.top;
-      topRow.style.height = `${newHeight}px`;
+        if (!isResizingRow) return;
+        const leftColumnRect = leftColumn.getBoundingClientRect();
+        const newHeight = e.clientY - leftColumnRect.top;
+        topRow.style.height = `${newHeight}px`;
+
+        adjustCodeMirrorSizes(topRow.clientHeight);
+        adjustConsoleSize(bottomRow.clientHeight);
     }
 
     function stopResizing() {
-      isResizingColumn = false;
-      isResizingRow = false;
-      document.removeEventListener('mousemove', handleColumnResize);
-      document.removeEventListener('mousemove', handleRowResize);
-      document.removeEventListener('mouseup', stopResizing);
+        isResizingColumn = false;
+        isResizingRow = false;
+        document.removeEventListener('mousemove', handleColumnResize);
+        document.removeEventListener('mousemove', handleRowResize);
+        document.removeEventListener('mouseup', stopResizing);
     }
 });
 
@@ -236,11 +245,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
 
+function adjustCodeMirrorSizes(height) {
+    for(let i = 0; i < scriptList.length; i++) {
+        codeMirrors[scriptList[i]].setSize(null, height - 300);
+        codeMirrors[scriptList[i]].refresh();
+    }
+}
 
-
-
-
-
+function adjustConsoleSize(height) {
+    consoleOutput.style.height = height - 140 + 'px';
+}
 
 
 
@@ -282,4 +296,8 @@ function resetEditor() {
 
 function exportScripts() {
     // PLACEHOLDER
+}
+
+function clearConsole() {
+    consoleOutput.innerHTML = '';
 }
