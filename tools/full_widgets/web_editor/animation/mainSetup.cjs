@@ -112,7 +112,7 @@ tick(d) := (
             katexLoaded = true;
             delayedSetup();
         , // else //
-        delayedSetup();
+            delayedSetup();
             tick(1/60);
         );
     );

@@ -25,7 +25,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 strokeSampleRate = 256;
-texDelimiters = ["⧸", "⧹"];
+texDelimiters = ["@", "/"];
 integralResolution = 3;
 
 
@@ -69,9 +69,12 @@ roundedRectangleStroke(center, w, h, cornerRadius) := (
 // ************************************************************************************************
 // Creates stroke around a polygon.
 // ************************************************************************************************
-samplePolygonCurveFREE(poly, nop) := (
+samplePolygonFREE(poly, nop, closed) := (
     regional(pairs, dists, totalDist, effectiveNumber, splitNumbers, stepSize, index, sr);
     
+    if(closed, 
+        poly = poly :> poly_1;
+    );
     
     sr = if(length(poly) == 2, strokeSampleRate, nop);
     
@@ -103,9 +106,10 @@ samplePolygonCurveFREE(poly, nop) := (
     flatten(apply(1..length(pairs), pop(subDivideSegment(pairs_#_1, pairs_#_2, splitNumbers_# + 2)) )) :> poly_(-1);
 
 );
+samplePolygonFREE(poly, nop) :=	samplePolygonFREE(poly, nop, true);
 
-samplePolygonCurve(poly) := samplePolygonFREE(poly, strokeSampleRate);
-
+samplePolygon(poly) := samplePolygonFREE(poly, strokeSampleRate);
+samplePolygon(poly, closed) := samplePolygonFREE(poly, strokeSampleRate, closed);
 
 
 
@@ -242,7 +246,7 @@ sampleCatmullRomSpline(points)               := sampleCatmullRomSplineGeneralFRE
 
 
 subdivideSegment(p, q, n) := apply(1..n, lerp(p, q, #, 1, n));
-
+subdivideSegment(p, q) := subdivideSegment(p, q, strokeSampleRate);
 
 
 
@@ -475,7 +479,18 @@ setupAnimationTrack(s, e) := (
 ); 
 
 
+setupMultiAnimationTracks(start, listOfDurations, pause) := (
+    regional(t, res);
 
+    res = [];
+    t = start;
+    forall(listOfDurations, d,
+        res = res :> setupAnimationTrack(t, t + d);
+        t = t + d + pause;
+    );
+
+    res;
+);
 
 // times must be of the form [startPause, duration 1, endPause 1, duration 2, endPause 2, ...]
 setupMultiAnimationTracks(times) := (
@@ -1413,4 +1428,59 @@ rnd() := (
 // *************************************************************************************************
 // Potential split for Egdod Mark III
 // **************************************************************************************************/
+
+
+
+const(n, x) := if(n == 0, [], apply(1..n, x));
+
+poissonDiscSampling(rect, d, numberOfPoints, searchThreshold) := (
+    regional(oldPoints, hSize, vSize, result, searching, i, j, candidate, candidateValid, rangeA, rangeB, offset);
+
+    hSize = ceil(rect.width / d);
+    vSize = ceil(rect.height / d);
+    oldPoints = const(vSize, const(hSize, []));
+
+    result = [];
+    
+    searching = true;
+    candidateValid = true;
+    numberOfSearches = 0;
+
+    while(and(searching, length(result) < numberOfPoints),
+        candidate = [random() * rect.width, random() * rect.height];
+        i = floor(candidate.x / d);
+        j = floor(candidate.y / d);
+
+        rangeA = max(i - 1, 0)..min(i + 1, hSize - 1);
+        rangeB = max(j - 1, 0)..min(j + 1, vSize - 1);
+        
+        
+
+        forall(rangeA, a, forall(rangeB, b,
+            
+            forall(oldPoints_(b+1)_(a+1), point,  
+                candidateValid = and(candidateValid,
+                    (candidate.x - point.x)^2 + (candidate.y - point.y)^2 > d^2;
+                );	
+            );
+        ));
+
+        if(candidateValid,
+            oldPoints_(j+1)_(i+1) = oldPoints_(j+1)_(i+1) :> candidate;
+            result = result :> candidate;
+            numberOfSearches = 0;
+        , // else //		
+            numberOfSearches = numberOfSearches + 1;
+            if(numberOfSearches > searchThreshold,
+                searching = false;	
+            );
+            candidateValid = true;
+        );
+    );
+
+    offset = [-1, -1] - compass(rect.anchor);
+
+    apply(result, # + rect.position + 0.5 * [offset.x * rect.width, offset.y * rect.height]);
+);
+poissonDiscSampling(rect, d, numberOfPoints) := poissonDiscSampling(rect, d, numberOfPoints, 32);
 

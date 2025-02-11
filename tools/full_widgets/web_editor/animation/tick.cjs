@@ -44,7 +44,7 @@ if(renderMode == RENDERMODES.FRAMES,
             katexLoaded = true;
             delayedSetup();
         , // else //
-        delayedSetup();
+            delayedSetup();
         );
     );
 );
