@@ -65,17 +65,17 @@ Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
 ### `animationBase`
 
+#### `arrowTip(tipPos, dir, size)`
+Creates an equilateral triangle at `tipPos` with the tip pointing in the direction `dir` (does not has to be normalized in advance) and a size of `size`. Feed the result into `connect(list)` or `fillpoly(list)` to draw arrow tips.
+
 #### `canvasAnchors`
 An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
 
-#### `canvasPoly`
-An array of the four corners of the canvas. Order top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
+#### `canvasBottom`
+The coordinate of the bottom edge of the canvas.
 
 #### `canvasCenter`
 The centre of the canvas. Identical to `canvasAnchors_5`.
-
-#### `canvasWidth`
-The width of the canvas.
 
 #### `canvasHeight`
 The height of the canvas.
@@ -83,17 +83,35 @@ The height of the canvas.
 #### `canvasLeft`
 The coordinate of the left edge of the canvas.
 
-#### `canvasTop`
-The coordinate of the top edge of the canvas.
+#### `canvasPoly`
+An array of the four corners of the canvas. Order top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
 
 #### `canvasRight`
 The coordinate of the right edge of the canvas.
 
-#### `canvasBottom`
-The coordinate of the bottom edge of the canvas.
+#### `canvasTop`
+The coordinate of the top edge of the canvas.
+
+#### `canvasWidth`
+The width of the canvas.
+
+#### `roundedRectangleStroke(center, w, h, cornerRadius)`
+Creates a list of `strokeSampleRate`-many points that form a rounded rectangle with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left of the top edge and goes counter-clockwise.
+
+#### `sampleCircle(rad, angle)`
+Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
+
+#### `sampleCircle(rad, startAngle, endAngle)`
+Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
+
+#### `sampleCircle(rad)`
+Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right.
 
 #### `screenMouse()`
+The coordinates of the mouse cursor normalized to the canvas such that they boh lie in the interval $[0,1]$.
 
+#### `strokeSampleRate`
+Global constant that is used as a default value for sampling various curves like circles or Bezier curves.
 
 
 
