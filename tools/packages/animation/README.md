@@ -61,63 +61,16 @@ Set `currentTrackIndex = k;` to determine at which animation track to start.
 ## Animation Commands & Functions
 These are the functions and commands found in the libraries `animationBase` and `mainSetup` relevant to creating animations. The first is a stand-alone library that can be used to create custom animations and animation frameworks. The second is used to setup the full management suite. This second file has very few parts you will have to interact with, unless you want to remodel the package.
 
-Relative reference points and sizes. `canvasCenter`, `canvasWidth`, `canvasHeight`, `canvasAnchors`
+### `animationBase`
 
-Linear interpolation between `x` and `y` where `t` is a percentage: `lerp(x, y, t)`
+#### `canvaspoly`
+An array of the four corners of the canvas. Order top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
 
-% Distance from `x` to `p` relative to distance from `x` to `y`: `inverseLerp(x, y, p)`
-
-Linear interpolation between `x` and `y` relative to `t` where `t` is between `a` and `b`: `lerp(x, y, t, a, b)`
-
-Limit `x` to the interval between `a` and `b`: `clamp(x, a, b)`
-
-% Total time of current animation: `now()`
-
-% Duration of last frame: `delta`
-
-Easing function are all of the form `easeInOutCubic(t)`. See \url{https://easings.net/} for all of them.
-
-The result moves from 0 to 1 while the progress `t` moves from `a` to `b`: `timeOffset(t, a, b)`
-
-% "Random" value between 0 and 1 given a position: `randomValue(point)`
-
-% 2D Perlin noise given a position: `perlinNoise2D(point)`
-
-Samples a circular arc stroke: `sampleCircle(radius, startAngle, endAngle)`
-
-% Samples a rectangle with rounded corners:\newline`roundedRectangleStroke(center, width, height, cornerRadius)`
-
-Samples a Bézier curve: `sampleBezierCurve(listOfPoints)`
-
-% Samples a cubic Bézier spline: `sampleBezierSpline(listOfPoints)`
-
-% Samples a single Catmul-Rom curve: `sampleCatmulRomCurve(listOfPoints)`
-
-% Samples a Catmul-Rom spline: `sampleCatmulRomSpline(listOfPoints)`
-
-Samples a polygonal curve: `samplePolygonCurve(listOfPoints)`
-
-Checks if a point is in a polygon: `pointInPolygon(point, listOfPoints)`
-
-% Creates unit vector pointing in a given angle direction: `ang2vec(angle)`
-
-Rotates a point around a centre: `rotate(point, angle, center)`
-
-% Shuffles an array: `randomSort(array)`
-
-% Chooses `k` elements from an array at random: `randomChoose(array, k)`
-
-% Removes first element of an array: `bite(array)`
-
-% Removes last element of an array : `pop(array)`
+#### `canvasAnchors`
+An array of anchor points around the border of the canvas.
 
 
-Splits a \emph{Nyka} maths string into individual glyphs: `fragment(nykaString, textSize)`
 
-Returns number of glyphs in a fragmented \emph{Nyka} maths string: `fragmentLength(fragmentedString)`
-
-Draws a fragmented \emph{Nyka} maths string over time `t` with a typewriter effect. `mode` can be `"up"` or `"down"`:
-\newline`drawFragments(position, fragmentedString, t, mode, dictOfModifiers)`
 
 \emph{Nyka} commands via examples:
 \setlength\parindent{2em}
@@ -139,3 +92,7 @@ Roots. Can be followed by square brackets. Must end with curly braces:
 
 \vspace{-0.8em}
 `"$\sqrt{2} \cdot \sqrt[3]{2}$"`
+
+
+### 'mainSetup'
+##
