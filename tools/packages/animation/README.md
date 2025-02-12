@@ -61,13 +61,56 @@ Set `currentTrackIndex = k;` to determine at which animation track to start.
 ## Animation Commands & Functions
 These are the functions and commands found in the libraries `animationBase` and `mainSetup` relevant to creating animations. The first is a stand-alone library that can be used to create custom animations and animation frameworks. The second is used to setup the full management suite. This second file has very few parts you will have to interact with, unless you want to remodel the package.
 
+Unless explicitly mentioned, all distances and sizes are in Cindy units.
+
 ### `animationBase`
 
-#### `canvaspoly`
+#### `canvasAnchors`
+An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
+
+#### `canvasPoly`
 An array of the four corners of the canvas. Order top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
 
-#### `canvasAnchors`
-An array of anchor points around the border of the canvas.
+#### `canvasCenter`
+The centre of the canvas. Identical to `canvasAnchors_5`.
+
+#### `canvasWidth`
+The width of the canvas.
+
+#### `canvasHeight`
+The height of the canvas.
+
+#### `canvasLeft`
+The coordinate of the left edge of the canvas.
+
+#### `canvasTop`
+The coordinate of the top edge of the canvas.
+
+#### `canvasRight`
+The coordinate of the right edge of the canvas.
+
+#### `canvasBottom`
+The coordinate of the bottom edge of the canvas.
+
+#### `screenMouse()`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
