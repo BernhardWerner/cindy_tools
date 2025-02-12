@@ -25,7 +25,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 strokeSampleRate = 256;
-texDelimiters = ["@", "/"];
+texDelimiters = ["⧸", "⧹"];
 integralResolution = 3;
 
 
