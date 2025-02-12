@@ -13,7 +13,7 @@ var cindy = CindyJS({
 
 ## Camera
 
-This is a simple camera controller to do 3D visualisations without the Cindy3D plugin. (Which is very good, but sometimes clunky to work with as it needs its own canvas to draw on.) All functions here assume that pass a camera object of the form
+This is a simple camera controller to do 3D visualisations without the Cindy3D plugin. (Which is very good, but sometimes clunky to work with as it needs its own canvas to draw on.) All functions here assume that you pass a camera object of the form
 ```JavaScript
 cam = {
     "rad": 60,
