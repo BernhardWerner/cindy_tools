@@ -19,8 +19,16 @@ Complex calculations go into the body of `calculation()`, draw commands go into 
 
 ### Basic animations
 The basic command to animate is `lerp`. There are, broadly speaking, two cases to consider:
-1. You want to change a variable `property` over time. Define it in `calculation()`, and write something like `property = lerp(property, newValue, t1)`, also in `calculation()`.
-2. You are building a new value from fixed references. Define them outside of `calculation()`, and then write something like `newProperty = lerp(referenceA, referenceB, t1)` inside.
+1. You want to change a variable `property` over time. Define it in `calculation()`, and write something like
+   
+    ```property = lerp(property, newValue, t1)```
+   
+    also in `calculation()`.
+3. You are building a new value from fixed references. Define them outside of `calculation()`, and then write something like
+
+    ```newProperty = lerp(referenceA, referenceB, t1)```
+
+    inside.
 
 If you are using `fragment` to preprocess *Nyka* maths strings, you have to call it inside a function called `delayedSetup()`.
 
@@ -51,6 +59,7 @@ Set `currentTrackIndex = k;` to determine at which animation track to start.
 
 
 ## Animation Commands & Functions
+These are the functions and commands found in the libraries `animationBase` and `mainSetup` relevant to creating animations. The first is a stand-alone library that can be used to create custom animations and animation frameworks. The second is used to setup the full management suite. This second file has very few parts you will have to interact with, unless you want to remodel the package.
 
 Relative reference points and sizes. `canvasCenter`, `canvasWidth`, `canvasHeight`, `canvasAnchors`
 
