@@ -65,103 +65,135 @@ These are the functions and commands found in the libraries `animationBase` and 
 
 Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
-### `animationBase`
+### Functions & Commands of `animationBase`
 
+---
 #### `ang2vec(alpha)`
 Converts an angle `alpha` in degrees to a unit vector pointing in that direction. Just sytanctic sugar for the expression `[cos(alpha), sin(alpha)]`.
 
+---
 #### `animatePolygon(vertices, t)`
 This function interprets the list of vertices as a polygonal curve that parametrized by the interval $[0,1]$. It assumes that `t` is in this interval, and returns the point on the curve at this parameter value together with all vertices up to that points.
 
 Use it to animate a polygonal curve via `connect(animatePoylgon(vertices, t));` with `t` being the progress variable of an animation track. This is preferabel to `samplePolygon` if the polygon itself doesn't drastically change because this function outputs much fewer points.
 
+---
 #### `arrowTip(tipPos, dir, size)`
 Creates an equilateral triangle at `tipPos` with the tip pointing in the direction `dir` (does not has to be normalized in advance) and a size of `size`. Feed the result into `connect(list)` or `fillpoly(list)` to draw arrow tips.
 
+---
 #### `bezier(controls, t)`
 Calculates the point on the Bezier curve defined by the control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$.
 
+---
 #### `bite(list, i)`
 Removes the first `i` elements from `list` and returns the shortened array.
 
+---
 #### `bite(list)`
 Removes the first element from `list` and returns the shortened array.
 
+---
 #### `canvasAnchors`
 An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
 
+---
 #### `canvasBottom`
 The coordinate of the bottom edge of the canvas.
 
+---
 #### `canvasCenter`
 The centre of the canvas. Identical to `canvasAnchors_5`.
 
+---
 #### `canvasHeight`
 The height of the canvas.
 
+---
 #### `canvasLeft`
 The coordinate of the left edge of the canvas.
 
+---
 #### `canvasPoly`
 An array of the four corners of the canvas. Order top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
 
+---
 #### `canvasRight`
 The coordinate of the right edge of the canvas.
 
+---
 #### `canvasTop`
 The coordinate of the top edge of the canvas.
 
+---
 #### `canvasWidth`
 The width of the canvas.
 
+---
 #### `catmullRom(controls, alpha, t)`
 Calculates the point on the Catmull-Rom curve defined by the four control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$. The parameter `alpha` determines the knot parametrization. 
 
+---
 #### `deltaTime()`
 Calculates the time elapsed since the last frame. Call it in the tick script if you use `animationBase` on its own and use its result to update animation tracks or do custom time-dependent calculations.
 
+---
 #### `eerp(x, y, t)`
 Exponentially interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$.
 
+---
 #### `inverseEerp(x, y, p)`
 Calculates the parameter value `t` at which the exponential interpolation between `x` and `y` equals `p`. In other words, it calculates the growth rate from `x` to `p` relative to the growth rate from `x` to `y`. The result is set to 0.5 when `x` and `y` are equal.
 
+---
 #### `inverseLerp(x, y, p)`
 Calculates the parameter value `t` at which the linear interpolation between `x` and `y` equals `p`. In other words, it calculates the distance from `p` to `x` relative to the distance from `y` to `x`. The result is set to 0.5 when `x` and `y` are equal.
 
+---
 #### `inverseSlerp(u, v, w)`
 Calculates the parameter value `t` at which the spherical interpolation between the vectors `u` and `v` equals `w`. In other words, it calculates the angle between `w` and `u` relative to the angle between `v` and `u`. The vectors are assumed to be normalized.
 
+---
 #### `lerp(x, y, t)`
 Linearly interpolates between `x` and `y` at the parameter value `t`. THe value `t` is allowed to be outside the interval $[0,1]$ to give the full affine combination of `x` and `y`.
 
+---
 #### `lerp(x, y, t, a, b)`
 Linearly interpolates between `x` and `y` at the parameter value `t` with the latter being in the interval $[a,b]$. In other words, it reparametrizes the interval $[a, b]$ to $[x, y]$.
 
+---
 #### `now()`
 The total time elapsed since the start of the animation.
 
+---
 #### `pop(list, i)`
 Removes the last `i` elements from `list` and returns the shortened array.
 
+---
 #### `pop(list)`
 Removes the last element from `list` and returns the shortened array.
 
+---
 #### `randomChoose(list, k)`
 Chooses `k` elements from `list` at random and returns them as a new array.
 
+---
 #### `randomChoose(list)`
 Chooses one element from `list` at random.
 
+---
 #### `randomSort(list)`
 Shuffles the elements of `list` randomly.
 
+---
 #### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rounded rectangle with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left of the top edge and goes counter-clockwise.
 
+---
 #### `sampleCatmullRomCurve(controls, alpha)`
 Creates `strokeSampleRate`-many points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
 
+---
 #### `sampleCatmullRomCurve(controls)`
 Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
 
@@ -172,37 +204,71 @@ Creates points on the Catmull-Rom spline defined by the points in `points`. The 
 Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
 
 
+---
 #### `sampleCircle(rad, angle)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
 
+---
 #### `sampleCircle(rad, startAngle, endAngle)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
 
+---
 #### `sampleCircle(rad)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right.
 
+---
 #### `samplePolygon(poly, nop)`
 Creates `nop`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve.
 
+---
 #### `samplePolygon(poly)`
 Creates `strokeSampleRate`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve. 
 
+---
 #### `screenMouse()`
 The coordinates of the mouse cursor normalized to the canvas such that they boh lie in the interval $[0,1]$.
 
+---
 #### `setupTime()`
 Sets up the basic time keeping system. Call it together with `playanimation()` in the init script if you use `animationBase` on its own.
 
+---
 #### `sign(x)`
 Returns the sign of `x`.
 
+---
 #### `slerp(u, v, t)`
 Spherical interpolation between the vectors `u` and `v` at the parameter value `t`. The vectors are assumed to be normalized.
 
+---
+#### `smoothStep(x)`
+The polynomial 3x^2 - 2x^3. The function assumes that `x` is betwenn 0 and 1 and smoothly transitions from 0 to 1 as `x` grows.
+
+---
+#### `smoothStep(x, a, b)`
+The function is 0 if `x` is smaller than `a` and 1 if `x` is larger than `b`. It transitions smoothly between `a` and `b` via an appropriate cubic polynomial.
+
+---
+#### `stepSignal(t, a, b, c, d)`
+Returns 0 if `t` is smaller than `a` or larger than `d`. Returns 1 if `t` is between `b` and `c`. Transitions linearly when `t` is between `a` and `b` or between `c` and `d`.
+
+---
 #### `strokeSampleRate`
 Global constant that is used as a default value for sampling various curves like circles or Bezier curves.
 
+---
+#### `timeOffset(t, a, b)`
+Reparametrizes the interval $[0,1]$ to the interval $[a,b]$, but assumes that `t` is strictly between 0 and 1. In other words, for values $0\leq a < b \leq 1$, this returns 0 if `t` is below `a` and 1 if `t` is above `b`. In between, it linearly interpolates from 0 to 1.
 
+The main use is to slightly offset movements within the same animation track. Cf. the example `animation/coordinate_system.html` in the examples folder.
+
+---
+#### `triangleSignal(t, a, b)`
+Returns 0 if `t` is smaller than `a` or larger than `b`. Between `a` and `b`, it rises linearly from 0 to 1 and then falls linearly back to 0.
+
+---
+#### `triangleSignal(t)`
+Returns 0 if `t` is smaller than 0 or larger than 1. Between 0 and 1, it rises linearly from 0 to 1 and then falls linearly back to 0.
 
 
 
@@ -244,5 +310,4 @@ Roots. Can be followed by square brackets. Must end with curly braces:
 `"$\sqrt{2} \cdot \sqrt[3]{2}$"`
 
 
-### 'mainSetup'
-##
+### Functions & Commands of `mainSetup`
