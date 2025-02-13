@@ -11,7 +11,7 @@ trackData = [
     durationN, pauseN
 ];
 ```
-You must have an even number of entries, i.e., end with a pause. Set `startDelay` to have a pause at the very start. By default, this will setup will create animation tracks that run in sequence. If you want overlapping animations, there are two main cases:
+You must have an even number of entries, i.e., end with a pause. Set `startDelay` to have a pause at the very start. By default, this setup will create animation tracks that run in sequence. If you want overlapping animations, there are two main cases:
 - For very simple overlaps, you can set the appropriate pauses to be negative. Just make sure that the track that ends last is also last in the list to ensure that the following tracks are handled correctly.
 - If you want titghtly linked animations to be slightly offset -- e.g. when drawing grid lines -- use the function `timeOffset` to create these offset within a single track that covers the whole animation.
 
@@ -260,7 +260,7 @@ Global constant that is used as a default value for sampling various curves like
 #### `timeOffset(t, a, b)`
 Reparametrizes the interval $[0,1]$ to the interval $[a,b]$, but assumes that `t` is strictly between 0 and 1. In other words, for values $0\leq a < b \leq 1$, this returns 0 if `t` is below `a` and 1 if `t` is above `b`. In between, it linearly interpolates from 0 to 1.
 
-The main use is to slightly offset movements within the same animation track. Cf. the example `animation/coordinate_system.html` in the examples folder.
+The main use is to slightly offset movements within the same animation track. Cf. the example `animations/coordinate_grid.html` in the examples folder.
 
 ---
 #### `triangleSignal(t, a, b)`
