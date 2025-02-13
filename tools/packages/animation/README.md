@@ -109,6 +109,9 @@ Calculates the point on the Catmull-Rom curve defined by the four control points
 #### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rounded rectangle with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left of the top edge and goes counter-clockwise.
 
+#### `sampleCatmullRomCurve(controls, alpha)`
+
+
 #### `sampleCircle(rad, angle)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
 

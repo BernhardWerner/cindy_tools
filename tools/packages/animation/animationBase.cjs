@@ -207,8 +207,11 @@ sampleCatmullRomCurve(controls, alpha) := (
 );
 sampleCatmullRomCurve(controls) := sampleCatmullRomCurve(controls, 0.5);
         
-sampleCatmullRomSplineGeneralFREE(points, alpha, nop) := (
+sampleCatmullRomSpline(points, modifs) := (
     regional(dists, traj, before, after, cutTimes, piece, controls, t);
+
+    if(!contains(keys(modifs), "alpha"), modifs.alpha = 0.5);
+    if(!contains(keys(modifs), "sampleRate"), modifs.sampleRate = strokeSampleRate);
 
     dists    = apply(derive(points), abs(#));
     traj     = sum(dists);
@@ -216,27 +219,25 @@ sampleCatmullRomSplineGeneralFREE(points, alpha, nop) := (
     after    = 2 * points_(-1) - points_(-2);
     cutTimes = 0 <: apply(1..(length(dists) - 1), sum(dists_(1..#))) / traj;
   
-    apply(0..(nop - 1), i,
-      piece = select(1..(length(points) - 1), cutTimes_# * (nop - 1) <= i)_(-1);
+    apply(0..(sampleRate - 1), i,
+      piece = select(1..(length(points) - 1), cutTimes_# * (sampleRate - 1) <= i)_(-1);
   
     
       if(piece == 1,
         controls = [before, points_1, points_2, points_3];
-        t = i / (nop - 1) * traj / dists_1;
+        t = i / (sampleRate - 1) * traj / dists_1;
       ,if(piece == length(points) - 1,
         controls = [points_(-3), points_(-2), points_(-1), after];
-        t = (i / (nop - 1) - cutTimes_(-1)) * traj / dists_(-1);
+        t = (i / (sampleRate - 1) - cutTimes_(-1)) * traj / dists_(-1);
       , // else //
         controls = [points_(piece - 1), points_(piece), points_(piece + 1), points_(piece + 2)];
-        t = (i / (nop - 1) - cutTimes_piece) * traj / dists_piece;
+        t = (i / (sampleRate - 1) - cutTimes_piece) * traj / dists_piece;
       ));
 
       catmullRom(controls, alpha, t);
     );
 );
-sampleCatmullRomSplineGeneral(points, alpha) := sampleCatmullRomSplineGeneralFREE(points, alpha, strokeSampleRate);
-sampleCatmullRomSplineFREE(points, nop)      := sampleCatmullRomSplineGeneralFREE(points, 0.5, nop);
-sampleCatmullRomSpline(points)               := sampleCatmullRomSplineGeneralFREE(points, 0.5, strokeSampleRate);
+sampleCatmullRomSpline(points) := sampleCatmullRomSplineGeneralFREE(points, {});
 
 
 subdivideSegment(p, q, n) := apply(1..n, lerp(p, q, #, 1, n));
