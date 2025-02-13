@@ -527,8 +527,8 @@ tween(obj, prop, target, time) := (
 
 
 
-START = 0;
-END = 1;
+START := 0;
+END := 1;
 
 
 
@@ -887,7 +887,7 @@ fragment(string, size) := fragment(string, size, 0);
 
 
 
-fragmentLength(listOfDicts) := sum(apply(listOfDicts, #.length));
+fragmentLength(fragmentedString) := sum(apply(fragmentedString, #.length));
 
 
 
@@ -993,14 +993,14 @@ fragmentMixed(string, size) := fragmentMixed(string, size, 0);
 
 
 
-drawFragments(pos, listOfDicts, time, mode, modifs) := (
+drawFragments(pos, fragmentedString, time, mode, modifs) := (
     regional(totalLength, customTime, s, e);
 
-    totalLength = sum(apply(listOfDicts, #.length));
+    totalLength = sum(apply(fragmentedString, #.length));
     s = 0;
-    forall(listOfDicts, dict, index,
+    forall(fragmentedString, dict, index,
         if(index > 1,
-            s = s + listOfDicts_(index - 1).length / totalLength;
+            s = s + fragmentedString_(index - 1).length / totalLength;
         );
         e = s + dict.length / totalLength;
         customTime = timeOffset(time, s, e);
@@ -1012,7 +1012,7 @@ drawFragments(pos, listOfDicts, time, mode, modifs) := (
     );
 
 );
-drawFragments(pos, listOfDicts, time, mode) := drawFragments(pos, listOfDicts, time, mode, {});
+drawFragments(pos, fragmentedString, time, mode) := drawFragments(pos, fragmentedString, time, mode, {});
 
 
 
@@ -1094,9 +1094,6 @@ drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time,
 
 
 
-preProcessTex(string) := (
-    
-);
 
 drawFragmentedTex(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, s, hasColorMap, hasAlphaMap, col);
