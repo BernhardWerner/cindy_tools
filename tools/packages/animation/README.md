@@ -11,7 +11,9 @@ trackData = [
     durationN, pauseN
 ];
 ```
-You must have an even number of entries, i.e., end with a pause. Set `startDelay` to have a pause at the very start.
+You must have an even number of entries, i.e., end with a pause. Set `startDelay` to have a pause at the very start. By default, this will setup will create animation tracks that run in sequence. If you want overlapping animations, there are two main cases:
+- For very simple overlaps, you can set the appropriate pauses to be negative. Just make sure that the track that ends last is also last in the list to ensure that the following tracks are handled correctly.
+- If you want titghtly linked animations to be slightly offset -- e.g. when drawing grid lines -- use the function `timeOffset` to create these offset within a single track that covers the whole animation.
 
 For every animation track, you get a progress variable `t1`, ..., `tN` that runs from 0 to 1 during its run.
 
@@ -114,6 +116,9 @@ The width of the canvas.
 
 #### `catmullRom(controls, alpha, t)`
 Calculates the point on the Catmull-Rom curve defined by the four control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$. The parameter `alpha` determines the knot parametrization. 
+
+#### `deltaTime()`
+Calculates the time elapsed since the last frame. Call it in the tick script if you use `animationBase` on its own and use its result to update animation tracks or do custom time-dependent calculations.
 
 #### `eerp(x, y, t)`
 Exponentially interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$.
