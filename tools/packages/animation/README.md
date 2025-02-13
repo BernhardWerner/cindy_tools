@@ -65,6 +65,9 @@ Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
 ### `animationBase`
 
+#### `ang2vec(alpha)`
+Converts an angle `alpha` in degrees to a unit vector pointing in that direction. Just sytanctic sugar for the expression `[cos(alpha), sin(alpha)]`.
+
 #### `animatePolygon(vertices, t)`
 This function interprets the list of vertices as a polygonal curve that parametrized by the interval $[0,1]$. It assumes that `t` is in this interval, and returns the point on the curve at this parameter value together with all vertices up to that points.
 
@@ -75,6 +78,12 @@ Creates an equilateral triangle at `tipPos` with the tip pointing in the directi
 
 #### `bezier(controls, t)`
 Calculates the point on the Bezier curve defined by the control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$.
+
+#### `bite(list, i)`
+Removes the first `i` elements from `list` and returns the shortened array.
+
+#### `bite(list)`
+Removes the first element from `list` and returns the shortened array.
 
 #### `canvasAnchors`
 An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
@@ -106,10 +115,56 @@ The width of the canvas.
 #### `catmullRom(controls, alpha, t)`
 Calculates the point on the Catmull-Rom curve defined by the four control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$. The parameter `alpha` determines the knot parametrization. 
 
+#### `eerp(x, y, t)`
+Exponentially interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$.
+
+#### `inverseEerp(x, y, p)`
+Calculates the parameter value `t` at which the exponential interpolation between `x` and `y` equals `p`. In other words, it calculates the growth rate from `x` to `p` relative to the growth rate from `x` to `y`. The result is set to 0.5 when `x` and `y` are equal.
+
+#### `inverseLerp(x, y, p)`
+Calculates the parameter value `t` at which the linear interpolation between `x` and `y` equals `p`. In other words, it calculates the distance from `p` to `x` relative to the distance from `y` to `x`. The result is set to 0.5 when `x` and `y` are equal.
+
+#### `inverseSlerp(u, v, w)`
+Calculates the parameter value `t` at which the spherical interpolation between the vectors `u` and `v` equals `w`. In other words, it calculates the angle between `w` and `u` relative to the angle between `v` and `u`. The vectors are assumed to be normalized.
+
+#### `lerp(x, y, t)`
+Linearly interpolates between `x` and `y` at the parameter value `t`. THe value `t` is allowed to be outside the interval $[0,1]$ to give the full affine combination of `x` and `y`.
+
+#### `lerp(x, y, t, a, b)`
+Linearly interpolates between `x` and `y` at the parameter value `t` with the latter being in the interval $[a,b]$. In other words, it reparametrizes the interval $[a, b]$ to $[x, y]$.
+
+#### `now()`
+The total time elapsed since the start of the animation.
+
+#### `pop(list, i)`
+Removes the last `i` elements from `list` and returns the shortened array.
+
+#### `pop(list)`
+Removes the last element from `list` and returns the shortened array.
+
+#### `randomChoose(list, k)`
+Chooses `k` elements from `list` at random and returns them as a new array.
+
+#### `randomChoose(list)`
+Chooses one element from `list` at random.
+
+#### `randomSort(list)`
+Shuffles the elements of `list` randomly.
+
 #### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rounded rectangle with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left of the top edge and goes counter-clockwise.
 
 #### `sampleCatmullRomCurve(controls, alpha)`
+Creates `strokeSampleRate`-many points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
+
+#### `sampleCatmullRomCurve(controls)`
+Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
+
+### `sampleCatmullRomSpline(points, modifs)`
+Creates points on the Catmull-Rom spline defined by the points in `points`. The parameter `modifs` is a dictionary that allows you to set the knot parametrization with the key `alpha` and the number of points to sample with the key `nop`. The default values are `alpha = 0.5` and `nop = strokeSampleRate`.
+
+### `sampleCatmullRomSpline(points)`
+Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
 
 
 #### `sampleCircle(rad, angle)`
@@ -130,8 +185,14 @@ Creates `strokeSampleRate`-many points on a polygonal curve given by the points 
 #### `screenMouse()`
 The coordinates of the mouse cursor normalized to the canvas such that they boh lie in the interval $[0,1]$.
 
+#### `setupTime()`
+Sets up the basic time keeping system. Call it together with `playanimation()` in the init script if you use `animationBase` on its own.
+
 #### `sign(x)`
 Returns the sign of `x`.
+
+#### `slerp(u, v, t)`
+Spherical interpolation between the vectors `u` and `v` at the parameter value `t`. The vectors are assumed to be normalized.
 
 #### `strokeSampleRate`
 Global constant that is used as a default value for sampling various curves like circles or Bezier curves.

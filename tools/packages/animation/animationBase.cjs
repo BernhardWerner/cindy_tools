@@ -294,8 +294,8 @@ randomChoose(list) := randomChoose(list, 1)_1;
 
 
 
-pop(list) := list_(1..(length(list) - 1));
 pop(list, i) := list_(1..(length(list) - i));
+pop(list) := pop(list, 1);
 
 
 
