@@ -65,8 +65,16 @@ Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
 ### `animationBase`
 
+#### `animatePolygon(vertices, t)`
+This function interprets the list of vertices as a polygonal curve that parametrized by the interval $[0,1]$. It assumes that `t` is in this interval, and returns the point on the curve at this parameter value together with all vertices up to that points.
+
+Use it to animate a polygonal curve via `connect(animatePoylgon(vertices, t));` with `t` being the progress variable of an animation track. This is preferabel to `samplePolygon` if the polygon itself doesn't drastically change because this function outputs much fewer points.
+
 #### `arrowTip(tipPos, dir, size)`
 Creates an equilateral triangle at `tipPos` with the tip pointing in the direction `dir` (does not has to be normalized in advance) and a size of `size`. Feed the result into `connect(list)` or `fillpoly(list)` to draw arrow tips.
+
+#### `bezier(controls, t)`
+Calculates the point on the Bezier curve defined by the control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$.
 
 #### `canvasAnchors`
 An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
@@ -95,6 +103,9 @@ The coordinate of the top edge of the canvas.
 #### `canvasWidth`
 The width of the canvas.
 
+#### `catmullRom(controls, alpha, t)`
+Calculates the point on the Catmull-Rom curve defined by the four control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$. The parameter `alpha` determines the knot parametrization. 
+
 #### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rounded rectangle with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left of the top edge and goes counter-clockwise.
 
@@ -107,8 +118,17 @@ Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting a
 #### `sampleCircle(rad)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right.
 
+#### `samplePolygon(poly, nop)`
+Creates `nop`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve.
+
+#### `samplePolygon(poly)`
+Creates `strokeSampleRate`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve. 
+
 #### `screenMouse()`
 The coordinates of the mouse cursor normalized to the canvas such that they boh lie in the interval $[0,1]$.
+
+#### `sign(x)`
+Returns the sign of `x`.
 
 #### `strokeSampleRate`
 Global constant that is used as a default value for sampling various curves like circles or Bezier curves.
