@@ -56,18 +56,42 @@ If you need absolute time information:
 - `delta` gives you the duration of the last frame.
 - `tracks_k.timeElapsed` gives you the absolute time elapsed in the `k`-th animation track.
 
-Set `showDebugInfo = false;` to remove the debug information in the top left.
+### The debug view
+By default, you will see debug information in the top left corner of the canvas -- like the current animation track, its progress, the current total time and the FPS. You can turn it off by setting `showDebugInfo = false;`. You can customize its position and color by setting `debugInfoPosition` and `debugInfoColor`, respectively.
 
-Set `currentTrackIndex = k;` to determine at which animation track to start.
 
 ### Exporting
  There are three render modes available. You can set `renderMode` to
 1. `RENDERMODES.REAL`. This lets the animation run in real time from start to finish as is. It is mostly intended for development and debugging.
-2. `RENDERMODES.FRAMES`. This will export the animation frame by frame at 60FPS after you double-click inside the canvas. This will download many(!) PNGs to your computer. Firefox seems to cause the fewest problems here. But in any case, it's better to export more short animation sequences. You can turn the PNGs into a video with, for example, \emph{FFmpeg} or \emph{DaVinci Resolve}.
-3. `RENDERMODES.STEPS`. This will run in real time, too, but will pause the animation at the start of each track. Use it to embed animations into blog posts for readers to control, or to build presentation slides. It is also very handy for debugging. After clicking inside the canvas once, this mode can be controlled with the keyboard. The key 'D' will play the next animation track. With 'W', you can jump back one animation; and with 'S' you jump forward.
+2. `RENDERMODES.FRAMES`. This will export the animation frame by frame at 60FPS after you double-click inside the canvas. This will download many(!) PNGs to your computer. Firefox seems to cause the fewest problems here. But in any case, it's better to export more short animation sequences. You can turn the PNGs into a video with, for example, *FFmpeg* or *DaVinci Resolve*.
+3. `RENDERMODES.STEPS`. This will run in real time, too, but will pause the animation at the start of each track. Use it to embed animations into blog posts for readers to control, or to build presentation slides. It's very cool to combine this with *Reveal.js* to make presentations. It is also very handy for debugging. After clicking inside the canvas once, this mode can be controlled with the keyboard. The key 'D' will play the next animation track. With 'W', you can jump back one animation; and with 'S' you jump forward.
 
 
+### Customization
+Apart from the things already mentioned above, there are a few more things you can customize:
 
+#### In general
+Set `currentTrackIndex = k;` to start the animation at track `k`. Great for debugging/development; but also handy when you want to export frames starting at a specific track. This variable is also used in the backend to keep track of the current animation track. Therefore, you should only set it once in the init script.
+
+You can change the global speed of the animation by setting `timeScale` to something different than 1.
+
+#### During `RENDERMODE.FRAMES`
+You can set the variable `disableFrameDownload` to `true` to run through the whole frame-by-frame exporting process without actually downloading the PNGs. This is useful to check that the fixed-FPS rendering produces the same result as the real-time rendering -- especially if there are heavy calculations involved.
+
+You can specify the frames you want to export by listing them in the array `framesToExport`. If you set it to `0`, all frames will be exported.
+
+If you look into `mainSetup.cjs`, it looks as if you can specify the output format of the frames -- PNG, SVG or PDF. But this is only a placeholder. At the moment, only the PNG export works in CindyJS.
+
+#### During `RENDERMODE.STEPS`
+As explained above, you can control the steps animation with the keyboard. Override the variables
+```
+STEPFORWARDS = "D";
+SKIPFORWARDS = "W";
+SKIPBACKWARDS = "S";
+```
+to create your own key bindings.
+
+Moreover, you can set `stepMode`. By default it is `STEPMODES.KEYBOARD` and does work as described. Set it to `STEPMODES.MANUAL` and you can implement your own custom controller. Call the function `moveStepForwards()`, `skipStepForwards()` and `skipStepBackwards()` during appropriate mouse or keyboard events to achieve the same effect as the default key bindings.
 
 
 
@@ -78,9 +102,7 @@ Set `currentTrackIndex = k;` to determine at which animation track to start.
 
 
 ## Animation Commands & Functions
-These are the functions and commands found in the libraries `animationBase` and `mainSetup` relevant to creating animations. The first is a stand-alone library that can be used to create custom animations and animation frameworks. The second one is used to setup the full management suite of this package and uses many of the functions found in `animationBase`. It has very few parts you will have to interact with, unless you want to remodel the package.
-
-There are more functions in both libraries than listed here, but those are for backend purposes and would only ever be interesting for hyper-specific use cases.
+These are the functions and commands found in `animationBase` relevant to creating animations. It is a stand-alone library that can be used to create custom animations and animation frameworks. There are more functions than listed here, but those are for backend purposes and would only ever be interesting for hyper-specific use cases.
 
 Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
@@ -522,21 +544,6 @@ Updates the progress and all other variables of the animation track `track` base
 #### `zip(a, b)`
 Pairs up corresponding entries of two arrays of the same length `a` and `b`. I.e. the first entry of the output is `[a_1, b_1]`, the second entry is `[a_2, b_2]`, etc. Syntactic sugar for `transpose([a, b])`.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Functions & Commands of `mainSetup`
 
 
 
