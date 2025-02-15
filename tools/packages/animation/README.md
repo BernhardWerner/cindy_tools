@@ -242,6 +242,16 @@ Exponentially interpolates between `x` and `y` at the parameter value `t`. The v
 The number 1. If you are testing parts of your animation and you want to set some progress to always be 1, use this constant to make it easier to see and later on change where you did this.
 
 ---
+#### `expandRect(pos, w, h, a)`
+Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left -- at position `pos` with width `w` and height `h`. The parameter `a` determines the anchor point around the border of the rectangle which is used for `pos`. The anchor points are numbered in the order of a standard number pad on a computer keyboard. I.e. 1 is the bottom-left corner, 5 is the centre, etc.
+
+#### `expandRect(pos, w, h)`
+Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left -- with bottom-left corner `pos`, width `w` and height `h`.
+
+### `expandRect(rect)`
+Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left. The rectangle `rect` must be an object with properties `position`, `width`, `height` and `anchor`.
+
+---
 #### `findIn(list, x)`
 Returns the index of the first occurrence of the value `x` in the array `list`. Returns 0 if `x` is not in `list`.
 
@@ -250,6 +260,10 @@ Returns the index of the first occurrence of the value `x` in the array `list`. 
 Finds the index of the matching bracket of `bracketA` in the string `string` starting at index `startIndex`. The bracket `bracketB` is used to determine the matching bracket. Returns 0 if no matching bracket is found. The bracket symbols can be anything you want to pair up in a string.
 
 This is heavily used in *Nyka* maths string processing.  But very occasionally, it might be useful for other purposes.
+
+---
+#### `fract(x)`
+The fractional part of `x`. I.e. the digits after the decimal point. Syntactic sugar for `mod(x, 1)`.
 
 ---
 #### `fragment(string, size, family)`
@@ -292,8 +306,29 @@ Linearly interpolates between `x` and `y` at the parameter value `t`. The value 
 Linearly interpolates between `x` and `y` at the parameter value `t` with the latter being in the interval $[a,b]$. In other words, it reparametrizes the interval $[a, b]$ to $[x, y]$.
 
 ---
+#### `newRect(pos, w, h, a)`
+Creates a rectangle object at position `pos` with width `w` and height `h`. The parameter `a` determines the anchor point around the vorder of the rectangle which is used for `pos`. The anchor points are numbered in the order of a standard number pad on a computer keyboard. I.e. 1 is the bottom-left corner, 5 is the centre, etc.
+
+#### `newRect(pos, w, h)`
+Creates a rectangle object with bottom-left corner `pos`, width `w` and height `h`.
+
+---
 #### `now()`
 The total time elapsed since the start of the animation.
+
+---
+#### `perlinNoise2D(pos)`
+Returns a smooth, continuous pseudo-random value between 0 and 1 based on a 2D-vector `pos`. You can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
+
+---
+#### `perlinNoise2DOctaves(pos)`
+Returns a smooth, continuous pseudo-random value between 0 and 1 based on a 2D-vector `pos`. The value is the sum of 3 copies of Perlin noise with varying resolutions. You can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
+
+The packages does not provide a general way to create Perlin noise with any number of octaves. Firstly, it doesn't work on the GPU. Secondly, I haven't found the need for that level of detail in CPU-based applications.
+
+---
+#### `pointInPolygon(point, polygon)`
+Checks if the point `point` is inside the polygon defined by the points in `polygon`. Returns a boolean.
 
 ---
 #### `pop(list, i)`
@@ -316,37 +351,79 @@ Chooses one element from `list` at random.
 Shuffles the elements of `list` randomly.
 
 ---
+#### `randomGradient2D(pos)`
+Returns a 2D-unit vector that is pseudo-random based on the 2D-vector `pos`. It is mostly used in `perlinNoise2D`. But you can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
+
+---
+#### `randomValue(pos)`
+Returns a pseudo-random value between 0 and 1 based on a 2D-vector `pos`. It is mostly used in `randomGradient2D` and `perlinNoise2D`. But you can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
+
+---
+#### `rndSeed`
+The seed for the pseudo-random number generator `rnd()`.
+
+---
+#### `rnd()`
+A pseudo-random number between 0 and 1. Can be seeded by setting `rndSeed`. This is equivalent to the built-in function `random()` combined with `seedrandom(x)`. For large, complex calculationsthe built-in version doesn't seen to work and does not produce the same outcame each time you run the animation.
+
+---
+#### `rotate(point, alpha, center)`
+Rotates the point `point` around the centre `center` by the angle `alpha`.
+
+#### `rotate(vector, alpha)`
+Rotates the vector `vector` by the angle `alpha`.
+
+---
+#### `rotation(alpha)`
+Creates a 2x2 rotation matrix that rotates vectors by the angle `alpha`.
+
+---
 #### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rectangle with rounded corners with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left end of the top edge and goes counter-clockwise.
 
 ---
+#### `sampleBezierCurve(controls, n)`
+Creates `n` points on the Bezier curve defined by the control points `controls`. These are equidistant in time, not in space. Use `sampleBezierSpline([controls], sampleRate, n)` for that.
+
+---
+#### `sampleBezierSpline(spline, sampleRate, strokeResolution)`
+Creates `strokeResolution`-many approximately equidistant points on a given Bezier spline. The spline has to be given as a list of lists of control points. E.g. 
+```
+    spline = [
+        [(0, 0), (1, 1), (2, 2)],
+        [(2, 2), (3, 3), (4, 4), (5, 5)]
+    ];
+```
+would describe a spline built from a quadratic and a cubic Bezier curve. It is your own responsibility to make sure that the end point of one curve is the start point of the next. The parameter `sampleRate` determines how many points are sampled on each curve to approximate an equidistant distribution. If you use this in a preprocessing step, feel free to set `sampleRate` as high as necessary. In realtime processing -- e.g. recalculating a spline each frame of an animation -- you want to set this as low as possible while still getting good results.
+
+---
 #### `sampleCatmullRomCurve(controls, alpha)`
-Creates `strokeSampleRate`-many points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
+Creates `strokeSampleRate`-many approximately equidistant points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
 
 
 #### `sampleCatmullRomCurve(controls)`
-Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
+Creates `strokeSampleRate`-many approximately equidistant points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
 
 ---
 #### `sampleCatmullRomSpline(points, modifs)`
-Creates points on the Catmull-Rom spline defined by the points in `points`. The parameter `modifs` is a dictionary that allows you to set the knot parametrization with the key `alpha` and the number of points to sample with the key `nop`. The default values are `alpha = 0.5` and `nop = strokeSampleRate`.
+Creates approximately equidistant points on the Catmull-Rom spline defined by the points in `points`. The parameter `modifs` is a dictionary that allows you to set the knot parametrization with the key `alpha` and the number of points to sample with the key `nop`. The default values are `alpha = 0.5` and `nop = strokeSampleRate`.
 
 
 #### `sampleCatmullRomSpline(points)`
-Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
+Creates `strokeSampleRate`-many approximately equidistant points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
 
 
 ---
 #### `sampleCircle(rad, angle)`
-Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
+Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
 
 
 #### `sampleCircle(rad, startAngle, endAngle)`
-Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
+Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
 
 
 #### `sampleCircle(rad)`
-Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right.
+Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting on the right.
 
 ---
 #### `samplePolygon(poly, nop)`

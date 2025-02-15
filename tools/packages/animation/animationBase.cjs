@@ -139,14 +139,6 @@ animatePolygon(vertices, t) := (
 
 
 
-// ************************************************************************************************
-// Resampling via centripetal Catmull-Rom splines.
-// ************************************************************************************************
-resample(stroke, nop) := sampleCatmullRomSplineFREE(stroke, nop);
-resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
-
-
-
 
 // ************************************************************************************************
 // Creates stroke as Bezier curves.
@@ -237,7 +229,7 @@ sampleCatmullRomSpline(points, modifs) := (
       catmullRom(controls, alpha, t);
     );
 );
-sampleCatmullRomSpline(points) := sampleCatmullRomSplineGeneralFREE(points, {});
+sampleCatmullRomSpline(points) := sampleCatmullRomSpline(points, {});
 
 
 subdivideSegment(p, q, n) := apply(1..n, lerp(p, q, #, 1, n));
@@ -1244,12 +1236,12 @@ newRect(pos, w, h) := newRect(pos, w, h, 1);
 
 
 
-expandRect(pos, w, h, c) := (
+expandRect(pos, w, h, a) := (
     regional(d, e, shift);
 
     d     = 0.5 * [w, h];
     e     = (d_1, -d_2);
-    shift = -compass(c);
+    shift = -compass(a);
     shift = (0.5 * w * shift.x, 0.5 * h * shift.y);
     apply([-d, e, d, -e], pos + # + shift); //LU, RU, RO, LO
 );
@@ -1330,15 +1322,15 @@ sampleBezierCurve(controls, n) := (
 );
 
 
-resample(stroke, nop) := sampleCatmullRomSplineFREE(stroke, nop);
-resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
+resample(stroke, nop) := sampleCatmullRomSpline(stroke, {"sampleRate": nop});
+resample(stroke) := resample(stroke, strokeSampleRate);
 
 
 
 
 
 
-fract(x) := x - floor(x);
+fract(x) := mod(x, 1);
 
 
 
@@ -1356,11 +1348,11 @@ randomGradient2D(pos) := (
 // *************************************************************************************************
 // Gives random gradient noise based on a point in the plane.
 // *************************************************************************************************
-perlinNoise2D(coords) := (
+perlinNoise2D(pos) := (
     regional(iPoint, fPoint);
     
-    iPoint = [floor(coords.x), floor(coords.y)];
-    fPoint = [fract(coords.x), fract(coords.y)];
+    iPoint = [floor(pos.x), floor(pos.y)];
+    fPoint = [fract(pos.x), fract(pos.y)];
 
     0.5 * lerp(
             lerp(
@@ -1373,12 +1365,12 @@ perlinNoise2D(coords) := (
             smoothstep(fPoint.x)),
         smoothstep(fPoint.y)) + 0.5;
 );
-perlinNoise2DOctaves(coords) := (
+perlinNoise2DOctaves(pos) := (
     regional(sum);
 
     sum = 0;
     repeat(3,
-        sum = sum + pow(0.5, # - 1) * perlinNoise2D(pow(2, # - 1) * coords);    
+        sum = sum + pow(0.5, # - 1) * perlinNoise2D(pow(2, # - 1) * pos);    
     );
 
     sum / 1.75
