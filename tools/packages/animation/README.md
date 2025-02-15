@@ -80,7 +80,7 @@ You can set the variable `disableFrameDownload` to `true` to run through the who
 
 You can specify the frames you want to export by listing them in the array `framesToExport`. If you set it to `0`, all frames will be exported.
 
-If you look into `mainSetup.cjs`, it looks as if you can specify the output format of the frames -- PNG, SVG or PDF. But this is only a placeholder. At the moment, only the PNG export works in CindyJS.
+If you look into `mainSetup.cjs`, it looks as if you can specify the output format of the frames -- PNG, SVG or PDF. But this is only a placeholder. At the moment, only the PNG export works in *CindyJS*.
 
 #### During `RENDERMODE.STEPS`
 As explained above, you can control the steps animation with the keyboard. Override the variables
@@ -548,24 +548,19 @@ Pairs up corresponding entries of two arrays of the same length `a` and `b`. I.e
 
 
 ### The *Nyka* typesetting language
+When creating the parser for the function `fragment`, which splits strings containing *KaTeX* commands into individual glyphs, I thought that it is much simpler to assume certain formating rules. Especially, since I was using them anyway. For example, always using curly braces for fractions: `"\frac{1}{2}"` even though `"\frac12"` would also work. Or listing the subscript part of a sum always before the superscript part: `"\sum_{k=1}^{n}"` instead of `"\sum^{n}_{k=1}"`. When deciding to make the animation package more public, I thought that asking the user to adhere to these rules might be a bit awkward. In my mind, it is much more convenient to create a completely new maths typesetting language that incorporates these rules; even though it is 99% identical to ordinary *LaTeX*. Or, at least, to the old *KaTeX* version that *CindyJS* is using. With this, *Nyka* was created, which stands for *Not Yet KaTeX*. It also allows me to make some minor adaptions, since there's no way to create custom *KaTeX* commands in *CindyJS*.
 
-\emph{Nyka} commands via examples:
-\setlength\parindent{2em}
+Here are the things that are different in *Nyka* compared to *KaTeX*:
 
-Shorthand for `\mathbb`, `\mathfrak`, `\mathscr` and `\mathcal`: `"$\bA$"`, `"$\fB$"`, `"$\sC$"`, `"$\cD$"`
-
-Matrices and cases: `"$\bmatrix{1 & 2 & 3}{4 & 5 & 6}{7 & 8 & 9}$"`
-
-Sums, products, and integrals. Must be followed by two square brackets or nothing:
-
-\vspace{-0.8em}
-`"$\sum[k\in\bN][] k$"`
-
-Limits. Can be followed by square brackets: `"$\lim[x\to\infty] \frac{1}{x}$"`
-
-Fractions must be followed by curly braces: `"$\frac{a}{b}$"`
-
-Roots. Can be followed by square brackets. Must end with curly braces:
-
-\vspace{-0.8em}
-`"$\sqrt{2} \cdot \sqrt[3]{2}$"`
+- *Nyka* provides shorthand version for `\mathbb`, `\mathfrak`, `\mathscr` and `\mathcal`. You can write `"$\bA$"` instead of `"$\mathbb{A}$"`. For the others, it is `"$\fA$"`, `"$\sA$"`, and `"$\cA$"`, respectively.
+- Matrices and cases are not created via environment, but via regular, multi-argument commands. E.g., you would write
+    ```"$\bmatrix{1 & 2 & 3}{4 & 5 & 6}{7 & 8 & 9}$"```
+    instead of
+    ```"$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{bmatrix}$"```
+    and 
+    ```"$\cases{1 & \text{if } x = 0}{0 & \text{otherwise}}$"```
+    instead of
+    ```"$\begin{cases} 1 & \text{if } x = 0 \\ 0 & \text{otherwise} \end{cases}$"```
+- Fractions must be followed by curly braces: `"$\frac{a}{b}$"`.
+- Roots must end with curly braces for the radicand: `"$\sqrt{2}$"`. The order is optional: `"$\sqrt[3]{2}$"`.
+- Commands that take subscripts and superscripts must have them in square brackets. For limits, this means that you have to write `"$\lim[x \to 0]$"` instead of `"$\lim_{x \to 0}$"`. The other cases are sums, products and integrals. Here, You must type both square brackets even of you only need one. E.g. for sums you would write `"$\sum[k=0][\infty]$"` or `"$\sum[k\in\bN][]$"`. If you don't need either subscript and superscript, you can omit the square brackets. E.g. `"$\sum$"` and or `"$\sum[][]$"` are both valid.
