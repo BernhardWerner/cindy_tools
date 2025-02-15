@@ -107,7 +107,6 @@ These are the functions and commands found in `animationBase` relevant to creati
 Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
 
-
 ### `ang2vec(alpha)`
 Converts an angle `alpha` in degrees to a unit vector pointing in that direction. Just sytanctic sugar for the expression `[cos(alpha), sin(alpha)]`.
 
@@ -118,68 +117,68 @@ This function interprets the list of vertices as a polygonal curve that is param
 Use it to animate a polygonal curve via `connect(animatePoylgon(vertices, t));` with `t` being the progress variable of an animation track. This is preferable to `samplePolygon` if the polygon itself doesn't drastically change because this function outputs much fewer points.
 
 ---
-#### `arrowTip(tipPos, dir, size)`
+### `arrowTip(tipPos, dir, size)`
 Creates an equilateral triangle at `tipPos` with the tip pointing in the direction `dir` (does not has to be normalized in advance) and a size of `size`. Feed the result into `connect(list)` or `fillpoly(list)` to draw arrow tips. The cleaner way to draw arrows is to set the modifier `arrow` in the appropriate `draw` command to true and maybe animate the size via the modifier `arrowsize`. But for some special use cases this function here might be useful.
 
 ---
-#### `bezier(controls, t)`
+### `bezier(controls, t)`
 Calculates the point on the Bezier curve defined by the control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$.
 
 ---
-#### `bite(list, i)`
+### `bite(list, i)`
 Removes the first `i` elements from `list` and returns the shortened array.
 
 
-#### `bite(list)`
+### `bite(list)`
 Removes the first element from `list` and returns the shortened array.
 
 ---
-#### `canvasAnchors`
+### `canvasAnchors`
 An array of anchor points around the border of the canvas. They are index in the order indicated by a standard number pad on a computer keyboard. I.e. entry 1 is the bottom-left corner, entry 6 is the centre of the right edge of the canvas. Etc.
 
 ---
-#### `canvasBottom`
+### `canvasBottom`
 The y-coordinate of the bottom edge of the canvas.
 
 ---
-#### `canvasCenter`
+### `canvasCenter`
 The centre of the canvas. Identical to `canvasAnchors_5`.
 
 ---
-#### `canvasHeight`
+### `canvasHeight`
 The height of the canvas.
 
 ---
-#### `canvasLeft`
+### `canvasLeft`
 The x-coordinate of the left edge of the canvas.
 
 ---
-#### `canvasPoly`
+### `canvasPoly`
 An array of the four corners of the canvas. Ordered top-left, top-right, bottom-right, bottom-left. Basically a version of `screenbounds()` with dehomogenized coordinates.
 
 ---
-#### `canvasRight`
+### `canvasRight`
 The x-coordinate of the right edge of the canvas.
 
 ---
-#### `canvasTop`
+### `canvasTop`
 The y-coordinate of the top edge of the canvas.
 
 ---
-#### `canvasWidth`
+### `canvasWidth`
 The width of the canvas.
 
 ---
-#### `catmullRom(controls, alpha, t)`
+### `catmullRom(controls, alpha, t)`
 Calculates the point on the Catmull-Rom curve defined by the four control points `controls` at the parameter value `t`, assuming the latter is in the interval $[0,1]$. The parameter `alpha` determines the knot parametrization. 
 
 
 ---
-#### `deltaTime()`
+### `deltaTime()`
 Calculates the time elapsed since the last frame. Call it in the tick script if you use `animationBase` on its own and use its result for custom time-dependent calculations.
 
 ---
-#### `drawFragments(pos, fragmentedString, time, mode, modifs) `
+### `drawFragments(pos, fragmentedString, time, mode, modifs) `
 Draws a fragmented *Nyka* maths string `fragmentedString` (the output of `fragment`) at position `pos` with progress `t` in a typewriter-like effect. At the moment, there are two values for `mode`:
 
 - `"up"` will let the glyphs appear from the bottom.
@@ -213,7 +212,7 @@ as they are the third and fifth glyph in the string. You can reference the same 
 ```
 Clunky, but it gets the job done.
 
-#### `drawFragments(pos, fragmentedString, time, mode)`
+### `drawFragments(pos, fragmentedString, time, mode)`
 Draws a fragmented *Nyka* maths string `fragmentedString` (the output of `fragment`) at position `pos` with progress `t` in a typewriter-like effect. At the moment, there are two values for `mode`:
 - `"up"` will let the glyphs appear from the bottom.
 - `"down"` will let the glyphs appear from the top.
@@ -254,160 +253,160 @@ easeInOutElastic
 ```
 
 ---
-#### `eerp(x, y, t)`
+### `eerp(x, y, t)`
 Exponentially interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$.
 
 
 --- 
-#### `END`
+### `END`
 The number 1. If you are testing parts of your animation and you want to set some progress to always be 1, use this constant to make it easier to see and later on change where you did this.
 
 ---
-#### `expandRect(pos, w, h, a)`
+### `expandRect(pos, w, h, a)`
 Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left -- at position `pos` with width `w` and height `h`. The parameter `a` determines the anchor point around the border of the rectangle which is used for `pos`. The anchor points are numbered in the order of a standard number pad on a computer keyboard. I.e. 1 is the bottom-left corner, 5 is the centre, etc.
 
-#### `expandRect(pos, w, h)`
+### `expandRect(pos, w, h)`
 Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left -- with bottom-left corner `pos`, width `w` and height `h`.
 
 ### `expandRect(rect)`
 Calculates the four corners of a rectangle -- ordered counter-clockwise starting in the bottom-left. The rectangle `rect` must be an object with properties `position`, `width`, `height` and `anchor`.
 
 ---
-#### `findIn(list, x)`
+### `findIn(list, x)`
 Returns the index of the first occurrence of the value `x` in the array `list`. Returns 0 if `x` is not in `list`.
 
 ---
-#### `findMatchingBracket(string, startIndex, bracketA, bracketB)`
+### `findMatchingBracket(string, startIndex, bracketA, bracketB)`
 Finds the index of the matching bracket of `bracketA` in the string `string` starting at index `startIndex`. The bracket `bracketB` is used to determine the matching bracket. Returns 0 if no matching bracket is found. The bracket symbols can be anything you want to pair up in a string.
 
 This is heavily used in *Nyka* maths string processing.  But very occasionally, it might be useful for other purposes.
 
 ---
-#### `fract(x)`
+### `fract(x)`
 The fractional part of `x`. I.e. the digits after the decimal point. Syntactic sugar for `mod(x, 1)`.
 
 ---
-#### `fragment(string, size, family)`
+### `fragment(string, size, family)`
 Fragments a string containing *Nyka* maths commands into individual glyphs, based on font size `size` and font family `family`. Make sure to call this function inside `delayedSetup()` to preprocess these strings if you want to draw them on screen at the correct position.
 
 
-#### `fragment(string, size)`
+### `fragment(string, size)`
 Fragments a string containing *Nyka* maths commands into individual glyphs, based on font size `size` using the default font family. Make sure to call this function inside `delayedSetup()` to preprocess these strings if you want to draw them on screen at the correct position.
 
 ---
-#### `fragmentLength(fragmentedString)`
+### `fragmentLength(fragmentedString)`
 Calculates the number of glyphs in a fragmented *Nyka* maths string. Only useful to call on the output of `fragment`.
 
 ---
-#### `frequency(list, x)`
+### `frequency(list, x)`
 Returns the number of times the value `x` appears in the array `list`.
 
 ---
-#### `inverseEerp(x, y, p)`
+### `inverseEerp(x, y, p)`
 Calculates the parameter value `t` at which the exponential interpolation between `x` and `y` equals `p`. In other words, it calculates the growth rate from `x` to `p` relative to the growth rate from `x` to `y`. The result is set to 0.5 when `x` and `y` are equal.
 
 ---
-#### `inverseLerp(x, y, p)`
+### `inverseLerp(x, y, p)`
 Calculates the parameter value `t` at which the linear interpolation between `x` and `y` equals `p`. In other words, it calculates the distance from `p` to `x` relative to the distance from `y` to `x`. The result is set to 0.5 when `x` and `y` are equal.
 
 ---
-#### `inverseSlerp(u, v, w)`
+### `inverseSlerp(u, v, w)`
 Calculates the parameter value `t` at which the spherical interpolation between the vectors `u` and `v` equals `w`. In other words, it calculates the angle between `w` and `u` relative to the angle between `v` and `u`. The vectors are assumed to be normalized.
 
 ---
-#### `joinStrings(list, symbol)`
+### `joinStrings(list, symbol)`
 Joins the strings in `list` together to a new one and inserts the symbol `symbol` in between them. 
 
 ---
-#### `lerp(x, y, t)`
+### `lerp(x, y, t)`
 Linearly interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$ to give the full affine combination of `x` and `y`.
 
 
-#### `lerp(x, y, t, a, b)`
+### `lerp(x, y, t, a, b)`
 Linearly interpolates between `x` and `y` at the parameter value `t` with the latter being in the interval $[a,b]$. In other words, it reparametrizes the interval $[a, b]$ to $[x, y]$.
 
 ---
-#### `newRect(pos, w, h, a)`
+### `newRect(pos, w, h, a)`
 Creates a rectangle object at position `pos` with width `w` and height `h`. The parameter `a` determines the anchor point around the vorder of the rectangle which is used for `pos`. The anchor points are numbered in the order of a standard number pad on a computer keyboard. I.e. 1 is the bottom-left corner, 5 is the centre, etc.
 
-#### `newRect(pos, w, h)`
+### `newRect(pos, w, h)`
 Creates a rectangle object with bottom-left corner `pos`, width `w` and height `h`.
 
 ---
-#### `now()`
+### `now()`
 The total time elapsed since the start of the animation.
 
 ---
-#### `perlinNoise2D(pos)`
+### `perlinNoise2D(pos)`
 Returns a smooth, continuous pseudo-random value between 0 and 1 based on a 2D-vector `pos`. You can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
 
 ---
-#### `perlinNoise2DOctaves(pos)`
+### `perlinNoise2DOctaves(pos)`
 Returns a smooth, continuous pseudo-random value between 0 and 1 based on a 2D-vector `pos`. The value is the sum of 3 copies of Perlin noise with varying resolutions. You can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
 
 The packages does not provide a general way to create Perlin noise with any number of octaves. Firstly, it doesn't work on the GPU. Secondly, I haven't found the need for that level of detail in CPU-based applications.
 
 ---
-#### `pointInPolygon(point, polygon)`
+### `pointInPolygon(point, polygon)`
 Checks if the point `point` is inside the polygon defined by the points in `polygon`. Returns a boolean.
 
 ---
-#### `pop(list, i)`
+### `pop(list, i)`
 Removes the last `i` elements from `list` and returns the shortened array.
 
 
-#### `pop(list)`
+### `pop(list)`
 Removes the last element from `list` and returns the shortened array.
 
 ---
-#### `randomChoose(list, k)`
+### `randomChoose(list, k)`
 Chooses `k` elements from `list` at random and returns them as a new array.
 
 
-#### `randomChoose(list)`
+### `randomChoose(list)`
 Chooses one element from `list` at random.
 
 ---
-#### `randomSort(list)`
+### `randomSort(list)`
 Shuffles the elements of `list` randomly.
 
 ---
-#### `randomGradient2D(pos)`
+### `randomGradient2D(pos)`
 Returns a 2D-unit vector that is pseudo-random based on the 2D-vector `pos`. It is mostly used in `perlinNoise2D`. But you can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
 
 ---
-#### `randomValue(pos)`
+### `randomValue(pos)`
 Returns a pseudo-random value between 0 and 1 based on a 2D-vector `pos`. It is mostly used in `randomGradient2D` and `perlinNoise2D`. But you can use it to randomize parts of your animation such that it looks the same each time you run it. It is fully compatible with CindyGL if you want to use it in a shader.
 
 ---
-#### `rndSeed`
+### `rndSeed`
 The seed for the pseudo-random number generator `rnd()`.
 
 ---
-#### `rnd()`
+### `rnd()`
 A pseudo-random number between 0 and 1. Can be seeded by setting `rndSeed`. This is equivalent to the built-in function `random()` combined with `seedrandom(x)`. For large, complex calculationsthe built-in version doesn't seen to work and does not produce the same outcame each time you run the animation.
 
 ---
-#### `rotate(point, alpha, center)`
+### `rotate(point, alpha, center)`
 Rotates the point `point` around the centre `center` by the angle `alpha`.
 
-#### `rotate(vector, alpha)`
+### `rotate(vector, alpha)`
 Rotates the vector `vector` by the angle `alpha`.
 
 ---
-#### `rotation(alpha)`
+### `rotation(alpha)`
 Creates a 2x2 rotation matrix that rotates vectors by the angle `alpha`.
 
 ---
-#### `roundedRectangleStroke(center, w, h, cornerRadius)`
+### `roundedRectangleStroke(center, w, h, cornerRadius)`
 Creates a list of `strokeSampleRate`-many points that form a rectangle with rounded corners with centre `center`, width `w`, height `h`, and corner radius `cornerRadius`. The stroke starts on the left end of the top edge and goes counter-clockwise.
 
 ---
-#### `sampleBezierCurve(controls, n)`
+### `sampleBezierCurve(controls, n)`
 Creates `n` points on the Bezier curve defined by the control points `controls`. These are equidistant in time, not in space. Use `sampleBezierSpline([controls], sampleRate, n)` for that.
 
 ---
-#### `sampleBezierSpline(spline, sampleRate, strokeResolution)`
+### `sampleBezierSpline(spline, sampleRate, strokeResolution)`
 Creates `strokeResolution`-many approximately equidistant points on a given Bezier spline. The spline has to be given as a list of lists of control points. E.g. 
 ```
     spline = [
@@ -418,106 +417,106 @@ Creates `strokeResolution`-many approximately equidistant points on a given Bezi
 would describe a spline built from a quadratic and a cubic Bezier curve. It is your own responsibility to make sure that the end point of one curve is the start point of the next. The parameter `sampleRate` determines how many points are sampled on each curve to approximate an equidistant distribution. If you use this in a preprocessing step, feel free to set `sampleRate` as high as necessary. In realtime processing -- e.g. recalculating a spline each frame of an animation -- you want to set this as low as possible while still getting good results.
 
 ---
-#### `sampleCatmullRomCurve(controls, alpha)`
+### `sampleCatmullRomCurve(controls, alpha)`
 Creates `strokeSampleRate`-many approximately equidistant points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
 
 
-#### `sampleCatmullRomCurve(controls)`
+### `sampleCatmullRomCurve(controls)`
 Creates `strokeSampleRate`-many approximately equidistant points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
 
 ---
-#### `sampleCatmullRomSpline(points, modifs)`
+### `sampleCatmullRomSpline(points, modifs)`
 Creates approximately equidistant points on the Catmull-Rom spline defined by the points in `points`. The parameter `modifs` is a dictionary that allows you to set the knot parametrization with the key `alpha` and the number of points to sample with the key `nop`. The default values are `alpha = 0.5` and `nop = strokeSampleRate`.
 
 
-#### `sampleCatmullRomSpline(points)`
+### `sampleCatmullRomSpline(points)`
 Creates `strokeSampleRate`-many approximately equidistant points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
 
 
 ---
-#### `sampleCircle(rad, angle)`
+### `sampleCircle(rad, angle)`
 Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
 
 
-#### `sampleCircle(rad, startAngle, endAngle)`
+### `sampleCircle(rad, startAngle, endAngle)`
 Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
 
 
-#### `sampleCircle(rad)`
+### `sampleCircle(rad)`
 Creates `strokeSampleRate`-many equidistant points on a circle with radius `rad`, starting on the right.
 
 ---
-#### `samplePolygon(poly, nop)`
+### `samplePolygon(poly, nop)`
 Creates `nop`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve.
 
 
-#### `samplePolygon(poly)`
+### `samplePolygon(poly)`
 Creates `strokeSampleRate`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve. 
 
 ---
-#### `screenMouse()`
+### `screenMouse()`
 The coordinates of the mouse cursor normalized to the canvas such that they both lie in the interval $[0,1]$.
 
 ---
-#### `setupAnimationTrack(s, e)`
+### `setupAnimationTrack(s, e)`
 Sets up one animation track based on its start time `s` and its end time `e`. Mostly only interesting if you are using `animationBase` on its own. But it can also be useful to create animations completely independent of the main setup provided via `trackData`.
 
 
 ---
-#### `setupMultiAnimationTracks(times)`
+### `setupMultiAnimationTracks(times)`
 Given time information of the form `times = [startPause, duration 1, endPause 1, duration 2, endPause 2, ...]`, this will create multiple animation tracks that run in sequence.
 
 There is basically no reason to call this yourself. But! You can override it to accomodate for your own timing setup. I.e. when you don't like the way durations and pauses are listed in `trackData`, reimplement this function to your liking. The return value must be an array of animation tracks, though.
 
 ---
-#### `setupTime()`
+### `setupTime()`
 Sets up the basic time keeping system. Call it together with `playanimation()` in the init script if you use `animationBase` on its own.
 
 ---
-#### `sign(x)`
+### `sign(x)`
 Returns the sign of `x`.
 
 ---
-#### `slerp(u, v, t)`
+### `slerp(u, v, t)`
 Spherical interpolation between the vectors `u` and `v` at the parameter value `t`. The vectors are assumed to be normalized. Is equivalent to `ang2vec(lerp(alpha, beta, t))` for appropriate angles `alpha` and `beta`.
 
 ---
-#### `smoothStep(x)`
+### `smoothStep(x)`
 The polynomial 3x^2 - 2x^3. The function assumes that `x` is betwenn 0 and 1 and smoothly transitions from 0 to 1 as `x` grows.
 
 
-#### `smoothStep(x, a, b)`
+### `smoothStep(x, a, b)`
 The function is 0 if `x` is smaller than `a` and 1 if `x` is larger than `b`. It transitions smoothly between `a` and `b` via an appropriate cubic polynomial.
 
 
 ---
-#### `START`
+### `START`
 The number 0. If you are testing parts of your animation and you want to set some progress to always be 0, use this constant to make it easier to see and later on change where you did this.
 
 ---
-#### `stepSignal(t, a, b, c, d)`
+### `stepSignal(t, a, b, c, d)`
 Returns 0 if `t` is smaller than `a` or larger than `d`. Returns 1 if `t` is between `b` and `c`. Transitions linearly when `t` is between `a` and `b` or between `c` and `d`.
 
 ---
-#### `strokeSampleRate`
+### `strokeSampleRate`
 Global constant that is used as a default value for sampling various curves like circles or Bezier curves.
 
 ---
-#### `timeOffset(t, a, b)`
+### `timeOffset(t, a, b)`
 Reparametrizes the interval $[0,1]$ to the interval $[a,b]$, but assumes that `t` is strictly between 0 and 1. In other words, for values $0\leq a < b \leq 1$, this returns 0 if `t` is below `a` and 1 if `t` is above `b`. In between, it linearly interpolates from 0 to 1.
 
 The main use is to slightly offset movements within the same animation track. Cf. the example `animations/coordinate_grid.html` in the examples folder where gridlines are drawn with such a time offset from one another.
 
 ---
-#### `triangleSignal(t, a, b)`
+### `triangleSignal(t, a, b)`
 Returns 0 if `t` is smaller than `a` or larger than `b`. Between `a` and `b`, it rises linearly from 0 to 1 and then falls linearly back to 0.
 
 
-#### `triangleSignal(t)`
+### `triangleSignal(t)`
 Returns 0 if `t` is smaller than 0 or larger than 1. Between 0 and 1, it rises linearly from 0 to 1 and then falls linearly back to 0.
 
 ---
-#### `tween(obj, prop, target, time)`
+### `tween(obj, prop, target, time)`
 Syntactic sugar for lerping properties of objects. For example, if you define
 
 ```
@@ -535,18 +534,18 @@ to animate the radius of the circle instead of
 ```circle.radius = lerp(circle.radius, 2, t1);```
 
 ---
-#### `updateAnimationTrack(track)`
+### `updateAnimationTrack(track)`
 Updates the progress and all other variables of the animation track `track` based on the current total time. Mostly only interesting if you are using `animationBase` on its own.
 
 
 ---
-#### `zip(a, b)`
+### `zip(a, b)`
 Pairs up corresponding entries of two arrays of the same length `a` and `b`. I.e. the first entry of the output is `[a_1, b_1]`, the second entry is `[a_2, b_2]`, etc. Syntactic sugar for `transpose([a, b])`.
 
 
 
 
-### The *Nyka* typesetting language
+## The *Nyka* typesetting language
 When creating the parser for the function `fragment`, which splits strings containing *KaTeX* commands into individual glyphs, I thought that it is much simpler to assume certain formating rules. Especially, since I was using them anyway. For example, always using curly braces for fractions: `"\frac{1}{2}"` even though `"\frac12"` would also work. Or listing the subscript part of a sum always before the superscript part: `"\sum_{k=1}^{n}"` instead of `"\sum^{n}_{k=1}"`. When deciding to make the animation package more public, I thought that asking the user to adhere to these rules might be a bit awkward. In my mind, it is much more convenient to create a completely new maths typesetting language that incorporates these rules; even though it is 99% identical to ordinary *LaTeX*. Or, at least, to the old *KaTeX* version that *CindyJS* is using. With this, *Nyka* was created, which stands for *Not Yet KaTeX*. It also allows me to make some minor adaptions, since there's no way to create custom *KaTeX* commands in *CindyJS*.
 
 Here are the things that are different in *Nyka* compared to *KaTeX*:
