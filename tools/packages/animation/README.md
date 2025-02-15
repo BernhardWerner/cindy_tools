@@ -108,7 +108,7 @@ Calculates the point on the Bezier curve defined by the control points `controls
 #### `bite(list, i)`
 Removes the first `i` elements from `list` and returns the shortened array.
 
----
+
 #### `bite(list)`
 Removes the first element from `list` and returns the shortened array.
 
@@ -160,10 +160,43 @@ Calculates the time elapsed since the last frame. Call it in the tick script if 
 ---
 #### `drawFragments(pos, fragmentedString, time, mode, modifs) `
 Draws a fragmented *Nyka* maths string `fragmentedString` (the output of `fragment`) at position `pos` with progress `t` in a typewriter-like effect. At the moment, there are two values for `mode`:
+
 - `"up"` will let the glyphs appear from the bottom.
 - `"down"` will let the glyphs appear from the top.
 - Any other value will let the glyphs simply appear at the righttime at the right position. Since `mode` is necessary, I propose to set it to `"none"` to make this case clear.
-Lastly, `modifs` is a dictionary that allows you to set the usual modifiers for drawing text like colour, opacity, outline width and outline colour. (Size and font family are stored in the fragmented string.) Moreover, you can set the keys `"colorMap"` and `"alphaMap"`
+
+Lastly, `modifs` is a dictionary that allows you to set the usual modifiers for drawing text like colour, opacity, outline width and outline colour. (Size and font family are stored in the fragmented string.) Moreover, you can set the keys `"colorMap"` and `"alphaMap"`. They allow you set individual glyphs to a particular colour or alpha value. Use them, for example, to highlight a part of a maths formula. They work by specifying a list of indices that represent the appropriate glyphs and the corresponding values. For example, say you want to draw the string
+
+```
+    fragmentedString = fragment("a + b = c", 30);
+```
+
+and you want to highlight the `b` and `c` in red. The you would write
+
+```
+    drawFragments([0, 0], fragmentedString, t, "none", {
+        "colorMap": [
+            [[3, 5], [1, 0, 0]]
+        ]
+    });
+```
+as they are the third and fifth glyph in the string. You can reference the same glyph multiple times. For example, in the same string as above, if you want to make the `a + b` red during the first animation track and then turn the `b` blue in the second track, you would write
+
+```
+    drawFragments([0, 0], fragmentedString, t, "none", {
+        "colorMap": [
+            [[1, 2, 3], lerp([0, 0, 0], [1, 0, 0], t1)],
+            [[4], lerp([1, 0, 0], [0, 0, 1], t2)]
+        ]
+    });
+```
+Clunky, but it gets the job done.
+
+#### `drawFragments(pos, fragmentedString, time, mode)`
+Draws a fragmented *Nyka* maths string `fragmentedString` (the output of `fragment`) at position `pos` with progress `t` in a typewriter-like effect. At the moment, there are two values for `mode`:
+- `"up"` will let the glyphs appear from the bottom.
+- `"down"` will let the glyphs appear from the top.
+- Any other value will let the glyphs simply appear at the righttime at the right position. Since `mode` is necessary, I propose to set it to `"none"` to make this case clear.
 
 ---
 #### Easing function
@@ -209,16 +242,30 @@ Exponentially interpolates between `x` and `y` at the parameter value `t`. The v
 The number 1. If you are testing parts of your animation and you want to set some progress to always be 1, use this constant to make it easier to see and later on change where you did this.
 
 ---
+#### `findIn(list, x)`
+Returns the index of the first occurrence of the value `x` in the array `list`. Returns 0 if `x` is not in `list`.
+
+---
+#### `findMatchingBracket(string, startIndex, bracketA, bracketB)`
+Finds the index of the matching bracket of `bracketA` in the string `string` starting at index `startIndex`. The bracket `bracketB` is used to determine the matching bracket. Returns 0 if no matching bracket is found. The bracket symbols can be anything you want to pair up in a string.
+
+This is heavily used in *Nyka* maths string processing.  But very occasionally, it might be useful for other purposes.
+
+---
 #### `fragment(string, size, family)`
 Fragments a string containing *Nyka* maths commands into individual glyphs, based on font size `size` and font family `family`. Make sure to call this function inside `delayedSetup()` to preprocess these strings if you want to draw them on screen at the correct position.
 
----
+
 #### `fragment(string, size)`
 Fragments a string containing *Nyka* maths commands into individual glyphs, based on font size `size` using the default font family. Make sure to call this function inside `delayedSetup()` to preprocess these strings if you want to draw them on screen at the correct position.
 
 ---
 #### `fragmentLength(fragmentedString)`
 Calculates the number of glyphs in a fragmented *Nyka* maths string. Only useful to call on the output of `fragment`.
+
+---
+#### `frequency(list, x)`
+Returns the number of times the value `x` appears in the array `list`.
 
 ---
 #### `inverseEerp(x, y, p)`
@@ -233,10 +280,14 @@ Calculates the parameter value `t` at which the linear interpolation between `x`
 Calculates the parameter value `t` at which the spherical interpolation between the vectors `u` and `v` equals `w`. In other words, it calculates the angle between `w` and `u` relative to the angle between `v` and `u`. The vectors are assumed to be normalized.
 
 ---
+#### `joinStrings(list, symbol)`
+Joins the strings in `list` together to a new one and inserts the symbol `symbol` in between them. 
+
+---
 #### `lerp(x, y, t)`
 Linearly interpolates between `x` and `y` at the parameter value `t`. The value `t` is allowed to be outside the interval $[0,1]$ to give the full affine combination of `x` and `y`.
 
----
+
 #### `lerp(x, y, t, a, b)`
 Linearly interpolates between `x` and `y` at the parameter value `t` with the latter being in the interval $[a,b]$. In other words, it reparametrizes the interval $[a, b]$ to $[x, y]$.
 
@@ -248,7 +299,7 @@ The total time elapsed since the start of the animation.
 #### `pop(list, i)`
 Removes the last `i` elements from `list` and returns the shortened array.
 
----
+
 #### `pop(list)`
 Removes the last element from `list` and returns the shortened array.
 
@@ -256,7 +307,7 @@ Removes the last element from `list` and returns the shortened array.
 #### `randomChoose(list, k)`
 Chooses `k` elements from `list` at random and returns them as a new array.
 
----
+
 #### `randomChoose(list)`
 Chooses one element from `list` at random.
 
@@ -272,14 +323,16 @@ Creates a list of `strokeSampleRate`-many points that form a rectangle with roun
 #### `sampleCatmullRomCurve(controls, alpha)`
 Creates `strokeSampleRate`-many points on the Catmull-Rom curve defined by the four control points `controls`. The parameter `alpha` determines the knot parametrization.
 
----
+
 #### `sampleCatmullRomCurve(controls)`
 Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom curve (knot parametrization of 0.5) defined by the four control points `controls`.
 
-### `sampleCatmullRomSpline(points, modifs)`
+---
+#### `sampleCatmullRomSpline(points, modifs)`
 Creates points on the Catmull-Rom spline defined by the points in `points`. The parameter `modifs` is a dictionary that allows you to set the knot parametrization with the key `alpha` and the number of points to sample with the key `nop`. The default values are `alpha = 0.5` and `nop = strokeSampleRate`.
 
-### `sampleCatmullRomSpline(points)`
+
+#### `sampleCatmullRomSpline(points)`
 Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom spline (knot parametrization of 0.5) defined by the points in `points`.
 
 
@@ -287,11 +340,11 @@ Creates `strokeSampleRate`-many points on the centripetal Catmull-Rom spline (kn
 #### `sampleCircle(rad, angle)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right side and going counter-clockwise for an angle of `angle`.
 
----
+
 #### `sampleCircle(rad, startAngle, endAngle)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting at `startAngle` and ending at `endAngle`.
 
----
+
 #### `sampleCircle(rad)`
 Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting on the right.
 
@@ -299,7 +352,7 @@ Creates `strokeSampleRate`-many points on a circle with radius `rad`, starting o
 #### `samplePolygon(poly, nop)`
 Creates `nop`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve.
 
----
+
 #### `samplePolygon(poly)`
 Creates `strokeSampleRate`-many points on a polygonal curve given by the points in `poly`. The original points are included in the output, and the rest are spread as evenly as possible along the curve. 
 
@@ -334,7 +387,7 @@ Spherical interpolation between the vectors `u` and `v` at the parameter value `
 #### `smoothStep(x)`
 The polynomial 3x^2 - 2x^3. The function assumes that `x` is betwenn 0 and 1 and smoothly transitions from 0 to 1 as `x` grows.
 
----
+
 #### `smoothStep(x, a, b)`
 The function is 0 if `x` is smaller than `a` and 1 if `x` is larger than `b`. It transitions smoothly between `a` and `b` via an appropriate cubic polynomial.
 
@@ -361,7 +414,7 @@ The main use is to slightly offset movements within the same animation track. Cf
 #### `triangleSignal(t, a, b)`
 Returns 0 if `t` is smaller than `a` or larger than `b`. Between `a` and `b`, it rises linearly from 0 to 1 and then falls linearly back to 0.
 
----
+
 #### `triangleSignal(t)`
 Returns 0 if `t` is smaller than 0 or larger than 1. Between 0 and 1, it rises linearly from 0 to 1 and then falls linearly back to 0.
 
@@ -388,8 +441,9 @@ to animate the radius of the circle instead of
 Updates the progress and all other variables of the animation track `track` based on the current total time. Mostly only interesting if you are using `animationBase` on its own.
 
 
-
-
+---
+#### `zip(a, b)`
+Pairs up corresponding entries of two arrays of the same length `a` and `b`. I.e. the first entry of the output is `[a_1, b_1]`, the second entry is `[a_2, b_2]`, etc. Syntactic sugar for `transpose([a, b])`.
 
 
 

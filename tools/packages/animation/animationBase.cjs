@@ -1194,7 +1194,7 @@ deca2hexa(digit) := ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E"
 frequency(list, x) := length(select(list, # == x));
 
 
-findin(list, x) := (
+findIn(list, x) := (
     regional(occs);
 
     occs = select(1..length(list), list_# == x);
