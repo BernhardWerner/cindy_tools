@@ -106,14 +106,13 @@ These are the functions and commands found in `animationBase` relevant to creati
 
 Unless explicitly mentioned, all distances and sizes are in Cindy units.
 
-### Functions & Commands of `animationBase`
 
----
-#### `ang2vec(alpha)`
+
+### `ang2vec(alpha)`
 Converts an angle `alpha` in degrees to a unit vector pointing in that direction. Just sytanctic sugar for the expression `[cos(alpha), sin(alpha)]`.
 
 ---
-#### `animatePolygon(vertices, t)`
+### `animatePolygon(vertices, t)`
 This function interprets the list of vertices as a polygonal curve that is parametrized by the interval $[0,1]$. It assumes that `t` is in this interval, and returns the point on the curve at this parameter value, together with all vertices up to that points.
 
 Use it to animate a polygonal curve via `connect(animatePoylgon(vertices, t));` with `t` being the progress variable of an animation track. This is preferable to `samplePolygon` if the polygon itself doesn't drastically change because this function outputs much fewer points.
