@@ -219,7 +219,7 @@ Draws a fragmented *Nyka* maths string `fragmentedString` (the output of `fragme
 - Any other value will let the glyphs simply appear at the righttime at the right position. Since `mode` is necessary, I propose to set it to `"none"` to make this case clear.
 
 ---
-#### Easing function
+### Easing functions
 These functions are used to create more dynamic transitions between values. Use the progress variable of an animation track as their input. Cf. https://easings.net/ for details. The full list of easing functions in this package is:
 
 ```
