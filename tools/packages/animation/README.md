@@ -455,7 +455,7 @@ Creates `strokeSampleRate`-many points on a polygonal curve given by the points 
 
 ---
 ### `screenMouse()`
-The coordinates of the mouse cursor normalized to the canvas such that they both lie in the interval $[0,1]$.
+The coordinates of the mouse cursor normalized to the canvas such that they both lie in the interval $[0,1]$. This is particularly handy for development and debugging of animations: Instead of using the progress variable of an animation track, use `screenMouse().x` and you will be able to scrub through the animation by moving your mouse across the canvas.
 
 ---
 ### `setupAnimationTrack(s, e)`
