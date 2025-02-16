@@ -482,7 +482,7 @@ Spherical interpolation between the vectors `u` and `v` at the parameter value `
 
 ---
 ### `smoothStep(x)`
-The polynomial 3x^2 - 2x^3. The function assumes that `x` is betwenn 0 and 1 and smoothly transitions from 0 to 1 as `x` grows.
+The polynomial $3x^2 - 2x^3$. The function assumes that `x` is betwenn 0 and 1 and smoothly transitions from 0 to 1 as `x` grows.
 
 
 ### `smoothStep(x, a, b)`
