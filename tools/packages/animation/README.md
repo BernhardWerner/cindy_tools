@@ -175,7 +175,7 @@ Calculates the point on the Catmull-Rom curve defined by the four control points
 
 ---
 ### `deltaTime()`
-Calculates the time elapsed since the last frame. Call it in the tick script if you use `animationBase` on its own and use its result for custom time-dependent calculations. If you use the full package, this function is automatically called and its result is stored in the variable `delta`.
+Calculates the time elapsed since the last frame. Call it every frame in the *tick* script if you use `animationBase` on its own and use its result for custom time-dependent calculations. If you use the full package, this function is automatically called and its result is stored in the variable `delta`.
 
 ---
 ### `drawFragments(pos, fragmentedString, time, mode, modifs) `
@@ -535,7 +535,7 @@ to animate the radius of the circle instead of
 
 ---
 ### `updateAnimationTrack(track)`
-Updates the progress and all other variables of the animation track `track` based on the current total time. Mostly only interesting if you are using `animationBase` on its own.
+Updates the progress and all other variables of the animation track `track` based on the current total time. Mostly only interesting if you are using `animationBase` on its own. Hasto be called every frame inthe *tick* script.
 
 
 ---
