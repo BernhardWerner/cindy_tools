@@ -542,11 +542,12 @@ Updates the progress and all other variables of the animation track `track` base
 ### `zip(a, b)`
 Pairs up corresponding entries of two arrays of the same length `a` and `b`. I.e. the first entry of the output is `[a_1, b_1]`, the second entry is `[a_2, b_2]`, etc. Syntactic sugar for `transpose([a, b])`.
 
+---
 
 
 
 ## The *Nyka* typesetting language
-When creating the parser for the function `fragment`, which splits strings containing *KaTeX* commands into individual glyphs, I thought that it is much simpler to assume certain formating rules. Especially, since I was using them anyway. For example, always using curly braces for fractions: `"\frac{1}{2}"` even though `"\frac12"` would also work. Or listing the subscript part of a sum always before the superscript part: `"\sum_{k=1}^{n}"` instead of `"\sum^{n}_{k=1}"`. When deciding to make the animation package more public, I thought that asking the user to adhere to these rules might be a bit awkward. In my mind, it is much more convenient to create a completely new maths typesetting language that incorporates these rules; even though it is 99% identical to ordinary *LaTeX*. Or, at least, to the old *KaTeX* version that *CindyJS* is using. With this, *Nyka* was created, which stands for *Not Yet KaTeX*. It also allows me to make some minor adaptions, since there's no way to create custom *KaTeX* commands in *CindyJS*.
+When creating the parser for the function `fragment`, which splits strings containing *KaTeX* commands into individual glyphs, I thought that it would be much simpler if the string adhered to certain formating rules. Especially, since I was using them anyway. For example, always using curly braces for fractions: `"\frac{1}{2}"` even though `"\frac12"` would also work. Or listing the subscript part of a sum always before the superscript part: `"\sum_{k=1}^{n}"` instead of `"\sum^{n}_{k=1}"`. When deciding to make the animation package more public, I thought that asking the user to adhere to these rules might be a bit awkward. In my mind, it is much more convenient to create a completely new maths typesetting language that incorporates these rules; even though it is 99% identical to ordinary *LaTeX*. Or, at least, to the old *KaTeX* version that *CindyJS* is using. With this, *Nyka* was created, which stands for *Not Yet KaTeX*. It also allows me to make some minor adaptions, since there's no way to create custom *KaTeX* commands in *CindyJS*.
 
 Here are the things that are different in *Nyka* compared to *KaTeX*:
 
