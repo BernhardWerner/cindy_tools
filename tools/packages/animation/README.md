@@ -384,7 +384,7 @@ The seed for the pseudo-random number generator `rnd()`.
 
 ---
 ### `rnd()`
-A pseudo-random number between 0 and 1. Can be seeded by setting `rndSeed`. This is equivalent to the built-in function `random()` combined with `seedrandom(x)`. For large, complex calculationsthe built-in version doesn't seen to work and does not produce the same outcame each time you run the animation.
+A pseudo-random number between 0 and 1. Can be seeded by setting `rndSeed`. This is equivalent to the built-in function `random()` combined with `seedrandom(x)`. For large, complex calculations the built-in version doesn't seem to work and does not produce the same outcame each time you run the animation.
 
 ---
 ### `rotate(point, alpha, center)`
