@@ -551,7 +551,7 @@ When creating the parser for the function `fragment`, which splits strings conta
 
 Here are the things that are different in *Nyka* compared to *KaTeX*:
 
-- *Nyka* provides shorthand version for `\mathbb`, `\mathfrak`, `\mathscr` and `\mathcal`. You can write `"$\bA$"` instead of `"$\mathbb{A}$"`. For the others, it is `"$\fA$"`, `"$\sA$"`, and `"$\cA$"`, respectively.
+- *Nyka* provides shorthand version for `\mathbb`, `\mathfrak`, `\mathscr` and `\mathcal`. FOr example, you can write `"$\bA$"` instead of `"$\mathbb{A}$"`. For the others, it is `"$\fA$"`, `"$\sA$"`, and `"$\cA$"`, respectively.
 - Matrices and cases are not created via environment, but via regular, multi-argument commands. E.g., you would write
   
     ```"$\bmatrix{1 & 2 & 3}{4 & 5 & 6}{7 & 8 & 9}$"```
@@ -569,4 +569,4 @@ Here are the things that are different in *Nyka* compared to *KaTeX*:
     ```"$\begin{cases} 1 & \text{if } x = 0 \\ 0 & \text{otherwise} \end{cases}$"```
 - Fractions must be followed by curly braces: `"$\frac{a}{b}$"`.
 - Roots must end with curly braces for the radicand: `"$\sqrt{2}$"`. The order/degree of the root is optional: `"$\sqrt[3]{2}$"`.
-- Commands that take subscripts and superscripts must have them in square brackets. For limits, this means that you have to write `"$\lim[x \to 0]$"` instead of `"$\lim_{x \to 0}$"`. Writing `"\lim"` alone is also valid. The other cases are sums, products and integrals. Here, You must type both square brackets even if you only need one. E.g. for sums you would write `"$\sum[k=0][\infty]$"` or `"$\sum[k\in\bN][]$"`. If you don't need either subscript and superscript, you can omit the square brackets. E.g. `"$\sum$"` and `"$\sum[][]$"` are both valid.
+- Commands that take subscripts and superscripts must have them in square brackets. For limits, this means that you have to write `"$\lim[x \to 0]$"` instead of `"$\lim_{x \to 0}$"`. Writing `"$\lim$"` alone is also valid. The other cases are sums, products and integrals. Here, You must type both square brackets even if you only need one. E.g. for sums you would write `"$\sum[k=0][\infty]$"` or `"$\sum[k\in\bN][]$"`. If you don't need either subscript and superscript, you can omit the square brackets. E.g. `"$\sum$"` and `"$\sum[][]$"` are both valid.
