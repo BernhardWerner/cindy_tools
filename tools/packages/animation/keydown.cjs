@@ -1,5 +1,6 @@
 if(stepMode == STEPMODES.KEYBOARD,
     key = key();
+    
     if(key == STEPFORWARDS,
         moveStepForwards();
     );
@@ -11,4 +12,8 @@ if(stepMode == STEPMODES.KEYBOARD,
     if(key == SKIPBACKWARDS,
         skipStepBackwards();
     );    
+
+    if(key == RELOAD,
+        reload();
+    );
 );

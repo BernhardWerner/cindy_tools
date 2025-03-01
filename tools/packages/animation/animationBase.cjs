@@ -25,7 +25,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 strokeSampleRate = 256;
-texDelimiters = ["⧸", "⧹"];
+texDelimiters = ["@", "/"];
 integralResolution = 3;
 
 
@@ -69,8 +69,12 @@ roundedRectangleStroke(center, w, h, cornerRadius) := (
 // ************************************************************************************************
 // Creates stroke around a polygon.
 // ************************************************************************************************
-samplePolygon(poly, nop) := (
+samplePolygonFREE(poly, nop, closed) := (
     regional(pairs, dists, totalDist, effectiveNumber, splitNumbers, stepSize, index, sr);
+    
+    if(closed, 
+        poly = poly :> poly_1;
+    );
     
     sr = if(length(poly) == 2, strokeSampleRate, nop);
     
@@ -102,8 +106,10 @@ samplePolygon(poly, nop) := (
     flatten(apply(1..length(pairs), pop(subDivideSegment(pairs_#_1, pairs_#_2, splitNumbers_# + 2)) )) :> poly_(-1);
 
 );
+samplePolygonFREE(poly, nop) :=	samplePolygonFREE(poly, nop, true);
 
 samplePolygon(poly) := samplePolygonFREE(poly, strokeSampleRate);
+samplePolygon(poly, closed) := samplePolygonFREE(poly, strokeSampleRate, closed);
 
 
 
@@ -136,6 +142,14 @@ animatePolygon(vertices, t) := (
 
 
 
+
+
+
+// ************************************************************************************************
+// Resampling via centripetal Catmull-Rom splines.
+// ************************************************************************************************
+resample(stroke, nop) := sampleCatmullRomSplineFREE(stroke, nop);
+resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
 
 
 
@@ -199,11 +213,8 @@ sampleCatmullRomCurve(controls, alpha) := (
 );
 sampleCatmullRomCurve(controls) := sampleCatmullRomCurve(controls, 0.5);
         
-sampleCatmullRomSpline(points, modifs) := (
+sampleCatmullRomSplineGeneralFREE(points, alpha, nop) := (
     regional(dists, traj, before, after, cutTimes, piece, controls, t);
-
-    if(!contains(keys(modifs), "alpha"), modifs.alpha = 0.5);
-    if(!contains(keys(modifs), "sampleRate"), modifs.sampleRate = strokeSampleRate);
 
     dists    = apply(derive(points), abs(#));
     traj     = sum(dists);
@@ -211,25 +222,27 @@ sampleCatmullRomSpline(points, modifs) := (
     after    = 2 * points_(-1) - points_(-2);
     cutTimes = 0 <: apply(1..(length(dists) - 1), sum(dists_(1..#))) / traj;
   
-    apply(0..(sampleRate - 1), i,
-      piece = select(1..(length(points) - 1), cutTimes_# * (sampleRate - 1) <= i)_(-1);
+    apply(0..(nop - 1), i,
+      piece = select(1..(length(points) - 1), cutTimes_# * (nop - 1) <= i)_(-1);
   
     
       if(piece == 1,
         controls = [before, points_1, points_2, points_3];
-        t = i / (sampleRate - 1) * traj / dists_1;
+        t = i / (nop - 1) * traj / dists_1;
       ,if(piece == length(points) - 1,
         controls = [points_(-3), points_(-2), points_(-1), after];
-        t = (i / (sampleRate - 1) - cutTimes_(-1)) * traj / dists_(-1);
+        t = (i / (nop - 1) - cutTimes_(-1)) * traj / dists_(-1);
       , // else //
         controls = [points_(piece - 1), points_(piece), points_(piece + 1), points_(piece + 2)];
-        t = (i / (sampleRate - 1) - cutTimes_piece) * traj / dists_piece;
+        t = (i / (nop - 1) - cutTimes_piece) * traj / dists_piece;
       ));
 
       catmullRom(controls, alpha, t);
     );
 );
-sampleCatmullRomSpline(points) := sampleCatmullRomSpline(points, {});
+sampleCatmullRomSplineGeneral(points, alpha) := sampleCatmullRomSplineGeneralFREE(points, alpha, strokeSampleRate);
+sampleCatmullRomSplineFREE(points, nop)      := sampleCatmullRomSplineGeneralFREE(points, 0.5, nop);
+sampleCatmullRomSpline(points)               := sampleCatmullRomSplineGeneralFREE(points, 0.5, strokeSampleRate);
 
 
 subdivideSegment(p, q, n) := apply(1..n, lerp(p, q, #, 1, n));
@@ -286,8 +299,8 @@ randomChoose(list) := randomChoose(list, 1)_1;
 
 
 
+pop(list) := list_(1..(length(list) - 1));
 pop(list, i) := list_(1..(length(list) - i));
-pop(list) := pop(list, 1);
 
 
 
@@ -466,6 +479,18 @@ setupAnimationTrack(s, e) := (
 ); 
 
 
+setupMultiAnimationTracks(start, listOfDurations, pause) := (
+    regional(t, res);
+
+    res = [];
+    t = start;
+    forall(listOfDurations, d,
+        res = res :> setupAnimationTrack(t, t + d);
+        t = t + d + pause;
+    );
+
+    res;
+);
 
 // times must be of the form [startPause, duration 1, endPause 1, duration 2, endPause 2, ...]
 setupMultiAnimationTracks(times) := (
@@ -519,8 +544,8 @@ tween(obj, prop, target, time) := (
 
 
 
-START := 0;
-END := 1;
+START = 0;
+END = 1;
 
 
 
@@ -879,7 +904,7 @@ fragment(string, size) := fragment(string, size, 0);
 
 
 
-fragmentLength(fragmentedString) := sum(apply(fragmentedString, #.length));
+fragmentLength(listOfDicts) := sum(apply(listOfDicts, #.length));
 
 
 
@@ -985,14 +1010,14 @@ fragmentMixed(string, size) := fragmentMixed(string, size, 0);
 
 
 
-drawFragments(pos, fragmentedString, time, mode, modifs) := (
+drawFragments(pos, listOfDicts, time, mode, modifs) := (
     regional(totalLength, customTime, s, e);
 
-    totalLength = sum(apply(fragmentedString, #.length));
+    totalLength = sum(apply(listOfDicts, #.length));
     s = 0;
-    forall(fragmentedString, dict, index,
+    forall(listOfDicts, dict, index,
         if(index > 1,
-            s = s + fragmentedString_(index - 1).length / totalLength;
+            s = s + listOfDicts_(index - 1).length / totalLength;
         );
         e = s + dict.length / totalLength;
         customTime = timeOffset(time, s, e);
@@ -1004,7 +1029,7 @@ drawFragments(pos, fragmentedString, time, mode, modifs) := (
     );
 
 );
-drawFragments(pos, fragmentedString, time, mode) := drawFragments(pos, fragmentedString, time, mode, {});
+drawFragments(pos, listOfDicts, time, mode) := drawFragments(pos, listOfDicts, time, mode, {});
 
 
 
@@ -1086,6 +1111,9 @@ drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time,
 
 
 
+preProcessTex(string) := (
+    
+);
 
 drawFragmentedTex(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, s, hasColorMap, hasAlphaMap, col);
@@ -1186,7 +1214,7 @@ deca2hexa(digit) := ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E"
 frequency(list, x) := length(select(list, # == x));
 
 
-findIn(list, x) := (
+findin(list, x) := (
     regional(occs);
 
     occs = select(1..length(list), list_# == x);
@@ -1236,12 +1264,12 @@ newRect(pos, w, h) := newRect(pos, w, h, 1);
 
 
 
-expandRect(pos, w, h, a) := (
+expandRect(pos, w, h, c) := (
     regional(d, e, shift);
 
     d     = 0.5 * [w, h];
     e     = (d_1, -d_2);
-    shift = -compass(a);
+    shift = -compass(c);
     shift = (0.5 * w * shift.x, 0.5 * h * shift.y);
     apply([-d, e, d, -e], pos + # + shift); //LU, RU, RO, LO
 );
@@ -1322,15 +1350,15 @@ sampleBezierCurve(controls, n) := (
 );
 
 
-resample(stroke, nop) := sampleCatmullRomSpline(stroke, {"sampleRate": nop});
-resample(stroke) := resample(stroke, strokeSampleRate);
+resample(stroke, nop) := sampleCatmullRomSplineFREE(stroke, nop);
+resample(stroke) := sampleCatmullRomSplineFREE(stroke, strokeSampleRate);
 
 
 
 
 
 
-fract(x) := mod(x, 1);
+fract(x) := x - floor(x);
 
 
 
@@ -1348,11 +1376,11 @@ randomGradient2D(pos) := (
 // *************************************************************************************************
 // Gives random gradient noise based on a point in the plane.
 // *************************************************************************************************
-perlinNoise2D(pos) := (
+perlinNoise2D(coords) := (
     regional(iPoint, fPoint);
     
-    iPoint = [floor(pos.x), floor(pos.y)];
-    fPoint = [fract(pos.x), fract(pos.y)];
+    iPoint = [floor(coords.x), floor(coords.y)];
+    fPoint = [fract(coords.x), fract(coords.y)];
 
     0.5 * lerp(
             lerp(
@@ -1365,12 +1393,12 @@ perlinNoise2D(pos) := (
             smoothstep(fPoint.x)),
         smoothstep(fPoint.y)) + 0.5;
 );
-perlinNoise2DOctaves(pos) := (
+perlinNoise2DOctaves(coords) := (
     regional(sum);
 
     sum = 0;
     repeat(3,
-        sum = sum + pow(0.5, # - 1) * perlinNoise2D(pow(2, # - 1) * pos);    
+        sum = sum + pow(0.5, # - 1) * perlinNoise2D(pow(2, # - 1) * coords);    
     );
 
     sum / 1.75

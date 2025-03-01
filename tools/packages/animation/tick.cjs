@@ -40,7 +40,8 @@ if(renderMode == RENDERMODES.FRAMES,
             );
         );
     , // else //
-        if(pixelsize(katexForceString)_1 < 10000,
+        println(pixelsize(katexForceString)_1);
+        if(pixelsize(katexForceString)_1 < katexBufferWidth,
             katexLoaded = true;
             delayedSetup();
         , // else //

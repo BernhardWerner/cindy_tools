@@ -1,7 +1,9 @@
 // Force KaTeX to load fonts:
 katexForceString = "$\begin{bmatrix}\frac{1+e}{\pi \oplus 1} & \prod_{k=3}^{\mathbb{A}\mathfrak{B}\mathscr{D}\mathcal{E}} 123 \\ \big(\bigg)\Big(\Bigg) & \lim\limits_{x\to\infty} \alpha^{2} \\ \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6\end{bmatrix}$";
 katexLoaded = false;
-pixelsize(katexForceString);
+katexBufferWidth = pixelsize(katexForceString)_1;
+if(not(katexBufferWidth < 10000), katexBufferWidth = 10000);
+println("KaTeX buffer width: " + katexBufferWidth);
 
 // ************************************************************
 
@@ -40,8 +42,9 @@ stepRenderState = STEPRENDERSTATES.WAITING;
 
 STEPBACKWARDS = "A";
 STEPFORWARDS = "D";
-SKIPFORWARDS = "W";
-SKIPBACKWARDS = "S";
+SKIPFORWARDS = "S";
+SKIPBACKWARDS = "W";
+RELOAD = "R";
 
 STEPMODES := {
     "KEYBOARD": 0,
@@ -67,6 +70,9 @@ skipStepBackwards() := (
         );
         calculate(-trackData_(2 * currentTrackIndex) - trackData_(2 * currentTrackIndex - 1));
     );
+);
+reload() := (
+    javascript("location.reload();");
 );
 
 // ************************************************************
