@@ -38,7 +38,11 @@ cameraBasis(cam) := (
 
 projectToScreen(p, camPosition, camBasis, camFOV) := (
     p = transpose(camBasis) * (p - camPosition);
-    p = - p / p.z / tan(camFOV / 2) * screenWidth / 2;
+    p = if(camFOV == 0,
+        [p.x, p.y]
+    , // else //
+        - p / p.z / tan(camFOV / 2) * screenWidth / 2;
+    );
 
     screenCenter + [p.x, p.y];
 );
