@@ -153,6 +153,19 @@ animatePolygon(vertices, t) := (
         vertices_(1..counter) :> endPoint;
     );
 );
+animatePolygon(vertices, s, t) := (
+    regional(front, back, start, end, middle);
+
+    [s, t] = [min(s, t), max(s, t)];
+
+    vertices = zip(vertices, 1..length(vertices));
+
+    front = reverse(animatePolygon(reverse(vertices), 1 - s));
+    back = animatePolygon(vertices, t);    start = if(length(front) > 0, [front_1], []);
+    end = if(length(back) > 0, [back_(-1)], []);;
+    middle = select(bite(front), contains(pop(back), #));
+    apply(start ++ middle ++ end, #_1);
+);
 
 
 
@@ -425,6 +438,32 @@ deltaTime() := (
 
 timeOffset(t, a, b) := clamp(inverseLerp(a, b, t), 0, 1);
 
+
+// Only usable in full package or, at least, when an array of animations tracks called 'tracks' exists.
+ladder(trackIndex, amount, separation) := (
+    regional(res);
+
+    res = {
+        "trackIndex": trackIndex,
+        "amount": amount,
+        "separation": separation,
+        "wiggle": separation / amount,
+        "index": -1
+    };
+
+    res.reset := (
+        self().index = -1;
+    );
+    res.doStep := (
+        self().index = self().index + 1;
+        timeOffset(tracks_(self().trackIndex).progress, self().index * self().wiggle, 1 - (self().amount - 1 - self().index) * self().wiggle);
+    );
+
+    res;
+); 
+
+
+
 stepSignal(t, a, b, c, d) := clamp(min(inverseLerp(a, b, t), inverseLerp(d, c, t)), 0, 1);
 
 smoothStep(x) := x * x * (3 - 2 * x);
@@ -473,7 +512,23 @@ easeInElastic(x)     := if(x == 0, 0, if(x == 1, 1, -2^(10 * x - 10) * sin(2 * p
 easeOutElastic(x)    := 1 - easeInElastic(1 - x);
 easeInOutElastic(x)  := if(x == 0, 0, if(x == 1, 1, if(x < 0.5, -2^(20 * x - 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2, 2^(-20 * x + 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2 + 1)));
 
+easeInBounce(x)      := 1 - easeoutBounce(1 - x);
+easeOutBounce(x)     := (
+    regional(d);
+    d = 2.75;
 
+    if(x < 1 / d,
+        d^2 * x^2;
+    ,if(x < 2 / d,
+        (x * d - 1.5)^2 + 0.75;
+    ,if(x < 2.5 / d,
+        (x * d - 2.25)^2 + 0.9375;
+    , // else //
+        (x * d - 2.625)^2 + 0.984375;
+    )));
+);
+
+easeInOutBounce(x) := 0.5 * if(x < 0.5, 1 - easeOutBounce(1 - 2 * x), 1 + easeOutBounce(2 * x - 1));
 
 // ************************************************************************************************
 // Basic animation functionlity.
@@ -1404,6 +1459,9 @@ randomGradient2D(pos) := (
 );
 
 
+randomPoint(pos) := [fract(sin(pos * (127.1,311.7)) * 43758.5453), 
+    fract(sin(pos * (269.5,183.3)) * 43758.5453) ];
+
 
 // *************************************************************************************************
 // Gives random gradient noise based on a point in the plane.
@@ -1474,6 +1532,28 @@ perlinNoise3D(coords) := (
             smoothstep(fPoint.x)),
         smoothstep(fPoint.y)),
     smoothStep(fPoint.z)) + 0.5;
+);
+
+
+voronoiNoise(coords) := (
+    regional(iPoint, mDist, neighbours, currDist);
+
+    iPoint = [floor(coords.x), floor(coords.y)];
+    fPoint = [fract(coords.x), fract(coords.y)];
+
+    neighbours = directproduct(-1..1, -1..1);
+
+    mDist = 1.5;
+
+    forall(neighbours,
+        currDist = dist(coords, iPoint + # + randomPoint(iPoint + #));	
+        if(currDist < mDist,
+            mDist = currDist;
+        );
+    );
+
+    mDist;
+
 );
 
 

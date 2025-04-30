@@ -1,7 +1,8 @@
 {
     "init": [
         {"name": "animationBase.cjs", "place": -12},
-        {"name": "mainSetup.cjs", "place": -11},
+        {"name": "plus.cjs", "place": -11},
+        {"name": "mainSetup.cjs", "place": -10},
         {"name": "startAnimation.cjs", "place": 11}
     ],
     "draw": [{"name": "draw.cjs", "place": 10}],
