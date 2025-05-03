@@ -1,3 +1,6 @@
+debugColor = [0.22, 1, 0.08];
+
+
 canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
 
 canvasAnchors = [
