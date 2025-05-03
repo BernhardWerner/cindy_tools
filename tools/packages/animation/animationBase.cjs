@@ -43,12 +43,6 @@ arrowTip(tipPos, dir, size) := (
 );
 
 
-
-sampleCircle(rad, angle) := apply(0..strokeSampleRate - 1, rad * [cos(angle * # / (strokeSampleRate - 1)), sin(angle * # / (strokeSampleRate - 1))]);
-sampleCircle(rad, startAngle, endAngle) := apply(0..strokeSampleRate - 1, rad * [cos(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1)), sin(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1))]);
-sampleCircle(rad) := sampleCircle(rad, 2*pi);
-
-
 roundedRectangleStroke(center, w, h, cornerRadius) := (
     regional(corners);
 
@@ -61,6 +55,29 @@ roundedRectangleStroke(center, w, h, cornerRadius) := (
 
     resample(resample(corners_4_(-1) <: flatten(corners)));
 );
+
+roundedRectangleShape(tl, w, h, r) := roundedRectangleShape(tl, tl + [w,-h], r);
+roundedRectangleShape(tl, br, r) := (
+    regional(tr, bl);
+    tr = [br.x, tl.y];
+    bl = [tl.x, br.y];
+    r = min([r, |tl.x-br.x|/2, |tl.y-br.y|/2]);
+    //rounded corners
+    circle(tl.xy + [r,-r], r)
+        ++ circle(bl.xy + [r,r], r)
+        ++ circle(br.xy + [-r,r], r)
+        ++ circle(tr.xy + [-r,-r], r)
+    //rectangle
+        ++ polygon([tl.xy + [r,0], tr.xy + [-r,0], br.xy + [-r,0], bl.xy + [r,0]])
+        ++ polygon([tl.xy + [0,-r], tr.xy + [0,-r], br.xy + [0,r], bl.xy + [0,r]]);
+);
+
+sampleCircle(rad) := sampleCircle(rad, 2*pi);
+sampleCircle(rad, angle) := apply(0..strokeSampleRate - 1, rad * [cos(angle * # / (strokeSampleRate - 1)), sin(angle * # / (strokeSampleRate - 1))]);
+sampleCircle(rad, startAngle, endAngle) := apply(0..strokeSampleRate - 1, rad * [cos(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1)), sin(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1))]);
+
+
+
 
 
 
@@ -135,6 +152,19 @@ animatePolygon(vertices, t) := (
         endPoint = lerp(vertices_counter, vertices_(counter + 1), t, cummulativeTimes_counter, cummulativeTimes_(counter + 1));
         vertices_(1..counter) :> endPoint;
     );
+);
+animatePolygon(vertices, s, t) := (
+    regional(front, back, start, end, middle);
+
+    [s, t] = [min(s, t), max(s, t)];
+
+    vertices = zip(vertices, 1..length(vertices));
+
+    front = reverse(animatePolygon(reverse(vertices), 1 - s));
+    back = animatePolygon(vertices, t);    start = if(length(front) > 0, [front_1], []);
+    end = if(length(back) > 0, [back_(-1)], []);;
+    middle = select(bite(front), contains(pop(back), #));
+    apply(start ++ middle ++ end, #_1);
 );
 
 
@@ -408,6 +438,32 @@ deltaTime() := (
 
 timeOffset(t, a, b) := clamp(inverseLerp(a, b, t), 0, 1);
 
+
+// Only usable in full package or, at least, when an array of animations tracks called 'tracks' exists.
+ladder(trackIndex, amount, separation) := (
+    regional(res);
+
+    res = {
+        "trackIndex": trackIndex,
+        "amount": amount,
+        "separation": separation,
+        "wiggle": separation / amount,
+        "index": -1
+    };
+
+    res.reset := (
+        self().index = -1;
+    );
+    res.doStep := (
+        self().index = self().index + 1;
+        timeOffset(tracks_(self().trackIndex).progress, self().index * self().wiggle, 1 - (self().amount - 1 - self().index) * self().wiggle);
+    );
+
+    res;
+); 
+
+
+
 stepSignal(t, a, b, c, d) := clamp(min(inverseLerp(a, b, t), inverseLerp(d, c, t)), 0, 1);
 
 smoothStep(x) := x * x * (3 - 2 * x);
@@ -456,7 +512,23 @@ easeInElastic(x)     := if(x == 0, 0, if(x == 1, 1, -2^(10 * x - 10) * sin(2 * p
 easeOutElastic(x)    := 1 - easeInElastic(1 - x);
 easeInOutElastic(x)  := if(x == 0, 0, if(x == 1, 1, if(x < 0.5, -2^(20 * x - 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2, 2^(-20 * x + 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2 + 1)));
 
+easeInBounce(x)      := 1 - easeoutBounce(1 - x);
+easeOutBounce(x)     := (
+    regional(d);
+    d = 2.75;
 
+    if(x < 1 / d,
+        d^2 * x^2;
+    ,if(x < 2 / d,
+        (x * d - 1.5)^2 + 0.75;
+    ,if(x < 2.5 / d,
+        (x * d - 2.25)^2 + 0.9375;
+    , // else //
+        (x * d - 2.625)^2 + 0.984375;
+    )));
+);
+
+easeInOutBounce(x) := 0.5 * if(x < 0.5, 1 - easeOutBounce(1 - 2 * x), 1 + easeOutBounce(2 * x - 1));
 
 // ************************************************************************************************
 // Basic animation functionlity.
@@ -536,9 +608,12 @@ updateAnimationTrack(track) := (
 
 
 
-
+// Returns displacement!
 tween(obj, prop, target, time) := (
-    obj_prop = lerp(obj_prop, target, time)
+    regional(old);
+    old = obj_prop;
+    obj_prop = lerp(old, target, time);
+    obj_prop - old;
 );
 
 
@@ -925,6 +1000,7 @@ fragmentText(string, size, family) := (
     result = {
         "size": size,
         "family": family,
+        "width": pixelsize(string, size -> size, family -> family)_1 / screenresolution(),
         "length": n,
         "characters": [],
         "offsets": []
@@ -946,7 +1022,7 @@ fragmentText(string, size, family) := (
 fragmentText(string, size) := fragmentText(string, size, 0);
 
 fragmentTex(string, size, family) := (
-    regional(n, m, pairsOfDelimiters, candidate);
+    regional(n, m, pairsOfDelimiters, candidate, res);
 
     m = length(string);
 
@@ -963,13 +1039,15 @@ fragmentTex(string, size, family) := (
     n = length(pairsOfDelimiters);
     string = replace(string, texDelimiters_2, "}");
 
-    {
+    res = {
         "size": size,
         "family": family,
         "length": n,
         "characters": apply(1..n, i, sum(flatten(zip(tokenize(string, texDelimiters_1), apply(1..n, j, "\color{" + if(i == j, "[COLOR_" + j + "][ALPHA_" + j + "]", "#00000000") + "}{") :> "")))),
         "offsets": apply(1..n, 0)
     };
+    res.width = pixelsize(replace(string, texDelimiters_1, "{"), size -> size)_1 / screenresolution();
+    res;
 );
 fragmentTex(string, size) := fragmentTex(string, size, 0);
 
@@ -1011,9 +1089,18 @@ fragmentMixed(string, size) := fragmentMixed(string, size, 0);
 
 
 drawFragments(pos, listOfDicts, time, mode, modifs) := (
-    regional(totalLength, customTime, s, e);
+    regional(totalLength, customTime, s, e, totalWidth, hOffset);
 
     totalLength = sum(apply(listOfDicts, #.length));
+    totalWidth = sum(apply(listOfDicts, #.width));
+    hOffset = 0;
+    if(contains(keys(modifs), "align"),
+        if(modifs.align == "mid",
+            hOffset = -totalWidth / 2;
+        ,if(modifs.align == "right",
+            hOffset = -totalWidth;
+        ));
+    );
     s = 0;
     forall(listOfDicts, dict, index,
         if(index > 1,
@@ -1022,9 +1109,9 @@ drawFragments(pos, listOfDicts, time, mode, modifs) := (
         e = s + dict.length / totalLength;
         customTime = timeOffset(time, s, e);
         if(mod(index, 2) == 0,
-            drawFragmentedTex(pos, dict, customTime, mode, modifs);
+            drawFragmentedTex(pos + [hOffset, 0], dict, customTime, mode, modifs);
         , // else //
-            drawFragmentedText(pos, dict, customTime, mode, modifs);
+            drawFragmentedText(pos + [hOffset, 0], dict, customTime, mode, modifs);
         );
     );
 
@@ -1372,6 +1459,9 @@ randomGradient2D(pos) := (
 );
 
 
+randomPoint(pos) := [fract(sin(pos * (127.1,311.7)) * 43758.5453), 
+    fract(sin(pos * (269.5,183.3)) * 43758.5453) ];
+
 
 // *************************************************************************************************
 // Gives random gradient noise based on a point in the plane.
@@ -1404,6 +1494,68 @@ perlinNoise2DOctaves(coords) := (
     sum / 1.75
 );
 
+// Not actually uniform, but good enough for our purposes.
+randomGradient3D(pos) := (
+    regional(a);
+
+    a = randomValue([pos.x, pos.y]);
+    b = randomValue([-pos.z, pos.x + pos.y]);
+
+    [sin(2 * pi * a) * sin(pi * b), cos(pi * b), cos(2 * pi * a) * sin(pi * b)]
+);                            
+
+perlinNoise3D(coords) := (
+    regional(iPoint, fPoint);
+    
+    iPoint = [floor(coords.x), floor(coords.y), floor(coords.z)];
+    fPoint = [fract(coords.x), fract(coords.y), fract(coords.z)];
+
+    0.5 * lerp(
+        lerp(
+            lerp(
+                randomGradient3D(iPoint) * (fPoint), 
+                randomGradient3D(iPoint + [1,0,0]) * (fPoint - [1,0,0]), 
+            smoothstep(fPoint.x)),
+            lerp(
+                randomGradient3D(iPoint + [0,1,0]) * (fPoint - [0,1,0]),
+                randomGradient3D(iPoint + [1,1,0]) * (fPoint - [1,1,0]),
+            smoothstep(fPoint.x)),
+        smoothstep(fPoint.y)),
+        lerp(
+            lerp(
+                randomGradient3D(iPoint + [0,0,1]) * (fPoint - [0,0,1]), 
+                randomGradient3D(iPoint + [1,0,1]) * (fPoint - [1,0,1]), 
+            smoothstep(fPoint.x)),
+            lerp(
+                randomGradient3D(iPoint + [0,1,1]) * (fPoint - [0,1,1]),
+                randomGradient3D(iPoint + [1,1,1]) * (fPoint - [1,1,1]),
+            smoothstep(fPoint.x)),
+        smoothstep(fPoint.y)),
+    smoothStep(fPoint.z)) + 0.5;
+);
+
+
+voronoiNoise(coords) := (
+    regional(iPoint, mDist, neighbours, currDist);
+
+    iPoint = [floor(coords.x), floor(coords.y)];
+    fPoint = [fract(coords.x), fract(coords.y)];
+
+    neighbours = directproduct(-1..1, -1..1);
+
+    mDist = 1.5;
+
+    forall(neighbours,
+        currDist = dist(coords, iPoint + # + randomPoint(iPoint + #));	
+        if(currDist < mDist,
+            mDist = currDist;
+        );
+    );
+
+    mDist;
+
+);
+
 
 rndSeed = 0.123456789;
 rnd() := (
@@ -1418,6 +1570,35 @@ rnd() := (
 
 
 
+// ************************************************************************************************
+// Quaternion rotation.
+// ************************************************************************************************
+
+qProd(u, v) := [
+    u_1 * v_1 - u_2 * v_2 - u_3 * v_3 - u_4 * v_4,
+    u_1 * v_2 + u_2 * v_1 + u_3 * v_4 - u_4 * v_3,
+    u_1 * v_3 - u_2 * v_4 + u_3 * v_1 + u_4 * v_2,
+    u_1 * v_4 + u_2 * v_3 - u_3 * v_2 + u_4 * v_1
+];
+
+qConj(a) := [a_1, -a_2, -a_3, -a_4];
+
+rotate3D(vec, axis, angle) := (
+    regional(r, p, res);
+
+    if(abs(axis) <= 0.001,
+        vec;
+    , // else //
+        axis = axis / abs(axis);
+
+        r = [cos(angle / 2), sin(angle / 2) * axis_1, sin(angle / 2) * axis_2, sin(angle / 2) * axis_3];
+        p = [0, vec_1, vec_2, vec_3];
+
+        res = qProd(qProd(r, p), qConj(r));
+
+        [res_2, res_3, res_4];
+    );
+);
 
 
 

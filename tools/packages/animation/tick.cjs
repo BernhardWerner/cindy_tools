@@ -40,7 +40,6 @@ if(renderMode == RENDERMODES.FRAMES,
             );
         );
     , // else //
-        println(pixelsize(katexForceString)_1);
         if(pixelsize(katexForceString)_1 < katexBufferWidth,
             katexLoaded = true;
             delayedSetup();

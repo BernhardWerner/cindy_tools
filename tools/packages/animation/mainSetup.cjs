@@ -3,7 +3,6 @@ katexForceString = "$\begin{bmatrix}\frac{1+e}{\pi \oplus 1} & \prod_{k=3}^{\mat
 katexLoaded = false;
 katexBufferWidth = pixelsize(katexForceString)_1;
 if(not(katexBufferWidth < 10000), katexBufferWidth = 10000);
-println("KaTeX buffer width: " + katexBufferWidth);
 
 // ************************************************************
 
