@@ -121,13 +121,13 @@ lerpHSV(vecA, vecB, t) := (
     if(d <= pi,
         newH = lerp(vecA_1, vecB_1, t);
     , // else //
-       vecA_1 = vecA_1 + 180°;
-       vecB_1 = vecB_1 + 180°;
-       if(vecA_1 > 360°, vecA_1 = vecA_1 - 360°);
-       if(vecB_1 > 360°, vecB_1 = vecB_1 - 360°);
-       
-       newH = lerp(vecA_1, vecB_1, t) + 180°;
-       if(newH > 360°, newH = newH - 360°);
+        vecA_1 = vecA_1 + 180°;
+        vecB_1 = vecB_1 + 180°;
+        if(vecA_1 > 360°, vecA_1 = vecA_1 - 360°);
+        if(vecB_1 > 360°, vecB_1 = vecB_1 - 360°);
+        
+        newH = lerp(vecA_1, vecB_1, t) + 180°;
+        if(newH > 360°, newH = newH - 360°);
     );
     
     [newH, lerp(vecA_2, vecB_2, t), lerp(vecA_3, vecB_3, t)];
@@ -212,13 +212,13 @@ lerpLCH(vecA, vecB, t) := (
     if(d <= pi,
         newH = lerp(vecA_3, vecB_3, t);
     , // else //
-       vecA_3 = vecA_3 + 180°;
-       vecB_3 = vecB_3 + 180°;
-       if(vecA_3 > 360°, vecA_3 = vecA_3 - 360°);
-       if(vecB_3 > 360°, vecB_3 = vecB_3 - 360°);
-       
-       newH = lerp(vecA_3, vecB_3, t) + 180°;
-       if(newH > 360°, newH = newH - 360°);
+        vecA_3 = vecA_3 + 180°;
+        vecB_3 = vecB_3 + 180°;
+        if(vecA_3 > 360°, vecA_3 = vecA_3 - 360°);
+        if(vecB_3 > 360°, vecB_3 = vecB_3 - 360°);
+        
+        newH = lerp(vecA_3, vecB_3, t) + 180°;
+        if(newH > 360°, newH = newH - 360°);
     );
     
     [lerp(vecA_1, vecB_1, t), lerp(vecA_2, vecB_2, t), newH];
@@ -236,6 +236,10 @@ oklch2rgb2(vec) := oklab2rgb(oklch2oklab(vec));
 
 
 blendRGB(a, b, t) := linrgb2rgb(lerp(rgb2linrgb(a), rgb2linrgb(b), t));
+blendRGB(a, b, t, c, d) := blendRGB(a, b, inverseLerp(c, d, t));
 blendHSV(a, b, t) := hsv2rgb(lerpHSV(rgb2hsv(a), rgb2hsv(b), t));
+blendHSV(a, b, t, c, d) := blendHSV(a, b, inverseLerp(c, d, t));
 blendLAB(a, b, t) := oklab2rgb(lerp(rgb2oklab(a), rgb2oklab(b), t));
+blendLAB(a, b, t, c, d) := blendLAB(a, b, inverseLerp(c, d, t));
 blendLCH(a, b, t) := oklch2rgb2(lerpLCH(rgb2oklch(a), rgb2oklch(b), t));
+blendLCH(a, b, t, c, d) := blendLCH(a, b, inverseLerp(c, d, t));

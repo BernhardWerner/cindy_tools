@@ -5,11 +5,12 @@ defaultStrokeColor = [0,0,1];
 defaultTextColor = [0,0,0];
 defaultPointSize = 1;
 defaultLineSize = 10;
-defaultOutlineSizePixel = 10;
+defaultOutlineSizePixel = 0;
 defaultArrowSize = 5;
 defaultTextSize = 120;
-
-
+defaultEdgeArrow = [false, false];
+defaultEdgeSampleRate = 2;
+defaultNodeSize = [6, 6];
 
 /**********************************************************************************************************************************************************
 CAUTION!
@@ -63,7 +64,7 @@ newPoint(pos) := newPoint(pos, {});
 
 
 /**********************************************************************************************************************************************************
-arrow types: empty, full, line, jet
+arrow shapes: empty, full, line, jet
 **********************************************************************************************************************************************************/
 
 
@@ -75,10 +76,12 @@ newLine(pointA, pointB, modifs) := (
         "endPoints":         [if(contains(keys(pointA), "position"), pointA.position, pointA), if(contains(keys(pointB), "position"), pointB.position, pointB)],
         "size":              if(contains(keys, "size"), modifs.size, defaultLineSize),
         "color":             if(contains(keys, "color"), modifs.color, defaultLineColor),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
         "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, defaultOutlineSizePixel),
         "outlineColor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
         "overshoot":         if(contains(keys, "overshoot"), modifs.overshoot, 0),
         "dashType":          if(contains(keys, "dashType"), modifs.dashType, 0),
+        "dashPattern":          if(contains(keys, "dashPattern"), modifs.dashPattern, []),
         "arrow":             if(contains(keys, "arrow"), modifs.arrow, [false, false]),
         "arrowSize":         if(contains(keys, "arrowSize"), modifs.arrowSize, defaultArrowSize),
         "arrowShape":        if(contains(keys, "arrowShape"), modifs.arrowShape, "line"),
@@ -93,23 +96,23 @@ newLine(pointA, pointB, modifs) := (
     res.grow := easeInOutCubic(self().ink) - easeInOutCubic(self().erase);
     res.reverseGrow := easeInOutCubic(self().reverseInk) - easeInOutCubic(self().reverseErase);
     res.scale := (easeOutCirc(self().ink) - easeInCirc(self().erase)) * (easeOutCirc(self().reverseInk) - easeInCirc(self().reverseErase));
-    res.alpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut);
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
     res.dist := dist(self().endPoints_1, self().endPoints_2);
     res.draw := (
-        if(self().alpha > 0,
+        if(self().trueAlpha > 0 & self().scale > 0,
             dir = [0, 0];
             if(self().dist > 0, dir = (self().endPoints_2 - self().endPoints_1) / self().dist);
             if(self().outlineSize > 0, 
                 if(self().arrow_1 % self().arrow_2,
-                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().alpha);
+                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().trueAlpha);
                 , // else //
-                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, alpha -> self().alpha);
+                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
                 );
             );
             if(self().arrow_1 % self().arrow_2,
-                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().alpha, arrowposition -> 1);
+                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().trueAlpha, arrowposition -> 1);
             , // else //
-                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, alpha -> self().alpha);
+                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
             );
 
         );
@@ -119,6 +122,7 @@ newLine(pointA, pointB, modifs) := (
 );
 newLine(pointA, pointB) := newLine(pointA, pointB, {});
 
+line2line(line) := join(line.endPoints_1, line.endPoints_2);
 
 newStroke(list, modifs) := (
     regional(res, keys);
@@ -129,11 +133,13 @@ newStroke(list, modifs) := (
         "length":            length(list),
         "size":              if(contains(keys, "size"), modifs.size, defaultLineSize),
         "color":             if(contains(keys, "color"), modifs.color, defaultStrokeColor),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
         "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, defaultOutlineSizePixel),
         "outlineColor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
         "fillColor":         if(contains(keys, "fillColor"), modifs.fillColor, defaultBackgroundColor),
         "fillAlpha":         if(contains(keys, "fillAlpha"), modifs.fillAlpha, 0),
         "dashType":          if(contains(keys, "dashType"), modifs.dashType, 0),
+        "dashPattern":          if(contains(keys, "dashPattern"), modifs.dashPattern, []),
         "arrow":             if(contains(keys, "arrow"), modifs.arrow, [false, false]),
         "arrowSize":         if(contains(keys, "arrowSize"), modifs.arrowSize, defaultArrowSize),
         "arrowShape":        if(contains(keys, "arrowShape"), modifs.arrowShape, "line"),
@@ -150,23 +156,23 @@ newStroke(list, modifs) := (
     res.endIndex := round(lerp(1, self().length, self().grow));
     res.startIndex := round(lerp(self().length, 1, self().reverseGrow));
     res.lut := animatePolygon(self().points, 1 - self().reverseGrow, self().grow);
-    res.scale := easeOutCirc(self().ink) - easeInCirc(self().erase);
-    res.alpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut);
+    res.scale := easeOutCirc(self().ink) - easeInCirc(self().erase) + easeOutCirc(self().reverseInk) - easeInCirc(self().reverseErase) - 1;
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
     res.draw := (
-        if(self().alpha > 0,
-            fillpoly(self().lut, color -> self().fillColor, alpha -> self().fillAlpha * self().alpha * self().grow);
+        if(self().trueAlpha > 0,
+            fillpoly(self().lut, color -> self().fillColor, alpha -> self().fillAlpha * self().trueAlpha * self().grow);
             if(self().size > 0,
                 if(self().outlineSize > 0, 
-                    connect(self().lut, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, alpha -> self().alpha);
+                    connect(self().lut, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
                     if(self().endIndex - self().startIndex >= 1,
-                        if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().alpha));
-                        if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().alpha));
+                        if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().trueAlpha));
+                        if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().trueAlpha));
                     );
                 );
-                connect(self().lut, size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, alpha -> self().alpha);
+                connect(self().lut, size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
                 if(self().endIndex - self().startIndex >= 1,
-                    if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().alpha));
-                    if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().alpha));
+                    if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow * self().reverseGrow, alpha -> self().trueAlpha));
+                    if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow * self().reverseGrow, alpha -> self().trueAlpha));
                 );
             );
         );
@@ -176,172 +182,6 @@ newStroke(list, modifs) := (
 );
 newStroke(list) := newStroke(list, {});
 
-
-
-// lerp(x, y, t) := (
-//     regional(res);
-//     if((isreal(x) % iscomplex(x)) & (isreal(y) % iscomplex(y)),
-//         res = (1 - t) * x + t * y;
-//     , // else // 
-//         if(contains(keys(x), "type") & contains(keys(y), "type"),
-//             if(x.type != y.type,
-//                 err("lerp: incompatible types");
-//             , // else //
-//                 if(x.type == "point",
-//                     res = newPoint(lerp(x.position, y.position, t), {
-//                         "size": lerp(x.size, y.size, t),
-//                         "color": lerp(x.color, y.color, t),
-//                         "outlineSize": lerp(x.outlineSize, y.outlineSize, t),
-//                         "outlineColor": lerp(x.outlineColor, y.outlineColor, t),
-//                         "bounceGrow": lerp(x.bounceGrow, y.bounceGrow, t),
-//                         "bounceShrink": lerp(x.bounceShrink, y.bounceShrink, t),
-//                         "linearGrow": lerp(x.linearGrow, y.linearGrow, t),
-//                         "linearShrink": lerp(x.linearShrink, y.linearShrink, t),
-//                         "fadeIn": lerp(x.fadeIn, y.fadeIn, t),
-//                         "fadeOut": lerp(x.fadeOut, y.fadeOut, t)
-//                     });
-//                 ,if(x.type == "line",
-//                     res = newLine(lerp(x.endPoints, y.endPoints, t), {
-//                         "size": lerp(x.size, y.size, t),
-//                         "color": lerp(x.color, y.color, t),
-//                         "outlineSize": lerp(x.outlineSize, y.outlineSize, t),
-//                         "outlineColor": lerp(x.outlineColor, y.outlineColor, t),
-//                         "overshoot": lerp(x.overshoot, y.overshoot, t),
-//                         "dashType": if(t < 0.5, x.dashType, y.dashType),
-//                         "arrow": if(t < 0.5, x.arrow, y.arrow),
-//                         "arrowSize": lerp(x.arrowSize, y.arrowSize, t),
-//                         "fadeIn": lerp(x.fadeIn, y.fadeIn, t),
-//                         "fadeOut": lerp(x.fadeOut, y.fadeOut, t),
-//                         "ink": lerp(x.ink, y.ink, t),
-//                         "erase": lerp(x.erase, y.erase, t)
-//                     });
-
-//                 ,if(x.type == "stroke", 
-//                     if(x.length != y.length,
-//                         err("lerp: incompatible lengths of strokes");
-//                     , // else //
-//                         res = newStroke(lerp(x.points, y.points, t), {
-//                             "size": lerp(x.size, y.size, t),
-//                             "color": lerp(x.color, y.color, t),
-//                             "outlineSize": lerp(x.outlineSize, y.outlineSize, t),
-//                             "outlineColor": lerp(x.outlineColor, y.outlineColor, t),
-//                             "fillColor": lerp(x.fillColor, y.fillColor, t),
-//                             "fillAlpha": lerp(x.fillAlpha, y.fillAlpha, t),
-//                             "dashType": if(t < 0.5, x.dashType, y.dashType),
-//                             "arrow": if(t < 0.5, x.arrow, y.arrow),
-//                             "arrowSize": lerp(x.arrowSize, y.arrowSize, t),
-//                             "fadeIn": lerp(x.fadeIn, y.fadeIn, t),
-//                             "fadeOut": lerp(x.fadeOut, y.fadeOut, t),
-//                             "ink": lerp(x.ink, y.ink, t),
-//                             "erase": lerp(x.erase, y.erase, t)
-//                         });
-//                     );
-//                 , // else //
-//                     err("lerp: unknown type");    
-//                 )));
-//             );
-//         ,if(contains(keys(x), "type"),
-//             if(x.type == "point",
-//                 res = newPoint(lerp(x.position, y, t), {
-//                     "size": x.size,
-//                     "color": x.color,
-//                     "outlineSize": x.outlineSize,
-//                     "outlineColor": x.outlineColor,
-//                     "bounceGrow": x.bounceGrow,
-//                     "bounceShrink": x.bounceShrink,
-//                     "linearGrow": x.linearGrow,
-//                     "linearShrink": x.linearShrink,
-//                     "fadeIn": x.fadeIn,
-//                     "fadeOut": x.fadeOut
-//                 });
-//             ,if(x.type == "line",
-//                 res = newLine(lerp(x.endPoints, y, t), {
-//                     "size": x.size,
-//                     "color": x.color,
-//                     "outlineSize": x.outlineSize,
-//                     "outlineColor": x.outlineColor,
-//                     "overshoot": x.overshoot,
-//                     "dashType": x.dashType,
-//                     "arrow": x.arrow,
-//                     "arrowSize": x.arrowSize,
-//                     "fadeIn": x.fadeIn,
-//                     "fadeOut": x.fadeOut,
-//                     "ink": x.ink,
-//                     "erase": x.erase
-//                 });
-//             ,if(x.type == "stroke",
-//                 res = newStroke(lerp(x.points, y, t), {
-//                     "size": x.size,
-//                     "color": x.color,
-//                     "outlineSize": x.outlineSize,
-//                     "outlineColor": x.outlineColor,
-//                     "fillColor": x.fillColor,
-//                     "fillAlpha": x.fillAlpha,
-//                     "dashType": x.dashType,
-//                     "arrow": x.arrow,
-//                     "arrowSize": x.arrowSize,
-//                     "fadeIn": x.fadeIn,
-//                     "fadeOut": x.fadeOut,
-//                     "ink": x.ink,
-//                     "erase": x.erase
-//                 });
-//             , // else //
-//                 err("lerp: unknown type");
-//             )));
-//         ,if(contains(keys(y), "type"),
-//             if(y.type == "point",
-//                 res = newPoint(lerp(x, y.position, t), {
-//                     "size": y.size,
-//                     "color": y.color,
-//                     "outlineSize": y.outlineSize,
-//                     "outlineColor": y.outlineColor,
-//                     "bounceGrow": y.bounceGrow,
-//                     "bounceShrink": y.bounceShrink,
-//                     "linearGrow": y.linearGrow,
-//                     "linearShrink": y.linearShrink,
-//                     "fadeIn": y.fadeIn,
-//                     "fadeOut": y.fadeOut
-//                 });
-//             ,if(y.type == "line",
-//                 res = newLine(lerp(x, y.endPoints, t), {
-//                     "size": y.size,
-//                     "color": y.color,
-//                     "outlineSize": y.outlineSize,
-//                     "outlineColor": y.outlineColor,
-//                     "overshoot": y.overshoot,
-//                     "dashType": y.dashType,
-//                     "arrow": y.arrow,
-//                     "arrowSize": y.arrowSize,
-//                     "fadeIn": y.fadeIn,
-//                     "fadeOut": y.fadeOut,
-//                     "ink": y.ink,
-//                     "erase": y.erase
-//                 });
-//             ,if(y.type == "stroke",
-//                 res = newStroke(lerp(x, y.points, t), {
-//                     "size": y.size,
-//                     "color": y.color,
-//                     "outlineSize": y.outlineSize,
-//                     "outlineColor": y.outlineColor,
-//                     "fillColor": y.fillColor,
-//                     "fillAlpha": y.fillAlpha,
-//                     "dashType": y.dashType,
-//                     "arrow": y.arrow,
-//                     "arrowSize": y.arrowSize,
-//                     "fadeIn": y.fadeIn,
-//                     "fadeOut": y.fadeOut,
-//                     "ink": y.ink,
-//                     "erase": y.erase
-//                 });
-//             , // else //
-//                 err("lerp: unknown type");
-//             )));
-//         , // else //
-//             res = (1 - t) * x + t * y;
-//         )));
-//     );
-//     res;
-// );
 
 
 
@@ -374,11 +214,11 @@ newText(pos, nykaString, modifs) := (
     };  
 
     res.grow := self().write - self().erase;
-    res.alpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut) + self().linearFade;
+    res.animationAlpha := easeInCirc(self().fadeIn) - easeOutCirc(self().fadeOut) + self().linearFade;
     res.trueModifs := {
         "color":             self().color,
         "angle":             self().angle,
-        "alpha":             self().alpha,
+        "alpha":             self().alpha * self().animationAlpha,
         "align":             self().align,
         "colorMap":          self().colorMap,
         "alphaMap":          self().alphaMap
@@ -386,7 +226,7 @@ newText(pos, nykaString, modifs) := (
     res.outlineModifs := {
         "color":             self().outlinecolor,
         "angle":             self().angle,
-        "alpha":             self().alpha,
+        "alpha":             self().alpha * self().animationAlpha,
         "outlinewidth":      self().outlinewidth,
         "outlinecolor":      self().outlinecolor,
         "align":             self().align,
@@ -417,7 +257,7 @@ newNode(pos, modifs) := (
     keys = keys(modifs);
     res = {
         "position":     pos,
-        "size":         if(contains(keys, "size"), modifs.size, [6, 6]),
+        "size":         if(contains(keys, "size"), modifs.size, defaultNodeSize),
         "color":        if(contains(keys, "color"), modifs.color, defaultBackgroundColor),
         "fillAlpha":    if(contains(keys, "fillAlpha"), modifs.fillAlpha, 1),
         "label":        if(contains(keys, "label"), modifs.label, ""),
@@ -428,6 +268,7 @@ newNode(pos, modifs) := (
         "outlineColor": if(contains(keys, "outlineColor"), modifs.outlineColor, defaultTextColor),
         "corner":       if(contains(keys, "corner"), modifs.corner, 3),
         "family":       if(contains(keys, "family"), modifs.family, fam),
+        "slideDist":    if(contains(keys, "slideDist"), modifs.slideDist, 15),
         "slideIn":      if(contains(keys, "slideIn"), modifs.slideIn, 0),
         "slideOut":     if(contains(keys, "slideOut"), modifs.slideOut, 0),
         "slideInDir":   if(contains(keys, "slideInDir"), modifs.slideInDir, [0, 1]),
@@ -438,8 +279,8 @@ newNode(pos, modifs) := (
     res.shape := roundedRectangleShape(self().position + self().offset + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner);
     res.labelOffset := -0.6 * (pixelsize(self().label, size -> self().labelSize, family -> self().family)_2 - pixelsize(self().label, size -> self().labelSize, family -> self().family)_3) / screenresolution();
 
-    res.alpha := min(easeOutCirc(self().fadeIn), (self().slideIn)) - max(easeOutCirc(self().fadeOut), (self().slideOut));
-    res.offset := 0.25 * sum(self().size) * (self().slideOutDir * easeOutCubic(self().slideOut) - self().slideInDir * easeInCubic(1 - self().slideIn));
+    res.alpha := easeInCirc(min(self().fadeIn, self().slideIn)) - easeOutCirc(max(self().fadeOut, self().slideOut));
+    res.offset := self().slideDist * (self().slideOutDir * easeOutCubic(self().slideOut) - self().slideInDir * easeInCubic(1 - self().slideIn));
     
     res.draw := (
         if(self().alpha > 0,
@@ -520,7 +361,7 @@ newLabelNode(pos, modifs) := (
 
     modifs.fillAlpha = 0;
     modifs.outlineSize = 0;
-    modifs.size = if(contains(keys, "size"), modifs.size, [4, 4]);
+    modifs.size = if(contains(keys, "size"), modifs.size, [6, 6]);
     modifs.corner = if(contains(keys, "corner"), modifs.corner, 2);
     newNode(pos, modifs);
 );
@@ -568,11 +409,12 @@ newEdge(nodeA, nodeB, modifs) := (
     keys = keys(modifs);
 
 
-    sampleRate = if(contains(keys, "sampleRate"), modifs.sampleRate, 32);
+    sampleRate = if(contains(keys, "sampleRate"), modifs.sampleRate, defaultEdgeSampleRate);
     
-    if(!contains(keys, "color"), modifs.color = defaultBackgroundColor);
-    if(!contains(keys, "arrow"), modifs.arrow = [false, true]);
+    if(!contains(keys, "color"), modifs.color = defaultTextColor);
+    if(!contains(keys, "arrow"), modifs.arrow = defaultEdgeArrow);
     if(!contains(keys, "arrowShape"), modifs.arrowShape = "line");
+    if(!contains(keys, "edgeBend"), modifs.edgeBend = 0.3);
 
     offsetA = if(contains(keys, "offsetA"), modifs.offsetA, 0°);
     offsetB = if(contains(keys, "offsetB"), modifs.offsetB, 0°);
@@ -591,8 +433,7 @@ newEdge(nodeA, nodeB, modifs) := (
 
 
 
-    
-    res = newStroke(sampleBezierCurve([anchorA, anchorA + uA * d / 3, anchorB + uB * d / 3, anchorB], sampleRate), modifs);
+    res = newStroke(sampleBezierCurve([anchorA, anchorA + uA * d * modifs.edgeBend, anchorB + uB * d * modifs.edgeBend, anchorB], sampleRate), modifs);
     res.offsetA = offsetA;
     res.offsetB = offsetB;
 
