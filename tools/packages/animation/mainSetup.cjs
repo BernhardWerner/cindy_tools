@@ -1,3 +1,120 @@
+
+defaultDuration = 1;
+defaultPause = 1;
+
+tweenBuffer = [];
+
+
+intermediateValue(id, prop) := (
+    regional(res);
+
+    res = errorTofu;
+    
+    forall(tweenBuffer,
+        if(#_1 == id & #_2 == prop,
+            res = #_3;
+        );
+    );
+
+    res;
+);
+
+
+
+
+t(i) := parse("t" + i);
+
+
+animate(commandList, duration) := (
+    regional(n, index, command, arr, oldStart, newStart, target);
+
+    n = length(trackData);
+    if(n == 0,
+        trackData = [startDelay];
+        n = 1;
+    );
+    if(mod(n, 2) == 0,
+        trackData = trackData :> defaultPause;
+        n = n + 1;
+    );
+
+
+    index = (n + 1) / 2;
+
+    arr = [];
+    forall(commandList, list,
+        command = list_1;
+        if(command == tween % command == tweenRelative,
+            oldStart = intermediateValue(list_2.id, list_3);
+            newStart = if(oldStart == errorTofu, (list_2)_(list_3), oldStart);
+            target = if(command == tweenRelative, newStart + list_4, list_4);
+            
+            //println([list_2.id, list_2.type, list_3, oldStart, newStart, target]);
+            
+            tweenBuffer = tweenBuffer :> [list_2.id, list_3, target];
+            arr = arr :> {
+                "mode": "tween",
+                "object": list_2,
+                "property": list_3,
+                "start":  newStart,
+                "target": target,
+                "easing": if(length(list) >= 5, list_5, 0)
+            };
+        ,if(command == ladder,
+            arr = arr :> {
+                "mode": "ladder",
+                "separation": list_2,
+                "command": list_3,
+                "objects": list_4
+            };
+        , // else //
+            if(contains(allActions, command),
+                if(command == write,
+                    duration = duration(list_(-1));
+                );
+                arr = arr :> {
+                    "mode": "simple",
+                    "command": command,
+                    "objects": bite(list)
+                };
+            , // else //
+                println("Unknown animation action '" + command + "'.");
+            );
+        ));
+    );
+    calculationQueue = calculationQueue :> arr;
+
+    trackData = trackData :> duration;
+
+    index;
+);
+animate(commandList) := animate(commandList, defaultDuration);
+
+
+
+pause(duration) := (
+    regional(n);
+
+    n = length(trackData);
+    if(n == 0,
+        trackData = [startDelay];
+        n = 1;
+    );
+    if(mod(n, 2) == 1,
+        trackData_(-1) = trackData_(-1) + duration;
+    , // else //
+        trackData = trackData :> duration;
+    );
+);
+
+pause() := pause(defaultPause);
+
+
+
+
+
+// ************************************************************
+
 // Force KaTeX to load fonts:
 katexForceString = "$\begin{bmatrix}\frac{1+e}{\pi \oplus 1} & \prod_{k=3}^{\mathbb{A}\mathfrak{B}\mathscr{D}\mathcal{E}} 123 \\ \big(\bigg)\Big(\Bigg) & \lim\limits_{x\to\infty} \alpha^{2} \\ \sqrt[\sqrt{\infty + 4}]{\beta_{3 + 4}} & 6\end{bmatrix}$";
 katexLoaded = false;
@@ -58,7 +175,7 @@ moveStepForwards() := (
 );
 skipStepForwards() := (
     if(stepRenderState == STEPRENDERSTATES.WAITING & currentTrackIndex <= numberOfTracks,
-        calculate(trackData_(2 * currentTrackIndex - 1) + trackData_(2 * currentTrackIndex));
+        calculate(trackData_(2 * currentTrackIndex) + trackData_(2 * currentTrackIndex + 1));
         currentTrackIndex = min(currentTrackIndex + 1, numberOfTracks);
     );
 );
@@ -79,6 +196,9 @@ reload() := (
 startDelay = 0;
 trackData = [];
 
+calculationQueue = [];
+
+startTrack = 1;
 currentTrackIndex = 1;
 
 
@@ -94,10 +214,10 @@ timeScale = 1;
 fpsBuffer = [0];
 
 delayedSetup() := ();
-calculation() := ();
-rendering() := ();
+update() := ();
+render() := ();
 
-frameExportWaitTime = 2;
+frameExportWaitTime = 8;
 frameExportTimer = frameExportWaitTime;
 
 endOfAnimationReached = false;
@@ -153,15 +273,43 @@ continueAnimation() := (
 );
 
 calculate(d) := (
+    regional(listOfDicts, ladder);
+
     totalTime = totalTime + d * timeScale;
-    endOfAnimationReached = totalTime ~>= totalDuration -trackData_(-1);
-    
-    forall(tracks, updateAnimationTrack(#));
+    endOfAnimationReached = if(length(trackData) == 0, true,
+        totalTime ~>= totalDuration - trackData_(-1);
+        
+        forall(tracks, updateAnimationTrack(#));
 
-    forall(1..numberOfTracks, parse("t" + # + " = tracks_" + # +".progress;"));
+        forall(1..numberOfTracks, 
+            parse("t" + # + " = tracks_" + # +".progress;");
+            if(# < startTrack % trackRunning(tracks_#),
+                listOfDicts = calculationQueue_#;
+                forall(listOfDicts, dict,
+                    if(dict.mode == "simple",
+                        forall(dict.objects, obj,
+                            obj_(dict.command) = t(#);
+                        );
+                    );
+                    if(dict.mode == "ladder",
+                        ladder = ladder(#, length(dict.objects), dict.separation);
+                        forall(dict.objects, obj,
+                            obj_(dict.command) = ladder.doStep;
+                        );
+                    );
+                    if(dict.mode == "tween",
+
+                        (dict.object)_(dict.property) = lerp(dict.start, dict.target, parse(if(dict.easing == 0, "", dict.easing) + "(" + t(#) + ")"));
+                    );
+                );
+            );
+        );
 
 
-    calculation();
+
+
+        update();
+    );
 );
 
 
