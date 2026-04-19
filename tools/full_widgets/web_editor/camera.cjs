@@ -12,6 +12,31 @@ camera = {
 };
 */
 
+
+
+newCamera(r, a, p) := (
+    regional(res);
+
+    res = {
+        "rad": r,
+        "azimuth": a,
+        "polar": p,
+        "lookAt": [0,0,0],
+        "up": [0, 0, 1],
+        "fov": 60°,
+        "anchor": [0,0,0],
+        "position": [0,0,0],
+        "basis": zeroMatrix(3, 3);
+    };
+    updateCamera(res);
+
+    res;
+);
+
+
+
+
+
 screenWidth = 1920 / screenresolution();
 screenCenter = [0, 0];
 
@@ -38,7 +63,11 @@ cameraBasis(cam) := (
 
 projectToScreen(p, camPosition, camBasis, camFOV) := (
     p = transpose(camBasis) * (p - camPosition);
-    p = - p / p.z / tan(camFOV / 2) * screenWidth / 2;
+    p = if(camFOV == 0,
+        [p.x, p.y]
+    , // else //
+        - p / p.z / tan(camFOV / 2) * screenWidth / 2;
+    );
 
     screenCenter + [p.x, p.y];
 );

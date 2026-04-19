@@ -14,4 +14,6 @@ computerSeconds() := (
 uiTime = computerSeconds();
 uiDelta = 0;
 
+fpsBuffer = [];
+
 playanimation();

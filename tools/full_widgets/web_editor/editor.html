@@ -4,15 +4,16 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web editor</title>
-    <script type="text/javascript" src="../../../cindy/Cindy.js"></script>
+    <title>CindyJS Web Editor</title>
+    <script type="text/javascript" src="../Cindy.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/theme/dracula.min.css">
     <link rel="stylesheet" href="./editor.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="editor.js"></script>
-    
 </head>
 
 <body>
@@ -24,99 +25,114 @@
     <script id='csmousedrag' type='text/x-cindyscript'></script>
     <script id='csmouseup' type='text/x-cindyscript'></script>
 
-
     <div class="container">
         <div class="column left-column">
-          <div class="row top-row">
-            <div class="content">
-                
-                <div class="import-header">
-                    <h3>Import:</h3>
-                    <div><input type="checkbox" name="Animation" id="animationCheckbox"><label for="animationCheckbox">Animation</label></div>
-                    <div><input type="checkbox" name="UI" id="uiCheckbox"><label for="uiCheckbox">UI</label></div>
-                    <div><input type="checkbox" name="Color" id="colorCheckbox"><label for="colorCheckbox">Color</label></div>
-                    <div><input type="checkbox" name="Camera" id="cameraCheckbox"><label for="cameraCheckbox">3D Camera</label></div>    
-                </div>
+            <div class="row top-row">
+                <div class="content">
 
-
-
-
-
-
-
-                <div class="tab-container">
-                    <ul class="tab-links">
-                        <li class="active"><a href="#tab-init" role="tab" aria-controls="tab-init" aria-selected="true">Init</a></li>
-                        <li><a href="#tab-draw" role="tab" aria-controls="tab-draw" aria-selected="false">Draw</a></li>
-                        <li><a href="#tab-tick" role="tab" aria-controls="tab-tick" aria-selected="false">Tick</a></li>
-                        <li><a href="#tab-mousemove" role="tab" aria-controls="tab-mousemove" aria-selected="false">Mouse Move</a></li>
-                        <li><a href="#tab-mousedown" role="tab" aria-controls="tab-mousedown" aria-selected="false">Mouse Down</a></li>
-                        <li><a href="#tab-mousedrag" role="tab" aria-controls="tab-mousedrag" aria-selected="false">Mouse Drag</a></li>
-                        <li><a href="#tab-mouseup" role="tab" aria-controls="tab-mouseup" aria-selected="false">Mouse Up</a></li>
-                    </ul>
-    
-                    <div id="tab-init" class="tab-content active">
-                        <h3>Init:</h3>
-                        <textarea id="textEditArea-init" rows="30" cols="100"></textarea>
+                    <div class="toolbar">
+                        <div class="toolbar-brand">
+                            <span class="brand-dot"></span>
+                            <span class="brand-name">CindyJS Web Editor</span>
+                        </div>
+                        <div class="font-size-control">
+                            <span class="chips-label">Size</span>
+                            <button class="font-size-btn" id="fontDecBtn" title="Decrease font size">A−</button>
+                            <span id="fontSizeDisplay">13</span>
+                            <button class="font-size-btn" id="fontIncBtn" title="Increase font size">A+</button>
+                        </div>
+                        <div class="import-chips">
+                            <span class="chips-label">Import</span>
+                            <label class="chip">
+                                <input type="checkbox" name="Animation" id="animationCheckbox">
+                                <span>Animation</span>
+                            </label>
+                            <label class="chip">
+                                <input type="checkbox" name="UI" id="uiCheckbox">
+                                <span>UI</span>
+                            </label>
+                            <label class="chip">
+                                <input type="checkbox" name="Color" id="colorCheckbox">
+                                <span>Color</span>
+                            </label>
+                            <label class="chip">
+                                <input type="checkbox" name="Camera" id="cameraCheckbox">
+                                <span>3D Camera</span>
+                            </label>
+                        </div>
                     </div>
-                    <div id="tab-draw" class="tab-content">
-                        <h3>Draw:</h3>
-                        <textarea id="textEditArea-draw" rows="30" cols="100"></textarea>
+
+                    <div class="tab-container">
+                        <ul class="tab-links">
+                            <li class="active"><a href="#tab-init">Init</a></li>
+                            <li><a href="#tab-draw">Draw</a></li>
+                            <li><a href="#tab-tick">Tick</a></li>
+                            <li><a href="#tab-mousemove">Mouse Move</a></li>
+                            <li><a href="#tab-mousedown">Mouse Down</a></li>
+                            <li><a href="#tab-mousedrag">Mouse Drag</a></li>
+                            <li><a href="#tab-mouseup">Mouse Up</a></li>
+                        </ul>
+
+                        <div id="tab-init" class="tab-content active">
+                            <textarea id="textEditArea-init"></textarea>
+                        </div>
+                        <div id="tab-draw" class="tab-content">
+                            <textarea id="textEditArea-draw"></textarea>
+                        </div>
+                        <div id="tab-tick" class="tab-content">
+                            <textarea id="textEditArea-tick"></textarea>
+                        </div>
+                        <div id="tab-mousemove" class="tab-content">
+                            <textarea id="textEditArea-mousemove"></textarea>
+                        </div>
+                        <div id="tab-mousedown" class="tab-content">
+                            <textarea id="textEditArea-mousedown"></textarea>
+                        </div>
+                        <div id="tab-mousedrag" class="tab-content">
+                            <textarea id="textEditArea-mousedrag"></textarea>
+                        </div>
+                        <div id="tab-mouseup" class="tab-content">
+                            <textarea id="textEditArea-mouseup"></textarea>
+                        </div>
                     </div>
-                    <div id="tab-tick" class="tab-content">
-                        <h3>Tick:</h3>
-                        <textarea id="textEditArea-tick" rows="30" cols="100"></textarea>
+
+                    <div class="button-array">
+                        <div class="button-group">
+                            <button class="button button--primary" id="runButton" title="Run (Ctrl+Enter)">
+                                <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.5l9 4.5-9 4.5z"/></svg>
+                                Run
+                            </button>
+                            <button class="button button--secondary" id="exportButton" title="Export">
+                                Export
+                            </button>
+                        </div>
+                        <button class="button button--danger" id="resetButton" title="Delete all scripts">
+                            Reset
+                        </button>
                     </div>
-                    <div id="tab-mousemove" class="tab-content">
-                        <h3>Mouse Move:</h3>
-                        <textarea id="textEditArea-mousemove" rows="30" cols="100"></textarea>
-                    </div>
-                    <div id="tab-mousedown" class="tab-content">
-                        <h3>Mouse Down:</h3>
-                        <textarea id="textEditArea-mousedown" rows="30" cols="100"></textarea>
-                    </div>
-                    <div id="tab-mousedrag" class="tab-content">
-                        <h3>Mouse Drag:</h3>
-                        <textarea id="textEditArea-mousedrag" rows="30" cols="100"></textarea>
-                    </div>
-                    <div id="tab-mouseup" class="tab-content">
-                        <h3>Mouse Up:</h3>
-                        <textarea id="textEditArea-mouseup" rows="30" cols="100"></textarea>
-                    </div>
-                </div>
-    
 
-
-
-
-
-
-
-                <div class="button-array">
-                    <button class="button" id="runButton">Run</button>
-                    <button class="button" id="resetButton">Delete all scripts</button>
-                    <button class="button" id="exportButton">Export</button>
                 </div>
             </div>
-          </div>
-          <div class="row-resizer"></div>
-          <div class="row bottom-row">
-                    <div class="console-header">
-                        <h3>Console:</h3>
-                        <button class="button" id="clearButton">Clear</button>
+            <div class="row-resizer"></div>
+            <div class="row bottom-row">
+                <div class="console-header">
+                    <div class="console-title">
+                        <span class="console-dot"></span>
+                        Console
                     </div>
-    
-                    <div id="console-output"></div>
-          </div>
+                    <button class="button button--ghost" id="clearButton">Clear</button>
+                </div>
+                <div id="console-output"></div>
+            </div>
         </div>
         <div class="column-resizer"></div>
         <div class="column right-column">
-          <div class="content">
-            <canvas id="CSCanvas"></canvas>
-          </div>
+            <div class="content">
+                <canvas id="CSCanvas"></canvas>
+                <div id="canvas-size-label"></div>
+            </div>
         </div>
-      </div>
-
+    </div>
 
 </body>
 </html>

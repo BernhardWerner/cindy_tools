@@ -1,4 +1,15 @@
-lerp(x, y, t) := t * y + (1 - t) * x;
+lerp1(x, y, t) := t * y + (1 - t) * x;
+lerp2(x, y, t) := t * y + (1 - t) * x;
+lerp3(x, y, t) := t * y + (1 - t) * x;
+lerp4(x, y, t) := t * y + (1 - t) * x;
+inverseLerp1(x, y, p) := (p - x) / (y - x);
+inverseLerp2(x, y, p) := abs(p - x) / abs(y - x);
+inverseLerp3(x, y, p) := abs(p - x) / abs(y - x);
+inverseLerp4(x, y, p) := abs(p - x) / abs(y - x);
+lerp1(x, y, t, a, b) := lerp1(x, y, inverseLerp1(a, b, t));
+lerp2(x, y, t, a, b) := lerp2(x, y, inverseLerp2(a, b, t));
+lerp3(x, y, t, a, b) := lerp3(x, y, inverseLerp3(a, b, t));
+lerp4(x, y, t, a, b) := lerp4(x, y, inverseLerp4(a, b, t));
 
 
 // *****************************************************************************************************************************
@@ -119,18 +130,18 @@ lerpHSV(vecA, vecB, t) := (
     d = abs(vecA_1 - vecB_1);
     
     if(d <= pi,
-        newH = lerp(vecA_1, vecB_1, t);
+        newH = lerp1(vecA_1, vecB_1, t);
     , // else //
-       vecA_1 = vecA_1 + 180°;
-       vecB_1 = vecB_1 + 180°;
-       if(vecA_1 > 360°, vecA_1 = vecA_1 - 360°);
-       if(vecB_1 > 360°, vecB_1 = vecB_1 - 360°);
-       
-       newH = lerp(vecA_1, vecB_1, t) + 180°;
-       if(newH > 360°, newH = newH - 360°);
+        vecA_1 = vecA_1 + 180°;
+        vecB_1 = vecB_1 + 180°;
+        if(vecA_1 > 360°, vecA_1 = vecA_1 - 360°);
+        if(vecB_1 > 360°, vecB_1 = vecB_1 - 360°);
+        
+        newH = lerp1(vecA_1, vecB_1, t) + 180°;
+        if(newH > 360°, newH = newH - 360°);
     );
     
-    [newH, lerp(vecA_2, vecB_2, t), lerp(vecA_3, vecB_3, t)];
+    [newH, lerp1(vecA_2, vecB_2, t), lerp1(vecA_3, vecB_3, t)];
 );
 
 // *****************************************************************************************************************************
@@ -210,18 +221,18 @@ lerpLCH(vecA, vecB, t) := (
     d = abs(vecA_3 - vecB_3);
     
     if(d <= pi,
-        newH = lerp(vecA_3, vecB_3, t);
+        newH = lerp1(vecA_3, vecB_3, t);
     , // else //
-       vecA_3 = vecA_3 + 180°;
-       vecB_3 = vecB_3 + 180°;
-       if(vecA_3 > 360°, vecA_3 = vecA_3 - 360°);
-       if(vecB_3 > 360°, vecB_3 = vecB_3 - 360°);
-       
-       newH = lerp(vecA_3, vecB_3, t) + 180°;
-       if(newH > 360°, newH = newH - 360°);
+        vecA_3 = vecA_3 + 180°;
+        vecB_3 = vecB_3 + 180°;
+        if(vecA_3 > 360°, vecA_3 = vecA_3 - 360°);
+        if(vecB_3 > 360°, vecB_3 = vecB_3 - 360°);
+        
+        newH = lerp1(vecA_3, vecB_3, t) + 180°;
+        if(newH > 360°, newH = newH - 360°);
     );
     
-    [lerp(vecA_1, vecB_1, t), lerp(vecA_2, vecB_2, t), newH];
+    [lerp1(vecA_1, vecB_1, t), lerp1(vecA_2, vecB_2, t), newH];
 );
 
 
@@ -236,6 +247,17 @@ oklch2rgb2(vec) := oklab2rgb(oklch2oklab(vec));
 
 
 blendRGB(a, b, t) := linrgb2rgb(lerp(rgb2linrgb(a), rgb2linrgb(b), t));
+blendRGB(a, b, t, c, d) := blendRGB(a, b, inverseLerp3(c, d, t));
 blendHSV(a, b, t) := hsv2rgb(lerpHSV(rgb2hsv(a), rgb2hsv(b), t));
+blendHSV(a, b, t, c, d) := blendHSV(a, b, inverseLerp3(c, d, t));
 blendLAB(a, b, t) := oklab2rgb(lerp(rgb2oklab(a), rgb2oklab(b), t));
+blendLAB(a, b, t, c, d) := blendLAB(a, b, inverseLerp3(c, d, t));
 blendLCH(a, b, t) := oklch2rgb2(lerpLCH(rgb2oklch(a), rgb2oklch(b), t));
+blendLCH(a, b, t, c, d) := blendLCH(a, b, inverseLerp3(c, d, t));
+
+// *****************************************************************************************************************************
+
+white = [1,1,1];
+
+colorMult(a, b) := [a_1 * b_1, a_2 * b_2, a_3 * b_3];
+colorScreen(a, b) := white - colorMult(white - a, white - b);

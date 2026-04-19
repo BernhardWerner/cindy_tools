@@ -1,7 +1,7 @@
 {
     "init": [
         {"name": "uiBase", "place": -10000},
-        {"name": "mainSetup", "place": -9999}
+        {"name": "mainSetup", "place": -9000}
     ],
     "draw": [{"name": "draw", "place": 10000}],
     "mousemove": [{"name": "mousemove", "place": -10000}],

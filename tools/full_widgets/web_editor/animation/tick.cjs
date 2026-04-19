@@ -8,7 +8,7 @@ if(renderMode == RENDERMODES.FRAMES,
         );
     );
 , // else //
-    if(katexLoaded,
+    if(katexLoaded & 0 <= totalTime & totalTime <= totalDuration,
         if(renderMode == RENDERMODES.REAL,
             delta = deltaTime();  
             fpsBuffer = fpsBuffer :> 1 / delta;
@@ -26,21 +26,22 @@ if(renderMode == RENDERMODES.FRAMES,
                 calculate(delta);
 
                 if(stepRenderState == STEPRENDERSTATES.RUNNING,
-                    if(tracks_currentTrackIndex.progress >= 1,
+                    hitGap = 0;
+                    forall(stepGaps, gap, index,
+                        if(gap_1 < totalTime & totalTime < gap_2,
+                            hitGap = index;
+                        );
+                    );
+                    if(hitGap > 0 & hitGap != currentGap,
                         stepRenderState = STEPRENDERSTATES.WAITING;
-                        totalTime = startDelay + sum(trackData_(1..2 * currentTrackIndex));
+                        currentGap = hitGap;
                     );
                 );
             );
         );
 
-        if(currentTrackIndex < numberOfTracks,
-            if(tracks_currentTrackIndex.progress >= 1,
-                currentTrackIndex = currentTrackIndex + 1;
-            );
-        );
     , // else //
-        if(pixelsize(katexForceString)_1 < 10000,
+        if(pixelsize(katexForceString)_1 < katexBufferWidth,
             katexLoaded = true;
             delayedSetup();
         , // else //

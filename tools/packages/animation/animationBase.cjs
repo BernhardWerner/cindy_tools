@@ -27,7 +27,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 
-strokeSampleRate = 256;
+strokeSampleRate = 96;
 texDelimiters = ["@", "/"];
 integralResolution = 3;
 
@@ -352,7 +352,7 @@ stringBite(string, i) := (
 stringBite(string) := stringBite(string, 1);
 
 clamp(x, a, b) := min(max(x, a), b);
-
+clamp01(x) := clamp(x, 0, 1);
 
 
 // *************************************************************************************************
@@ -557,6 +557,51 @@ easeOutBounce(x)     := (
 
 easeInOutBounce(x) := 0.5 * if(x < 0.5, 1 - easeOutBounce(1 - 2 * x), 1 + easeOutBounce(2 * x - 1));
 
+easeInJump(x) := if(x > 0, 1, 1);
+easeOutJump(x) := if(x < 1, 0, 1);
+easeZero(x) := 0;
+easeOne(x) := 1;
+
+easeNot(x) := x;
+
+
+easeInSine = "easeInSine";
+easeOutSine = "easeOutSine";
+easeInOutSine = "easeInOutSine";
+easeInQuad = "easeInQuad";
+easeOutQuad = "easeOutQuad";
+easeInOutQuad = "easeInOutQuad";
+easeInCubic = "easeInCubic";
+easeOutCubic = "easeOutCubic";
+easeInOutCubic = "easeInOutCubic";
+easeInQuart = "easeInQuart";
+easeOutQuart = "easeOutQuart";
+easeInOutQuart = "easeInOutQuart";
+easeInQuint = "easeInQuint";
+easeOutQuint = "easeOutQuint";
+easeInOutQuint = "easeInOutQuint";
+easeInExpo = "easeInExpo";
+easeOutExpo = "easeOutExpo";
+easeInOutExpo = "easeInOutExpo";
+easeInCirc = "easeInCirc";
+easeOutCirc = "easeOutCirc";
+easeInOutCirc = "easeInOutCirc";
+easeInBack = "easeInBack";
+easeOutBack = "easeOutBack";
+easeInOutBack = "easeInOutBack";
+easeInElastic = "easeInElastic";
+easeOutElastic = "easeOutElastic";
+easeInOutElastic = "easeInOutElastic";
+easeInBounce = "easeInBounce";
+easeOutBounce = "easeOutBounce";
+easeInOutBounce = "easeInOutBounce";
+easeInJump = "easeInJump";
+easeOutJump = "easeOutJump";
+easeZero = "easeZero";
+easeOne = "easeOne";
+easeNot = "easeNot";
+allEasing = [easeInSine,easeOutSine,easeInOutSine,easeInQuad,easeOutQuad,easeInOutQuad,easeInCubic,easeOutCubic,easeInOutCubic,easeInQuart,easeOutQuart,easeInOutQuart,easeInQuint,easeOutQuint,easeInOutQuint,easeInExpo,easeOutExpo,easeInOutExpo,easeInCirc,easeOutCirc,easeInOutCirc,easeInBack,easeOutBack,easeInOutBack,easeInElastic,easeOutElastic,easeInOutElastic,easeInBounce,easeOutBounce,easeInOutBounce,easeInJump,easeOutJump,easeZero,easeOne,easeNot];
+
 // ************************************************************************************************
 // Basic animation functionlity.
 // ************************************************************************************************
@@ -567,9 +612,8 @@ setupAnimationTrack(s, e) := (
         "end":      e,
         "duration": e - s,
         "timeLeft": e - s,
-        //"progress": 0,
-        //"running":  true,
-        "looping":  false
+        "looping":  false,
+        "iterations": 0
     };
     res.progress := 1 - self().timeLeft / self().duration;
     res.timeElapsed := self().duration - self().timeLeft;
@@ -629,6 +673,7 @@ updateAnimationTrack(track) := (
         track.timeLeft = mod(timeToEnd, track.duration);
     , // else //
         track.timeLeft = clamp(timeToEnd, 0, track.duration);
+        if(track.progress > 0, track.iterations = track.iterations + 1);
     );
 );
 
@@ -1142,6 +1187,7 @@ drawFragments(pos, listOfDicts, time, mode, modifs) := (
         );
         e = s + dict.length / totalLength;
         customTime = timeOffset(time, s, e);
+
         if(mod(index, 2) == 0,
             drawFragmentedTex(pos + [hOffset, 0], dict, customTime, mode, modifs);
         , // else //
@@ -1169,6 +1215,9 @@ zip(a, b) := transpose([a, b]);
 joinStrings(list, symbol) := sum(flatten(zip(list, apply(1..length(list) - 1, symbol) :> "")));
 
 
+fragmentSeparation = 0.8;
+typingOffset = 0.03;
+
 drawFragmentedText(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, hasColorMap, hasAlphaMap, col);
 
@@ -1179,38 +1228,30 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
     hasColorMap = contains(modifKeys, "colorMap");
     hasAlphaMap = contains(modifKeys, "alphaMap");
 
-    n = round(lerp(0, dict.length, time));
-
     fontHeight = pixelsize("M", size -> dict.size);
     fontHeight = fontHeight_2 + fontHeight_3;
 
-    forall(1..n,
+    forall(1..dict.length,
         yOffset = 0;
         alpha = 1;
         size = 1;
-    
-        if(mode == "up",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(-0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
-        );
-        if(mode == "down",
-        if(# == n, 
-            customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-            yOffset = lerp(0.1 * fontHeight, 0, easeOutCubic(customTime));
+
+        customTime = timeOffset(time, (#-1) * fragmentSeparation / dict.length, 1 - (dict.length - #) * fragmentSeparation / dict.length);
+
+        if(mode == "up",        
+            yOffset = lerp(-typingOffset * fontHeight, 0, easeOutCubic(customTime));
             alpha = (customTime);
         );
-    );
-        if(mode == "pop",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                size = easeOutBack(customTime)^2;
-                alpha = (customTime);
-
-            );
+        if(mode == "down",
+            yOffset = lerp(typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
+        
+        if(mode == "pop",
+            size = easeOutBack(customTime)^2;
+            alpha = (customTime);
+        );
+
         col = modifs.color;
         if(hasColorMap,
             forall(modifs.colorMap, entry, 
@@ -1248,40 +1289,30 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
     hasColorMap = contains(modifKeys, "colorMap");
     hasAlphaMap = contains(modifKeys, "alphaMap");
 
-    n = round(lerp(0, dict.length, time));
-
     fontHeight = pixelsize("M", size -> dict.size);
     fontHeight = fontHeight_2 + fontHeight_3;
 
 
 
-    forall(1..n,
+    forall(1..dict.length,
         yOffset = 0;
         alpha = 1;
         size = 1;
     
-        if(mode == "up",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(-0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
+        customTime = timeOffset(time, (#-1) * fragmentSeparation / dict.length, 1 - (dict.length - #) * fragmentSeparation / dict.length);
+
+        if(mode == "up",        
+            yOffset = lerp(-typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
         if(mode == "down",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
+            yOffset = lerp(typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
         
         if(mode == "pop",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                size = easeOutBack(customTime)^2;
-                alpha = (customTime);
-
-            );
+            size = easeOutBack(customTime)^2;
+            alpha = (customTime);
         );
 
         col = modifs.color;
@@ -1651,6 +1682,7 @@ defaultTextSize = 120;
 defaultEdgeArrow = [false, true];
 defaultEdgeSampleRate = 2;
 defaultNodeSize = [6, 6];
+defaultFamily = -1;
 
 /**********************************************************************************************************************************************************
 CAUTION!
@@ -1690,6 +1722,8 @@ allActions = [bounceGrow,bounceShrink,linearGrow,linearShrink,fadeIn,fadeOut,ink
 ladder = "ladder";
 tween = "tween";
 tweenRelative = "tweenRelative";
+set = "set";
+run = "run";
 
 
 animationObjectCounter = 0;
@@ -1702,6 +1736,7 @@ newPoint(pos, modifs) := (
         "id":                newID(),
         "type":              "point",
         "position":          pos,
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
         "size":              if(contains(keys, "size"), modifs.size, defaultPointSize),
         "color":             if(contains(keys, "color"), modifs.color, defaultPointColor),
         "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, outlineSizeCindy),
@@ -1715,11 +1750,11 @@ newPoint(pos, modifs) := (
     };  
 
     res.grow := self().linearGrow + easeOutBack(self().bounceGrow) - easeInBack(self().bounceShrink) - self().linearShrink;
-    res.alpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut);
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
     res.draw  := (
-        if(self().alpha > 0,
-            if(self().outlineSize > 0, fillcircle(self().position, (self().size + self().outlineSize) * self().grow, color -> self().outlineColor, alpha -> self().alpha));
-            fillcircle(self().position, self().size * self().grow, color -> self().color, alpha -> self().alpha);
+        if(self().trueAlpha > 0,
+            if(self().outlineSize > 0, fillcircle(self().position, (self().size + self().outlineSize) * self().grow, color -> self().outlineColor, alpha -> self().trueAlpha));
+            fillcircle(self().position, self().size * self().grow, color -> self().color, alpha -> self().trueAlpha);
         );
     );
 
@@ -1735,13 +1770,14 @@ newLabel(pos, string, modifs) := (
         "type":              "label",
         "position":          pos,
         "text":              string,
+        "family":            if(contains(keys, "family"), modifs.family, defaultFamily),
         "offset":            if(contains(keys, "offset"), modifs.offset, [0, 0]),
         "size":              if(contains(keys, "size"), modifs.size, defaultTextSize),
         "color":             if(contains(keys, "color"), modifs.color, defaultTextColor),
         "angle":             if(contains(keys, "angle"), modifs.angle, 0°),
         "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
         "bold":             if(contains(keys, "bold"), modifs.bold, false),
-        "align":             if(contains(keys, "align"), modifs.align, "left"),
+        "align":             if(contains(keys, "align"), modifs.align, "mid"),
         "outlinewidth":      if(contains(keys, "outlineSize"), modifs.outlineSize, 0),
         "outlinecolor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
         "bounceGrow":        if(contains(keys, bounceGrow), modifs.bounceGrow, 0),
@@ -1756,7 +1792,7 @@ newLabel(pos, string, modifs) := (
     res.trueAlpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut);
     res.draw  := (
         if(self().alpha > 0,
-            drawtext(self().position + self().grow * self().offset, self().text, size -> self().size * self().grow, align -> self().align, bold -> self().bold, alpha -> self().alpha * self().trueAlpha, color -> self().color, outlinewidth -> self().outlinewidth, outlinecolor -> self().outlinecolor, angle -> self().angle);
+            drawtext(self().position + self().grow * self().offset, self().text, size -> self().size * self().grow, align -> self().align, bold -> self().bold, alpha -> self().alpha * self().trueAlpha, color -> self().color, family -> self().family, outlinewidth -> self().outlinewidth, outlinecolor -> self().outlinecolor, angle -> self().angle);
         );
     );
 
@@ -1896,23 +1932,25 @@ newStroke(list) := newStroke(list, {});
 newText(pos, nykaString, modifs) := (
     regional(res, keys, fragments);
     keys = keys(modifs);
-    fragments = fragment(nykaString, if(contains(keys, "size"), modifs.size, defaultTextSize), if(contains(keys, "family"), modifs.family, fam));
     res = {
-        "id":                newID();
+        "id":                newID(),
         "type":              "text",
-        "fragments":         fragments,
-        "length":            fragmentLength(fragments),
+        "string":            nykaString,
+        "fragments":         [],
+        "length":            0, 
         "position":          pos,
+        "size":              if(contains(keys, "size"), modifs.size, defaultTextSize),
+        "family":            if(contains(keys, "family"), modifs.family, defaultFamily),
         "color":             if(contains(keys, "color"), modifs.color, defaultTextColor),
         "angle":             if(contains(keys, "angle"), modifs.angle, 0°),
         "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
-        "bold":             if(contains(keys, "bold"), modifs.bold, false),
+        "bold":              if(contains(keys, "bold"), modifs.bold, false),
         "align":             if(contains(keys, "align"), modifs.align, "left"),
         "colorMap":          if(contains(keys, "colorMap"), modifs.colorMap, []),
         "alphaMap":          if(contains(keys, "alphaMap"), modifs.alphaMap, []),
         "outlinewidth":      if(contains(keys, "outlineSize"), modifs.outlineSize, 0),
         "outlinecolor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
-        "mode":             if(contains(keys, "mode"), modifs.mode, "up"),
+        "mode":              if(contains(keys, "mode"), modifs.mode, "up"),
         "write":             if(contains(keys, write), modifs.write, 0),
         "erase":             if(contains(keys, erase), modifs.erase, 0),
         "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
@@ -1920,13 +1958,19 @@ newText(pos, nykaString, modifs) := (
         "linearFade":        if(contains(keys, linearFade), modifs.linearFade, 0)
     };  
 
+    res.calculateFragments := (
+        self().fragments = fragment(self().string, self().size, self().family);
+        self().length = fragmentLength(self().fragments);
+    );
+    res.calculateFragments;
+
     res.grow := self().write - self().erase;
-    res.animationAlpha := easeInCirc(self().fadeIn) - easeOutCirc(self().fadeOut) + self().linearFade;
+    res.trueAlpha := self().alpha * (easeInCirc(self().fadeIn) - easeOutCirc(self().fadeOut) + self().linearFade);
     res.trueModifs := {
         "color":             self().color,
         "angle":             self().angle,
         "bold":              self().bold,
-        "alpha":             self().alpha * self().animationAlpha,
+        "alpha":             self().trueAlpha,
         "align":             self().align,
         "colorMap":          self().colorMap,
         "alphaMap":          self().alphaMap
@@ -1935,7 +1979,7 @@ newText(pos, nykaString, modifs) := (
         "color":             self().outlinecolor,
         "angle":             self().angle,
         "bold":              self().bold,
-        "alpha":             self().alpha * self().animationAlpha,
+        "alpha":             self().trueAlpha,
         "outlinewidth":      self().outlinewidth,
         "outlinecolor":      self().outlinecolor,
         "align":             self().align,
@@ -1965,7 +2009,7 @@ newNode(pos, modifs) := (
     regional(res, keys);
     keys = keys(modifs);
     res = {
-        "id":           animationObjectCounter,
+        "id":           newID(),
         "type":         "node",
         "position":     pos,
         "size":         if(contains(keys, "size"), modifs.size, defaultNodeSize),
@@ -1978,7 +2022,7 @@ newNode(pos, modifs) := (
         "outlineSize":  if(contains(keys, "outlineSize"), modifs.outlineSize, defaultLineSize),
         "outlineColor": if(contains(keys, "outlineColor"), modifs.outlineColor, defaultTextColor),
         "corner":       if(contains(keys, "corner"), modifs.corner, 3),
-        "family":       if(contains(keys, "family"), modifs.family, fam),
+        "family":       if(contains(keys, "family"), modifs.family, defaultFamily),
         "slideDist":    if(contains(keys, "slideDist"), modifs.slideDist, 15),
         "slideIn":      if(contains(keys, slideIn), modifs.slideIn, 0),
         "slideOut":     if(contains(keys, slideOut), modifs.slideOut, 0),
@@ -2282,3 +2326,20 @@ poissonDiscSampling(rect, d, numberOfPoints) := poissonDiscSampling(rect, d, num
 
 
 
+delauney2D(listOfPoints) := select(convexhull3d(apply(listOfPoints, # :> # * #))_2, cross(listOfPoints_#_2 - listOfPoints_#_1, listOfPoints_#_3 - listOfPoints_#_1)_3 < 0);
+
+
+// Outputs list of x, y, r. Should be GPU-compatible.
+circleFromPoints(a, b, c) := (
+    regional(aa, bb, cc, p, l, m);
+
+    aa = a * a;
+    bb = b * b;
+    cc = c * c;
+    p = 0.5 * (det([(aa, a.y, 1), (bb, b.y, 1), (cc, c.y, 1)]), -det([(aa, a.x, 1), (bb, b.x, 1), (cc, c.x, 1)]));
+    l = det([(a.x, a.y, 1), (b.x, b.y, 1), (c.x, c.y, 1)]);
+    m = det([(a.x, a.y, aa), (b.x, b.y, bb), (c.x, c.y, cc)]);
+
+    [p.x / l, p.y / l, re(sqrt(m / l + (p * p) / (l * l)))];
+);
+circleFromPoints(list) := circleFromPoints(list_1, list_2, list_3);

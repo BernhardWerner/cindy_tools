@@ -1,7 +1,17 @@
 if(stepMode == STEPMODES.KEYBOARD,
     key = key();
     
-    if(key == STEPFORWARDS,
+    timeScale = abs(timeScale);
+
+    if(key == SKIPBACKWARDS,
+        skipStepBackwards();
+    );    
+
+    if(key == MOVEBACKWARDS,
+        moveStepBackwards();
+    );
+
+    if(key == MOVEFORWARDS,
         moveStepForwards();
     );
     
@@ -9,9 +19,7 @@ if(stepMode == STEPMODES.KEYBOARD,
         skipStepForwards();
     );
     
-    if(key == SKIPBACKWARDS,
-        skipStepBackwards();
-    );    
+
 
     if(key == RELOAD,
         reload();

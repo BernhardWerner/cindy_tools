@@ -1,4 +1,3 @@
- 
 // ************************************************************************************************
 // Draws a rectangle with rounded corners.
 // ************************************************************************************************
@@ -46,31 +45,17 @@ lerp(x, y, t, a, b) := lerp(x, y, inverseLerp(a, b, t));
         or(resultForwards, resultBackwards);
     );
     */      
-pointInPolygon(point, polygon) := (
-    regional(x,y, inside, i, j, xi, yi, xj, yj, intersect);
-    
-    if(polygon_1 ~= polygon_(-1),
-        pointInPolygon(point, pop(polygon));
-    , // else //
-        x = point_1;
-        y = point_2;
-        
-        inside = false;
+pointInPolygon(point, poly) := (
+    regional(resultForwards, resultBackwards);
 
-        j = length(polygon);
-        forall(1..length(polygon), i,
-            xi = polygon_i_1;
-            yi = polygon_i_2;
-            xj = polygon_j_1;
-            yj = polygon_j_2;
-            
-            intersect = ((yi > y) != (yj > y)) & (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect, inside = !inside);
-            j = i;
-        );
-        
-        inside;
+    resultForwards = true;
+    resultBackwards = true;
+    forall(cycle(poly),
+        resultForwards  = and(resultForwards , det([#_1 :> 1, #_2 :> 1, point :> 1]) >= 0);
+        resultBackwards = and(resultBackwards, det([#_1 :> 1, #_2 :> 1, point :> 1]) <= 0);
     );
+
+    or(resultForwards, resultBackwards);
 );
 
 
@@ -257,13 +242,18 @@ newSlider(dict) := (
   
   res.endPoints := [self().position, self().position + if(self().vertical, [0, self().length], [self().length, 0])];
   
+  res.handlePos := (
+    endPoints = self().endPoints;
+    lerp(endPoints_1, endPoints_2, self().animateValue);
+  );
   
   res.draw := (
     regional(handlePos, handleShape, endPoints);
     if(self().visible,
-      endPoints = self().endPoints;
-      draw(endPoints, size -> self().size * screenresolution(), color -> self().color);
-      handlePos = lerp(endPoints_1, endPoints_2, self().animateValue);
+
+      handlePos = self().handlePos;
+      draw(self().endPoints, size -> self().size * screenresolution(), color -> self().color);
+      
       handleShape = roundedRectangle(handlePos + 0.5 * (-self().handleSize_1, self().handleSize_2), self().handleSize_1, self().handleSize_2, self().handleCorner);
       fill(handleShape, color -> self().handleColor);
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
@@ -271,7 +261,7 @@ newSlider(dict) := (
   );
 
   res.animate := (
-    self().animateValue = lerp(self().animateValue, self().value, exp(-48 * uiDelta));
+    self().animateValue = lerp(self().animateValue, self().value, exp(-32 * uiDelta));
   );  
 
   res.onDown := ();
@@ -333,6 +323,7 @@ newOptionSlider(dict) := (
     "textSize":          if(contains(keys, "textSize"), dict.textSize, 20),
     "handleSize":        if(contains(keys, "handleSize"), dict.handleSize, [1.4, 1.4]),
     "handleOutlineSize": if(contains(keys, "handleOutlineSize"), dict.handleOutlineSize, 5),
+    "textOutlineWidth":  if(contains(keys, "textOutlineWidth"), dict.textOutlineWidth, 5),
     "handleCorner":      if(contains(keys, "handleCorner"), dict.handleCorner, 0.7),
     "fontFamily":        if(contains(keys, "fontFamily"), dict.fontFamily, 0),
     "active":            if(contains(keys, "active"), dict.active, true),
@@ -355,14 +346,16 @@ newOptionSlider(dict) := (
       draw(handleShape, size -> self().handleOutlineSize, color -> self().color);
       
       forall(1..length(self().options),
-        drawtext(lerp(endPoints_1, endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> 7, outlinecolor -> self().handleColor);
+        drawtext(lerp(endPoints_1, endPoints_2, #, 1 - self().endGap, length(self().options) + self().endGap) + (0, -0.013 * self().textSize), self().options_#, size -> self().textSize, align -> "mid", color -> self().textColor, family -> self().fontFamily, outlinewidth -> self().textOutlineWidth, outlinecolor -> self().handleColor);
       );
 
     );
   );
   res.animate := (
-    self().animateIndex = lerp(self().animateIndex, self().index, exp(-48 * uiDelta));
+    self().animateIndex = lerp(self().animateIndex, self().index, exp(-32 * uiDelta));
   );
+
+  res.currentOption := self().options_(self().index);
 
 
   res.onDown := ();
@@ -589,8 +582,8 @@ newDropdown(dict) := (
   );
 
   res.animate := (
-    self().animateOpen = lerp(self().animateOpen, self().open, exp(-96 * uiDelta));
-    self().animateIndex = lerp(self().animateIndex, self().index, exp(-96 * uiDelta));
+    self().animateOpen = lerp(self().animateOpen, self().open, exp(-64 * uiDelta));
+    self().animateIndex = lerp(self().animateIndex, self().index, exp(-64 * uiDelta));
     //self().animateMoveHighlightIndex = lerp(self().animateMoveHighlightIndex, self().moveHighlightIndex, exp(-32 * uiDelta));
   );
   res.onDown := ();
@@ -657,7 +650,7 @@ newToggle(dict) := (
     );
   );
   res.animate := (
-    self().animateState = lerp(self().animateState, self().state, exp(-48 * uiDelta));
+    self().animateState = lerp(self().animateState, self().state, exp(-32 * uiDelta));
   );
 
   res.onDown := ();

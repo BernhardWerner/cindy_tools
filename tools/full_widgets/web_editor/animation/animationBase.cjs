@@ -1,3 +1,6 @@
+debugColor = [0.22, 1, 0.08];
+
+
 canvasPoly = apply(screenbounds(), #.xy); //LO, RO, RU, LU
 
 canvasAnchors = [
@@ -24,7 +27,7 @@ screenMouse() := [(mouse().x - canvasLeft) / canvasWidth, (mouse().y - canvasBot
 
 
 
-strokeSampleRate = 256;
+strokeSampleRate = 96;
 texDelimiters = ["@", "/"];
 integralResolution = 3;
 
@@ -43,24 +46,39 @@ arrowTip(tipPos, dir, size) := (
 );
 
 
-
-sampleCircle(rad, angle) := apply(0..strokeSampleRate - 1, rad * [cos(angle * # / (strokeSampleRate - 1)), sin(angle * # / (strokeSampleRate - 1))]);
-sampleCircle(rad, startAngle, endAngle) := apply(0..strokeSampleRate - 1, rad * [cos(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1)), sin(startAngle + (endAngle - startAngle) * # / (strokeSampleRate - 1))]);
-sampleCircle(rad) := sampleCircle(rad, 2*pi);
-
-
 roundedRectangleStroke(center, w, h, cornerRadius) := (
     regional(corners);
 
     corners = [];
-    corners = corners :> apply(sampleCircle(cornerRadius, 0.5 * pi, pi), # + center + 0.5 * [-w, h] + cornerRadius * [1, -1]);
-    corners = corners :> apply(sampleCircle(cornerRadius, pi, 1.5 * pi), # + center + 0.5 * [-w, -h] + cornerRadius * [1, 1]);
-    corners = corners :> apply(sampleCircle(cornerRadius, 1.5 * pi, 2 * pi), # + center + 0.5 * [w, -h] + cornerRadius * [-1, 1]);
-    corners = corners :> apply(sampleCircle(cornerRadius, 0, 0.5 * pi), # + center + 0.5 * [w, h] + cornerRadius * [-1, -1]);
-    
+    corners = corners :> sampleCircle(center + 0.5 * [-w, h] + cornerRadius * [1, -1], cornerRadius, 0.5 * pi, pi);
+    corners = corners :> sampleCircle(center + 0.5 * [-w, -h] + cornerRadius * [1, 1], cornerRadius, pi, 1.5 * pi);
+    corners = corners :> sampleCircle(center + 0.5 * [w, -h] + cornerRadius * [-1, 1], cornerRadius, 1.5 * pi, 2 * pi);
+    corners = corners :> sampleCircle(center + 0.5 * [w, h] + cornerRadius * [-1, -1], cornerRadius, 0, 0.5 * pi);
 
-    resample(resample(corners_4_(-1) <: flatten(corners)));
+    corners_4_(-1) <: flatten(corners);
 );
+
+roundedRectangleShape(tl, w, h, r) := roundedRectangleShape(tl, tl + [w,-h], r);
+roundedRectangleShape(tl, br, r) := (
+    regional(tr, bl);
+    tr = [br.x, tl.y];
+    bl = [tl.x, br.y];
+    r = min([r, |tl.x-br.x|/2, |tl.y-br.y|/2]);
+    //rounded corners
+    circle(tl.xy + [r,-r], r)
+        ++ circle(bl.xy + [r,r], r)
+        ++ circle(br.xy + [-r,r], r)
+        ++ circle(tr.xy + [-r,-r], r)
+    //rectangle
+        ++ polygon([tl.xy + [r,0], tr.xy + [-r,0], br.xy + [-r,0], bl.xy + [r,0]])
+        ++ polygon([tl.xy + [0,-r], tr.xy + [0,-r], br.xy + [0,r], bl.xy + [0,r]]);
+);
+
+sampleCircle(center, rad) := sampleCircle(center, rad, 2 * pi);
+sampleCircle(center, rad, angle) := apply(0..strokeSampleRate - 1, center + rad * ang2vec(angle * # / (strokeSampleRate - 1)));
+sampleCircle(center, rad, startAngle, endAngle) := apply(0..strokeSampleRate - 1, center + rad * ang2vec(lerp(startAngle, endAngle, # / (strokeSampleRate - 1))));
+
+
 
 
 
@@ -136,7 +154,21 @@ animatePolygon(vertices, t) := (
         vertices_(1..counter) :> endPoint;
     );
 );
+animatePolygon(vertices, s, t) := (
+    regional(front, back, start, end, middle);
 
+    [s, t] = [min(s, t), max(s, t)];
+
+    vertices = zip(vertices, 1..length(vertices));
+
+    front = reverse(animatePolygon(reverse(vertices), 1 - s));
+    back = animatePolygon(vertices, t);
+    start = if(length(front) > 0, [front_1], []);
+    end = if(length(back) > 0, [back_(-1)], []);
+    middle = select(bite(front), contains(pop(back), #));
+    apply(start ++ middle ++ end, #_1);
+);
+moveAlongPolygon(vertices, t) := animatePolygon(vertices, 0, t)_(-1);
 
 
 
@@ -271,6 +303,7 @@ randomSort(list) := (
 
     list;
 );
+shuffle(list) := randomSort(list);
 
 
 
@@ -302,11 +335,21 @@ randomChoose(list) := randomChoose(list, 1)_1;
 pop(list) := list_(1..(length(list) - 1));
 pop(list, i) := list_(1..(length(list) - i));
 
+stringPop(string, i) := sum(pop(string, i));
+stringPop(string) := sum(pop(string, 1));
 
 
 
 bite(list, i) := list_((i + 1)..length(list));
 bite(list) := bite(list, 1);
+
+stringBite(string, i) := (
+    regional(res);
+
+    res = bite(string, i);
+    if(res == [], "", sum(res));
+);
+stringBite(string) := stringBite(string, 1);
 
 clamp(x, a, b) := min(max(x, a), b);
 
@@ -353,9 +396,11 @@ lerp4(x, y, t) := t * y + (1 - t) * x;
 inverseLerp1(x, y, p) := (p - x) / (y - x);
 inverseLerp2(x, y, p) := abs(p - x) / abs(y - x);
 inverseLerp3(x, y, p) := abs(p - x) / abs(y - x);
+inverseLerp4(x, y, p) := abs(p - x) / abs(y - x);
 lerp1(x, y, t, a, b) := lerp1(x, y, inverseLerp1(a, b, t));
 lerp2(x, y, t, a, b) := lerp2(x, y, inverseLerp2(a, b, t));
 lerp3(x, y, t, a, b) := lerp3(x, y, inverseLerp3(a, b, t));
+lerp4(x, y, t, a, b) := lerp4(x, y, inverseLerp4(a, b, t));
 
 
 
@@ -408,6 +453,44 @@ deltaTime() := (
 
 timeOffset(t, a, b) := clamp(inverseLerp(a, b, t), 0, 1);
 
+
+// Only usable in full package or, at least, when an array of animations tracks called 'tracks' exists.
+ladder(trackIndex, amount, separation) := (
+    regional(res);
+
+    res = {
+        "trackIndex": trackIndex,
+        "amount": amount,
+        "separation": separation,
+        "wiggle": separation / amount,
+        "index": -1
+    };
+
+    res.reset := (
+        self().index = -1;
+    );
+    res.doStep := (
+        self().index = self().index + 1;
+        timeOffset(tracks_(self().trackIndex).progress, self().index * self().wiggle, 1 - (self().amount - 1 - self().index) * self().wiggle);
+    );
+
+    res;
+); 
+extractedLadder(trackIndex, amount, separation) := (
+    regional(res, ladder);
+
+    res = [];
+    ladder = ladder(trackIndex, amount, separation);
+
+    repeat(amount, 
+        res = res :> ladder.doStep;
+    );
+
+    res;
+);
+
+
+
 stepSignal(t, a, b, c, d) := clamp(min(inverseLerp(a, b, t), inverseLerp(d, c, t)), 0, 1);
 
 smoothStep(x) := x * x * (3 - 2 * x);
@@ -456,7 +539,68 @@ easeInElastic(x)     := if(x == 0, 0, if(x == 1, 1, -2^(10 * x - 10) * sin(2 * p
 easeOutElastic(x)    := 1 - easeInElastic(1 - x);
 easeInOutElastic(x)  := if(x == 0, 0, if(x == 1, 1, if(x < 0.5, -2^(20 * x - 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2, 2^(-20 * x + 10) * sin(4 * pi / 9 * (20 * x - 11.125)) / 2 + 1)));
 
+easeInBounce(x)      := 1 - easeoutBounce(1 - x);
+easeOutBounce(x)     := (
+    regional(d);
+    d = 2.75;
 
+    if(x < 1 / d,
+        d^2 * x^2;
+    ,if(x < 2 / d,
+        (x * d - 1.5)^2 + 0.75;
+    ,if(x < 2.5 / d,
+        (x * d - 2.25)^2 + 0.9375;
+    , // else //
+        (x * d - 2.625)^2 + 0.984375;
+    )));
+);
+
+easeInOutBounce(x) := 0.5 * if(x < 0.5, 1 - easeOutBounce(1 - 2 * x), 1 + easeOutBounce(2 * x - 1));
+
+easeInJump(x) := if(x > 0, 1, 1);
+easeOutJump(x) := if(x < 1, 0, 1);
+easeZero(x) := 0;
+easeOne(x) := 1;
+
+easeNot(x) := x;
+
+
+easeInSine = "easeInSine";
+easeOutSine = "easeOutSine";
+easeInOutSine = "easeInOutSine";
+easeInQuad = "easeInQuad";
+easeOutQuad = "easeOutQuad";
+easeInOutQuad = "easeInOutQuad";
+easeInCubic = "easeInCubic";
+easeOutCubic = "easeOutCubic";
+easeInOutCubic = "easeInOutCubic";
+easeInQuart = "easeInQuart";
+easeOutQuart = "easeOutQuart";
+easeInOutQuart = "easeInOutQuart";
+easeInQuint = "easeInQuint";
+easeOutQuint = "easeOutQuint";
+easeInOutQuint = "easeInOutQuint";
+easeInExpo = "easeInExpo";
+easeOutExpo = "easeOutExpo";
+easeInOutExpo = "easeInOutExpo";
+easeInCirc = "easeInCirc";
+easeOutCirc = "easeOutCirc";
+easeInOutCirc = "easeInOutCirc";
+easeInBack = "easeInBack";
+easeOutBack = "easeOutBack";
+easeInOutBack = "easeInOutBack";
+easeInElastic = "easeInElastic";
+easeOutElastic = "easeOutElastic";
+easeInOutElastic = "easeInOutElastic";
+easeInBounce = "easeInBounce";
+easeOutBounce = "easeOutBounce";
+easeInOutBounce = "easeInOutBounce";
+easeInJump = "easeInJump";
+easeOutJump = "easeOutJump";
+easeZero = "easeZero";
+easeOne = "easeOne";
+easeNot = "easeNot";
+allEasing = [easeInSine,easeOutSine,easeInOutSine,easeInQuad,easeOutQuad,easeInOutQuad,easeInCubic,easeOutCubic,easeInOutCubic,easeInQuart,easeOutQuart,easeInOutQuart,easeInQuint,easeOutQuint,easeInOutQuint,easeInExpo,easeOutExpo,easeInOutExpo,easeInCirc,easeOutCirc,easeInOutCirc,easeInBack,easeOutBack,easeInOutBack,easeInElastic,easeOutElastic,easeInOutElastic,easeInBounce,easeOutBounce,easeInOutBounce,easeInJump,easeOutJump,easeZero,easeOne,easeNot];
 
 // ************************************************************************************************
 // Basic animation functionlity.
@@ -468,9 +612,8 @@ setupAnimationTrack(s, e) := (
         "end":      e,
         "duration": e - s,
         "timeLeft": e - s,
-        //"progress": 0,
-        //"running":  true,
-        "looping":  false
+        "looping":  false,
+        "iterations": 0
     };
     res.progress := 1 - self().timeLeft / self().duration;
     res.timeElapsed := self().duration - self().timeLeft;
@@ -530,15 +673,19 @@ updateAnimationTrack(track) := (
         track.timeLeft = mod(timeToEnd, track.duration);
     , // else //
         track.timeLeft = clamp(timeToEnd, 0, track.duration);
+        if(track.progress > 0, track.iterations = track.iterations + 1);
     );
 );
 
 
 
 
-
+// Returns displacement!
 tween(obj, prop, target, time) := (
-    obj_prop = lerp(obj_prop, target, time)
+    regional(old);
+    old = obj_prop;
+    obj_prop = lerp(old, target, time);
+    obj_prop - old;
 );
 
 
@@ -735,13 +882,16 @@ getChunkOfLetters(string) := getChunkOfLetters(string, 1);
 
 
 
+stripDelimiters(string) := replace(replace(string, texDelimiters_1, ""), texDelimiters_2, "");
+
+
 
 
 nyka2katex(string) := (
     regional(leftoverString, result, char, command, indexAfterCommand, curlyIndices, i, j, searching, followup);
 
     result = "";
-    leftoverString = string;
+    leftoverString = string; 
     while(length(leftoverString) > 0,
         char = leftoverString_1;
         if(char == backslash, // Check if it is any form of command
@@ -753,14 +903,14 @@ nyka2katex(string) := (
                         if(contains(abc, leftoverString_(indexAfterCommand + 1)), // Check if it is a proper word command.
                             followup = getChunkOfLetters(leftoverString, indexAfterCommand + 1);
                             result = result + texDelimiters_1 + backslash + command + backslash + followup + texDelimiters_2;
-                            leftoverString = bite(leftoverString, indexAfterCommand + length(followup));
+                            leftoverString = stringBite(leftoverString, indexAfterCommand + length(followup));
                         , // else // Must be single char command like \{
                             result = result + texDelimiters_1 + backslash + command + backslash + leftoverString_(indexAfterCommand + 1) + texDelimiters_2;
-                            leftoverString = bite(leftoverString, indexAfterCommand + 2);
+                            leftoverString = stringBite(leftoverString, indexAfterCommand + 2);
                         );
                     , // else // Followup is single character
                         result = result + texDelimiters_1 + backslash + command + leftoverString_indexAfterCommand + texDelimiters_2;
-                        leftoverString = bite(leftoverString, indexAfterCommand);
+                        leftoverString = stringBite(leftoverString, indexAfterCommand);
                     );
                 ,if(sum(bite(command)) == "matrix" % command == "matrix" % command == "cases", // Check if it's an environment. Must be followed by several {}.
                     curlyIndices = [];
@@ -770,7 +920,7 @@ nyka2katex(string) := (
                         j = findMatchingBracket(leftoverString, i, "{", "}");
                         if(j == 0, // No closing } found.
                             leftoverString = "";
-                            i = 999;
+                            i = 99999;
                         , // else //
                             curlyIndices = curlyIndices :> [i, j];
                             i = j + 1;
@@ -784,10 +934,10 @@ nyka2katex(string) := (
                     if(length(curlyIndices) > 0,
                         result = result + texDelimiters_1 + "\begin{" + command + "}";
                         forall(curlyIndices, pair, index,
-                            result = result + if(index != 1, " \\ ", "") + nyka2katex(leftoverString_(pair_1 + 1..pair_2 - 1));
+                            result = result + if(index != 1, " \\ ", "") + nyka2katex(substring(leftoverString, pair_1, pair_2-1));
                         );
                         result = result + "\end{" + command + "}" + texDelimiters_2;
-                        leftoverString = bite(leftoverString, curlyIndices_(-1)_2);
+                        leftoverString = stringBite(leftoverString, curlyIndices_(-1)_2);
                     , // else //
                         println("Nyka Parsing Error: " + command + " environment must be followed by one or more {...}.");
                         result = result :> errorTofu;
@@ -798,8 +948,8 @@ nyka2katex(string) := (
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
                         if(leftoverString_(i+1) == "{",
                             j = findMatchingBracket(leftoverString, i + 1, "{", "}");
-                            result = result + texDelimiters_1 + "\frac{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
-                            leftoverString = bite(leftoverString, j);
+                            result = result + texDelimiters_1 + "\frac{" + nyka2katex(substring(leftoverString, indexAfterCommand, i-1)) + "}{" + nyka2katex(substring(leftoverString, i + 1, j - 1)) + "}" + texDelimiters_2;
+                            leftoverString = stringBite(leftoverString, j);
                         , // else //
                             println("Nyka Parsing Error: frac command must be followed by {...}{...}.");
                             result = result :> errorTofu;
@@ -815,8 +965,8 @@ nyka2katex(string) := (
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
                         if(leftoverString_(i+1) == "[",
                             j = findMatchingBracket(leftoverString, i + 1, "[", "]");
-                            result = result + texDelimiters_1 + backslash + command + "_{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}^{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
-                            leftoverString = bite(leftoverString, j);
+                            result = result + texDelimiters_1 + backslash + command + "_{" + nyka2katex(substring(leftoverString, indexAfterCommand, i-1)) + "}^{" + nyka2katex(substring(leftoverString, i + 1, j - 1)) + "}" + texDelimiters_2;
+                            leftoverString = stringBite(leftoverString, j);
                         , // else //
                             println("Nyka Parsing Error: " + command + " command must be followed by [...][...] or nothing.");
                             result = result :> errorTofu;
@@ -824,24 +974,24 @@ nyka2katex(string) := (
                         );
                     , // else //
                         result = result + texDelimiters_1 + backslash + command + texDelimiters_2;
-                        leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                        leftoverString = stringBite(leftoverString, indexAfterCommand - 1);
                     );
                 ,if(command == "lim", // Check if it is a limit command. Can be followed by [].
                     if(leftoverString_indexAfterCommand == "[",
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
-                        result = result + texDelimiters_1 + "\lim\limits_{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
-                        leftoverString = bite(leftoverString, i);
+                        result = result + texDelimiters_1 + "\lim\limits_{" + nyka2katex(substring(leftoverString, indexAfterCommand, i - 1)) + "}" + texDelimiters_2;
+                        leftoverString = stringBite(leftoverString, i);
                     , // else //
                         result = result + texDelimiters_1 + "\lim" + texDelimiters_2;
-                        leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                        leftoverString = stringBite(leftoverString, indexAfterCommand - 1);
                     );
                 ,if(command == "sqrt", // Check if it is a square root command. Must be followed by []{} or {}.
                     if(leftoverString_indexAfterCommand == "[",
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "[", "]");
                         if(leftoverString_(i+1) == "{",
                             j = findMatchingBracket(leftoverString, i + 1, "{", "}");
-                            result = result + texDelimiters_1 + "\sqrt[" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "]{" + nyka2katex(leftoverString_(i+2..j-1)) + "}" + texDelimiters_2;
-                            leftoverString = bite(leftoverString, j);
+                            result = result + texDelimiters_1 + "\sqrt[" + nyka2katex(substring(leftoverString, indexAfterCommand, i-1)) + "]{" + nyka2katex(substring(leftoverString, i + 1, j - 1)) + "}" + texDelimiters_2;
+                            leftoverString = stringBite(leftoverString, j);
                         , // else //
                             println("Nyka Parsing Error: sqrt command must be followed by [...]{...} or {...}.");
                             result = result :> errorTofu;
@@ -849,8 +999,8 @@ nyka2katex(string) := (
                         );
                     ,if(leftoverString_indexAfterCommand == "{",
                         i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
-                        result = result + texDelimiters_1 + "\sqrt{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
-                        leftoverString = bite(leftoverString, i);
+                        result = result + texDelimiters_1 + "\sqrt{" + nyka2katex(substring(leftoverString, indexAfterCommand, i - 1)) + "}" + texDelimiters_2;
+                        leftoverString = stringBite(leftoverString, i);
                     , // else //
                         println("Nyka Parsing Error: sqrt command must be followed by [...]{...} or {...}.");
                         result = result :> errorTofu;
@@ -859,37 +1009,37 @@ nyka2katex(string) := (
                 ,if(leftoverString_indexAfterCommand == "{", // Check if the command is followed by an argument.
                     i = findMatchingBracket(leftoverString, indexAfterCommand, "{", "}");
                     if(contains(NYKA.IGNORABLES.FUNCTIONS, command),
-                        result = result + backslash + command + sum(leftoverString_(indexAfterCommand..i));
+                        result = result + backslash + command + stripDelimiters(nyka2katex(substring(leftoverString, indexAfterCommand - 1, i)));
                     , // else //
-                        result = result + texDelimiters_1 + backslash + nykaReplace(command) + "{" + nyka2katex(leftoverString_(indexAfterCommand+1..i-1)) + "}" + texDelimiters_2;
+                        result = result + texDelimiters_1 + backslash + nykaReplace(command) + "{" + nyka2katex(substring(leftoverString, indexAfterCommand, i - 1)) + "}" + texDelimiters_2;
                     );
-                    leftoverString = bite(leftoverString, i);
+                    leftoverString = stringBite(leftoverString, i);
                 , // else // Command is not followed by arguments and can be isolated
                     result = result + if(contains(NYKA.IGNORABLES.COMMANDS, command), backslash + command, texDelimiters_1 + backslash + nykaReplace(command) + texDelimiters_2);
-                    leftoverString = bite(leftoverString, indexAfterCommand - 1);
+                    leftoverString = stringBite(leftoverString, indexAfterCommand - 1);
                 )))))));
             , // else // It must be a command like \% \, or \
                 result = result + if(contains(NYKA.IGNORABLES.COMMANDS, leftoverString_2), backslash + leftoverString_2, texDelimiters_1 + backslash + leftoverString_2 + texDelimiters_2);
-                leftoverString = bite(leftoverString, 2);
+                leftoverString = stringBite(leftoverString, 2);
             )
         ,if(char == "_" % char == "^", // Check if it is subscript or superscript
             if(leftoverString_2 == "{", // Followed by block
                 i = findMatchingBracket(leftoverString, 2, "{", "}");
-                result = result + char + "{" + nyka2katex(leftoverString_(3..i-1)) + "}";
-                leftoverString = bite(leftoverString, i);
+                result = result + char + "{" + nyka2katex(substring(leftoverString, 2, i - 1)) + "}";
+                leftoverString = stringBite(leftoverString, i);
             ,if(leftoverString_2 == backslash, // Followed by command
                 command = getChunkOfLetters(leftoverString, 3);
                 result = result + char + "{" + texDelimiters_1 + backslash + nykaReplace(command) + texDelimiters_2 + "}";
-                leftoverString = bite(leftoverString, 2 + length(command));
+                leftoverString = stringBite(leftoverString, 2 + length(command));
             , // else // Foloowed by single character
                 result = result + char + "{" + texDelimiters_1 + leftoverString_2 + texDelimiters_2 + "}";
-                leftoverString = bite(leftoverString, 2);
+                leftoverString = stringBite(leftoverString, 2);
             ));
 
 
         , // else // Assume it is a single character that can be isolated.
             result = result + if(contains(NYKA.IGNORABLES.CHARACTERS, char), char, texDelimiters_1 + char + texDelimiters_2);
-            leftoverString = sum(bite(leftoverString));
+            leftoverString = stringBite(leftoverString);
         ));
     );
 
@@ -897,7 +1047,11 @@ nyka2katex(string) := (
 );
 
 
+
+
+
 parseNyka(string) := sum(apply(tokenize(string, "$", autoconvert -> false), chunk, index, if(mod(index, 2) == 0, "$" + nyka2katex(chunk) + "$", chunk)));
+
 fragment(string, size, family) := fragmentMixed(parseNyka(string), size, family);
 fragment(string, size) := fragment(string, size, 0);
 
@@ -925,6 +1079,7 @@ fragmentText(string, size, family) := (
     result = {
         "size": size,
         "family": family,
+        "width": pixelsize(string, size -> size, family -> family)_1 / screenresolution(),
         "length": n,
         "characters": [],
         "offsets": []
@@ -946,7 +1101,7 @@ fragmentText(string, size, family) := (
 fragmentText(string, size) := fragmentText(string, size, 0);
 
 fragmentTex(string, size, family) := (
-    regional(n, m, pairsOfDelimiters, candidate);
+    regional(n, m, pairsOfDelimiters, candidate, res);
 
     m = length(string);
 
@@ -963,13 +1118,15 @@ fragmentTex(string, size, family) := (
     n = length(pairsOfDelimiters);
     string = replace(string, texDelimiters_2, "}");
 
-    {
+    res = {
         "size": size,
         "family": family,
         "length": n,
         "characters": apply(1..n, i, sum(flatten(zip(tokenize(string, texDelimiters_1), apply(1..n, j, "\color{" + if(i == j, "[COLOR_" + j + "][ALPHA_" + j + "]", "#00000000") + "}{") :> "")))),
         "offsets": apply(1..n, 0)
     };
+    res.width = pixelsize(replace(string, texDelimiters_1, "{"), size -> size)_1 / screenresolution();
+    res;
 );
 fragmentTex(string, size) := fragmentTex(string, size, 0);
 
@@ -1011,9 +1168,18 @@ fragmentMixed(string, size) := fragmentMixed(string, size, 0);
 
 
 drawFragments(pos, listOfDicts, time, mode, modifs) := (
-    regional(totalLength, customTime, s, e);
+    regional(totalLength, customTime, s, e, totalWidth, hOffset);
 
     totalLength = sum(apply(listOfDicts, #.length));
+    totalWidth = sum(apply(listOfDicts, #.width));
+    hOffset = 0;
+    if(contains(keys(modifs), "align"),
+        if(modifs.align == "mid",
+            hOffset = -totalWidth / 2;
+        ,if(modifs.align == "right",
+            hOffset = -totalWidth;
+        ));
+    );
     s = 0;
     forall(listOfDicts, dict, index,
         if(index > 1,
@@ -1021,10 +1187,11 @@ drawFragments(pos, listOfDicts, time, mode, modifs) := (
         );
         e = s + dict.length / totalLength;
         customTime = timeOffset(time, s, e);
+
         if(mod(index, 2) == 0,
-            drawFragmentedTex(pos, dict, customTime, mode, modifs);
+            drawFragmentedTex(pos + [hOffset, 0], dict, customTime, mode, modifs);
         , // else //
-            drawFragmentedText(pos, dict, customTime, mode, modifs);
+            drawFragmentedText(pos + [hOffset, 0], dict, customTime, mode, modifs);
         );
     );
 
@@ -1038,7 +1205,7 @@ drawFragments(pos, listOfDicts, time, mode) := drawFragments(pos, listOfDicts, t
 
 
 
-
+screenUV(x, y) := [lerp(canvasLeft, canvasRight, x), lerp(canvasBottom, canvasTop, y)];
 
 
 
@@ -1047,6 +1214,9 @@ drawFragments(pos, listOfDicts, time, mode) := drawFragments(pos, listOfDicts, t
 zip(a, b) := transpose([a, b]);
 joinStrings(list, symbol) := sum(flatten(zip(list, apply(1..length(list) - 1, symbol) :> "")));
 
+
+fragmentSeparation = 0.8;
+typingOffset = 0.03;
 
 drawFragmentedText(pos, dict, time, mode, modifs) := (
     regional(modifKeys, n, fontHeight, yOffset, alpha, size, hasColorMap, hasAlphaMap, col);
@@ -1058,38 +1228,30 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
     hasColorMap = contains(modifKeys, "colorMap");
     hasAlphaMap = contains(modifKeys, "alphaMap");
 
-    n = round(lerp(0, dict.length, time));
-
     fontHeight = pixelsize("M", size -> dict.size);
     fontHeight = fontHeight_2 + fontHeight_3;
 
-    forall(1..n,
+    forall(1..dict.length,
         yOffset = 0;
         alpha = 1;
         size = 1;
-    
-        if(mode == "up",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(-0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
-        );
-        if(mode == "down",
-        if(# == n, 
-            customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-            yOffset = lerp(0.1 * fontHeight, 0, easeOutCubic(customTime));
+
+        customTime = timeOffset(time, (#-1) * fragmentSeparation / dict.length, 1 - (dict.length - #) * fragmentSeparation / dict.length);
+
+        if(mode == "up",        
+            yOffset = lerp(-typingOffset * fontHeight, 0, easeOutCubic(customTime));
             alpha = (customTime);
         );
-    );
-        if(mode == "pop",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                size = easeOutBack(customTime)^2;
-                alpha = (customTime);
-
-            );
+        if(mode == "down",
+            yOffset = lerp(typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
+        
+        if(mode == "pop",
+            size = easeOutBack(customTime)^2;
+            alpha = (customTime);
+        );
+
         col = modifs.color;
         if(hasColorMap,
             forall(modifs.colorMap, entry, 
@@ -1103,7 +1265,7 @@ drawFragmentedText(pos, dict, time, mode, modifs) := (
         );
         
 
-        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size -> dict.size * size, color -> col, alpha -> modifs.alpha * alpha, family -> dict.family, outlinewidth -> modifs.outlinewidth, outlinecolor -> modifs.outlinecolor);
+        drawtext(pos + [dict.offsets_#, yOffset], dict.characters_#, size -> dict.size * size, color -> col, alpha -> modifs.alpha * alpha, family -> dict.family, outlinewidth -> modifs.outlinewidth, outlinecolor -> modifs.outlinecolor, bold -> modifs.bold);
     );
 );
 drawFragmentedText(pos, dict, time, mode) := drawFragmentedText(pos, dict, time, mode, {});
@@ -1127,40 +1289,30 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
     hasColorMap = contains(modifKeys, "colorMap");
     hasAlphaMap = contains(modifKeys, "alphaMap");
 
-    n = round(lerp(0, dict.length, time));
-
     fontHeight = pixelsize("M", size -> dict.size);
     fontHeight = fontHeight_2 + fontHeight_3;
 
 
 
-    forall(1..n,
+    forall(1..dict.length,
         yOffset = 0;
         alpha = 1;
         size = 1;
     
-        if(mode == "up",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(-0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
+        customTime = timeOffset(time, (#-1) * fragmentSeparation / dict.length, 1 - (dict.length - #) * fragmentSeparation / dict.length);
+
+        if(mode == "up",        
+            yOffset = lerp(-typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
         if(mode == "down",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                yOffset = lerp(0.1 * fontHeight, 0, easeOutCubic(customTime));
-                alpha = (customTime);
-            );
+            yOffset = lerp(typingOffset * fontHeight, 0, easeOutCubic(customTime));
+            alpha = (customTime);
         );
         
         if(mode == "pop",
-            if(# == n, 
-                customTime = timeOffset(time, (#-1)/dict.length, #/dict.length);
-                size = easeOutBack(customTime)^2;
-                alpha = (customTime);
-
-            );
+            size = easeOutBack(customTime)^2;
+            alpha = (customTime);
         );
 
         col = modifs.color;
@@ -1180,7 +1332,7 @@ drawFragmentedTex(pos, dict, time, mode, modifs) := (
         s = replace(s, "[ALPHA_" + # + "]", alpha2hex(modifs.alpha * alpha));
 
 
-        drawtext(pos + [dict.offsets_#, yOffset], s, size -> dict.size * size, outlinewidth -> modifs.outlinewidth, outlinecolor -> modifs.outlinecolor, family -> dict.family);
+        drawtext(pos + [dict.offsets_#, yOffset], s, size -> dict.size * size, outlinewidth -> modifs.outlinewidth, outlinecolor -> modifs.outlinecolor, family -> dict.family, bold -> modifs.bold);
     );
 );
 drawFragmentedTex(pos, dict, time, mode) := drawFragmentedTex(pos, dict, time, mode, {});
@@ -1372,6 +1524,9 @@ randomGradient2D(pos) := (
 );
 
 
+randomPoint(pos) := [fract(sin(pos * (127.1,311.7)) * 43758.5453), 
+    fract(sin(pos * (269.5,183.3)) * 43758.5453) ];
+
 
 // *************************************************************************************************
 // Gives random gradient noise based on a point in the plane.
@@ -1404,6 +1559,68 @@ perlinNoise2DOctaves(coords) := (
     sum / 1.75
 );
 
+// Not actually uniform, but good enough for our purposes.
+randomGradient3D(pos) := (
+    regional(a);
+
+    a = randomValue([pos.x, pos.y]);
+    b = randomValue([-pos.z, pos.x + pos.y]);
+
+    [sin(2 * pi * a) * sin(pi * b), cos(pi * b), cos(2 * pi * a) * sin(pi * b)]
+);                            
+
+perlinNoise3D(coords) := (
+    regional(iPoint, fPoint);
+    
+    iPoint = [floor(coords.x), floor(coords.y), floor(coords.z)];
+    fPoint = [fract(coords.x), fract(coords.y), fract(coords.z)];
+
+    0.5 * lerp(
+        lerp(
+            lerp(
+                randomGradient3D(iPoint) * (fPoint), 
+                randomGradient3D(iPoint + [1,0,0]) * (fPoint - [1,0,0]), 
+            smoothstep(fPoint.x)),
+            lerp(
+                randomGradient3D(iPoint + [0,1,0]) * (fPoint - [0,1,0]),
+                randomGradient3D(iPoint + [1,1,0]) * (fPoint - [1,1,0]),
+            smoothstep(fPoint.x)),
+        smoothstep(fPoint.y)),
+        lerp(
+            lerp(
+                randomGradient3D(iPoint + [0,0,1]) * (fPoint - [0,0,1]), 
+                randomGradient3D(iPoint + [1,0,1]) * (fPoint - [1,0,1]), 
+            smoothstep(fPoint.x)),
+            lerp(
+                randomGradient3D(iPoint + [0,1,1]) * (fPoint - [0,1,1]),
+                randomGradient3D(iPoint + [1,1,1]) * (fPoint - [1,1,1]),
+            smoothstep(fPoint.x)),
+        smoothstep(fPoint.y)),
+    smoothStep(fPoint.z)) + 0.5;
+);
+
+
+voronoiNoise(coords) := (
+    regional(iPoint, mDist, neighbours, currDist);
+
+    iPoint = [floor(coords.x), floor(coords.y)];
+    fPoint = [fract(coords.x), fract(coords.y)];
+
+    neighbours = directproduct(-1..1, -1..1);
+
+    mDist = 1.5;
+
+    forall(neighbours,
+        currDist = dist(coords, iPoint + # + randomPoint(iPoint + #));	
+        if(currDist < mDist,
+            mDist = currDist;
+        );
+    );
+
+    mDist;
+
+);
+
 
 rndSeed = 0.123456789;
 rnd() := (
@@ -1418,8 +1635,630 @@ rnd() := (
 
 
 
+// ************************************************************************************************
+// Quaternion rotation.
+// ************************************************************************************************
+
+qProd(u, v) := [
+    u_1 * v_1 - u_2 * v_2 - u_3 * v_3 - u_4 * v_4,
+    u_1 * v_2 + u_2 * v_1 + u_3 * v_4 - u_4 * v_3,
+    u_1 * v_3 - u_2 * v_4 + u_3 * v_1 + u_4 * v_2,
+    u_1 * v_4 + u_2 * v_3 - u_3 * v_2 + u_4 * v_1
+];
+
+qConj(a) := [a_1, -a_2, -a_3, -a_4];
+
+rotate3D(vec, axis, angle) := (
+    regional(r, p, res);
+
+    if(abs(axis) <= 0.001,
+        vec;
+    , // else //
+        axis = axis / abs(axis);
+
+        r = [cos(angle / 2), sin(angle / 2) * axis_1, sin(angle / 2) * axis_2, sin(angle / 2) * axis_3];
+        p = [0, vec_1, vec_2, vec_3];
+
+        res = qProd(qProd(r, p), qConj(r));
+
+        [res_2, res_3, res_4];
+    );
+);
 
 
+
+// *************************************************************************************************
+
+defaultBackgroundColor = [1,1,1];
+defaultPointColor = [1,0,0];
+defaultLineColor = [0,0,1];
+defaultStrokeColor = [0,0,1];
+defaultTextColor = [0,0,0];
+defaultPointSize = 1;
+defaultLineSize = 10;
+defaultOutlineSizePixel = 0;
+defaultArrowSize = 5;
+defaultTextSize = 120;
+defaultEdgeArrow = [false, true];
+defaultEdgeSampleRate = 2;
+defaultNodeSize = [6, 6];
+defaultFamily = -1;
+
+/**********************************************************************************************************************************************************
+CAUTION!
+Doesn't work for code variables, i.e. methods.
+**********************************************************************************************************************************************************/
+copy(dict) := (
+    regional(result);
+
+    result = {};
+    forall(keys(dict),
+        result_# = dict_#;
+    );
+    result;
+);
+
+// Actions. These are now effectively keywords:
+
+bounceGrow = "bounceGrow";
+bounceShrink = "bounceShrink";
+linearGrow = "linearGrow";
+linearShrink = "linearShrink";
+fadeIn = "fadeIn";
+fadeOut = "fadeOut";
+ink = "ink";
+erase = "erase";
+reverseInk = "reverseInk";
+reverseErase = "reverseErase";
+write = "write";
+linearFade = "linearFade";
+slideIn = "slideIn";
+slideOut = "slideOut";
+bounceGrow = "bounceGrow";
+bounceGrow = "bounceGrow";
+
+allActions = [bounceGrow,bounceShrink,linearGrow,linearShrink,fadeIn,fadeOut,ink,erase,reverseInk,reverseErase,write,linearFade,slideIn,slideOut,bounceGrow,bounceGrow];
+
+ladder = "ladder";
+tween = "tween";
+tweenRelative = "tweenRelative";
+set = "set";
+run = "run";
+
+
+animationObjectCounter = 0;
+newID() := animationObjectCounter = animationObjectCounter + 1;
+
+newPoint(pos, modifs) := (
+    regional(res, keys);
+    keys = keys(modifs);
+    res = {
+        "id":                newID(),
+        "type":              "point",
+        "position":          pos,
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
+        "size":              if(contains(keys, "size"), modifs.size, defaultPointSize),
+        "color":             if(contains(keys, "color"), modifs.color, defaultPointColor),
+        "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, outlineSizeCindy),
+        "outlineColor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
+        "bounceGrow":        if(contains(keys, bounceGrow), modifs.bounceGrow, 0),
+        "bounceShrink":      if(contains(keys, bounceShrink), modifs.bounceShrink, 0),
+        "linearGrow":        if(contains(keys, linearGrow), modifs.linearGrow, 0),
+        "linearShrink":      if(contains(keys, linearShrink), modifs.linearShrink, 0),
+        "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":           if(contains(keys, fadeOut), modifs.fadeOut, 0)
+    };  
+
+    res.grow := self().linearGrow + easeOutBack(self().bounceGrow) - easeInBack(self().bounceShrink) - self().linearShrink;
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
+    res.draw  := (
+        if(self().trueAlpha > 0,
+            if(self().outlineSize > 0, fillcircle(self().position, (self().size + self().outlineSize) * self().grow, color -> self().outlineColor, alpha -> self().trueAlpha));
+            fillcircle(self().position, self().size * self().grow, color -> self().color, alpha -> self().trueAlpha);
+        );
+    );
+
+    res;
+);
+newPoint(pos) := newPoint(pos, {});
+
+newLabel(pos, string, modifs) := (
+    regional(res, keys);
+    keys = keys(modifs);
+    res = {
+        "id":                newID(),
+        "type":              "label",
+        "position":          pos,
+        "text":              string,
+        "family":            if(contains(keys, "family"), modifs.family, defaultFamily),
+        "offset":            if(contains(keys, "offset"), modifs.offset, [0, 0]),
+        "size":              if(contains(keys, "size"), modifs.size, defaultTextSize),
+        "color":             if(contains(keys, "color"), modifs.color, defaultTextColor),
+        "angle":             if(contains(keys, "angle"), modifs.angle, 0°),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
+        "bold":             if(contains(keys, "bold"), modifs.bold, false),
+        "align":             if(contains(keys, "align"), modifs.align, "mid"),
+        "outlinewidth":      if(contains(keys, "outlineSize"), modifs.outlineSize, 0),
+        "outlinecolor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
+        "bounceGrow":        if(contains(keys, bounceGrow), modifs.bounceGrow, 0),
+        "bounceShrink":      if(contains(keys, bounceShrink), modifs.bounceShrink, 0),
+        "linearGrow":        if(contains(keys, linearGrow), modifs.linearGrow, 0),
+        "linearShrink":      if(contains(keys, linearShrink), modifs.linearShrink, 0),
+        "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":           if(contains(keys, fadeOut), modifs.fadeOut, 0)
+    };  
+
+    res.grow := self().linearGrow + easeOutBack(self().bounceGrow) - easeInBack(self().bounceShrink) - self().linearShrink;
+    res.trueAlpha := easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut);
+    res.draw  := (
+        if(self().alpha > 0,
+            drawtext(self().position + self().grow * self().offset, self().text, size -> self().size * self().grow, align -> self().align, bold -> self().bold, alpha -> self().alpha * self().trueAlpha, color -> self().color, family -> self().family, outlinewidth -> self().outlinewidth, outlinecolor -> self().outlinecolor, angle -> self().angle);
+        );
+    );
+
+    res;
+);
+newLabel(pos, string) := newLabel(pos, string, {});
+
+
+
+/**********************************************************************************************************************************************************
+arrow shapes: empty, full, line, jet
+**********************************************************************************************************************************************************/
+
+
+newLine(pointA, pointB, modifs) := (
+    regional(res, keys);
+    keys = keys(modifs);
+    res = {
+        "id":                newID(),
+        "type":              "line",
+        "endPoints":         [if(contains(keys(pointA), "position"), pointA.position, pointA), if(contains(keys(pointB), "position"), pointB.position, pointB)],
+        "size":              if(contains(keys, "size"), modifs.size, defaultLineSize),
+        "color":             if(contains(keys, "color"), modifs.color, defaultLineColor),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
+        "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, defaultOutlineSizePixel),
+        "outlineColor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
+        "overshoot":         if(contains(keys, "overshoot"), modifs.overshoot, 0),
+        "dashType":          if(contains(keys, "dashType"), modifs.dashType, 0),
+        "dashPattern":          if(contains(keys, "dashPattern"), modifs.dashPattern, []),
+        "arrow":             if(contains(keys, "arrow"), modifs.arrow, [false, false]),
+        "arrowSize":         if(contains(keys, "arrowSize"), modifs.arrowSize, defaultArrowSize),
+        "arrowShape":        if(contains(keys, "arrowShape"), modifs.arrowShape, "line"),
+        "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":           if(contains(keys, fadeOut), modifs.fadeOut, 0),
+        "ink":               if(contains(keys, ink), modifs.ink, 0),
+        "erase":             if(contains(keys, erase), modifs.erase, 0),
+        "reverseInk":        if(contains(keys, reverseInk), modifs.ink, 1),
+        "reverseErase":      if(contains(keys, reverseErase), modifs.erase, 0)
+    };  
+
+    res.grow := easeInOutCubic(self().ink) - easeInOutCubic(self().erase);
+    res.reverseGrow := easeInOutCubic(self().reverseInk) - easeInOutCubic(self().reverseErase);
+    res.scale := (easeOutCirc(self().ink) - easeInCirc(self().erase)) * (easeOutCirc(self().reverseInk) - easeInCirc(self().reverseErase));
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
+    res.dist := dist(self().endPoints_1, self().endPoints_2);
+    res.draw := (
+        if(self().trueAlpha > 0 & self().scale > 0,
+            dir = [0, 0];
+            if(self().dist > 0, dir = (self().endPoints_2 - self().endPoints_1) / self().dist);
+            if(self().outlineSize > 0, 
+                if(self().arrow_1 % self().arrow_2,
+                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().trueAlpha);
+                , // else //
+                    draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
+                );
+            );
+            if(self().arrow_1 % self().arrow_2,
+                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, arrow -> true, arrowshape -> self().arrowShape, arrowsides -> if(self().arrow_1, "<", "") + "==" + if(self().arrow_2, ">", ""), arrowsize -> self().arrowSize * self().grow^2 * self().reverseGrow^2, alpha -> self().trueAlpha, arrowposition -> 1);
+            , // else //
+                draw(lerp(self().endPoints_2 + self().overshoot * dir, self().endPoints_1 - self().overshoot * dir, self().reverseGrow), lerp(self().endPoints_1 - self().overshoot * dir, self().endPoints_2 + self().overshoot * dir, self().grow), size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
+            );
+
+        );
+    );
+
+    res;
+);
+newLine(pointA, pointB) := newLine(pointA, pointB, {});
+
+line2line(line) := join(line.endPoints_1, line.endPoints_2);
+
+newStroke(list, modifs) := (
+    regional(res, keys);
+    keys = keys(modifs);
+    res = {
+        "id":                newID(),
+        "type":              "stroke",
+        "points":            list,
+        "length":            length(list),
+        "size":              if(contains(keys, "size"), modifs.size, defaultLineSize),
+        "color":             if(contains(keys, "color"), modifs.color, defaultStrokeColor),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
+        "outlineSize":       if(contains(keys, "outlineSize"), modifs.outlineSize, defaultOutlineSizePixel),
+        "outlineColor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
+        "fillColor":         if(contains(keys, "fillColor"), modifs.fillColor, defaultBackgroundColor),
+        "fillAlpha":         if(contains(keys, "fillAlpha"), modifs.fillAlpha, 0),
+        "dashType":          if(contains(keys, "dashType"), modifs.dashType, 0),
+        "dashPattern":          if(contains(keys, "dashPattern"), modifs.dashPattern, []),
+        "arrow":             if(contains(keys, "arrow"), modifs.arrow, [false, false]),
+        "arrowSize":         if(contains(keys, "arrowSize"), modifs.arrowSize, defaultArrowSize),
+        "arrowShape":        if(contains(keys, "arrowShape"), modifs.arrowShape, "line"),
+        "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":           if(contains(keys, fadeOut), modifs.fadeOut, 0),
+        "ink":               if(contains(keys, ink), modifs.ink, 0),
+        "erase":             if(contains(keys, erase), modifs.erase, 0),
+        "reverseInk":        if(contains(keys, reverseInk), modifs.ink, 1),
+        "reverseErase":      if(contains(keys, reverseErase), modifs.erase, 0)
+    };  
+
+    res.grow := easeInOutCubic(self().ink) - easeInOutCubic(self().erase);
+    res.reverseGrow := easeInOutCubic(self().reverseInk) - easeInOutCubic(self().reverseErase);
+    res.endIndex := round(lerp(1, self().length, self().grow));
+    res.startIndex := round(lerp(self().length, 1, self().reverseGrow));
+    res.lut := animatePolygon(self().points, 1 - self().reverseGrow, self().grow);
+    res.scale := easeOutCirc(self().ink) - easeInCirc(self().erase) + easeOutCirc(self().reverseInk) - easeInCirc(self().reverseErase) - 1;
+    res.trueAlpha := self().alpha * (easeOutCirc(self().fadeIn) - easeOutCirc(self().fadeOut));
+    res.draw := (
+        if(self().trueAlpha > 0,
+            fillpoly(self().lut, color -> self().fillColor, alpha -> self().fillAlpha * self().trueAlpha * self().grow);
+            if(self().size > 0,
+                if(self().outlineSize > 0, 
+                    connect(self().lut, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
+                    if(self().endIndex - self().startIndex >= 1,
+                        if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().trueAlpha));
+                        if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> (self().size + 2 * self().outlineSize) * self().scale, color -> self().outlineColor, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow, alpha -> self().trueAlpha));
+                    );
+                );
+                connect(self().lut, size -> self().size * self().scale, color -> self().color, dashtype -> self().dashType, dashpattern -> self().dashPattern, alpha -> self().trueAlpha);
+                if(self().endIndex - self().startIndex >= 1,
+                    if(self().arrow_1, draw(self().lut_2, self().lut_1, size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow * self().reverseGrow, alpha -> self().trueAlpha));
+                    if(self().arrow_2, draw(self().lut_(-2), self().lut_(-1), size -> self().size * self().scale, color -> self().color, arrow -> true, arrowshape -> self().arrowShape, arrowsize -> self().arrowSize * self().grow * self().reverseGrow, alpha -> self().trueAlpha));
+                );
+            );
+        );
+    );
+
+    res;
+);
+newStroke(list) := newStroke(list, {});
+
+
+
+
+
+
+
+newText(pos, nykaString, modifs) := (
+    regional(res, keys, fragments);
+    keys = keys(modifs);
+    res = {
+        "id":                newID(),
+        "type":              "text",
+        "string":            nykaString,
+        "fragments":         [],
+        "length":            0, 
+        "position":          pos,
+        "size":              if(contains(keys, "size"), modifs.size, defaultTextSize),
+        "family":            if(contains(keys, "family"), modifs.family, defaultFamily),
+        "color":             if(contains(keys, "color"), modifs.color, defaultTextColor),
+        "angle":             if(contains(keys, "angle"), modifs.angle, 0°),
+        "alpha":             if(contains(keys, "alpha"), modifs.alpha, 1),
+        "bold":              if(contains(keys, "bold"), modifs.bold, false),
+        "align":             if(contains(keys, "align"), modifs.align, "left"),
+        "colorMap":          if(contains(keys, "colorMap"), modifs.colorMap, []),
+        "alphaMap":          if(contains(keys, "alphaMap"), modifs.alphaMap, []),
+        "outlinewidth":      if(contains(keys, "outlineSize"), modifs.outlineSize, 0),
+        "outlinecolor":      if(contains(keys, "outlineColor"), modifs.outlineColor, defaultBackgroundColor),
+        "mode":              if(contains(keys, "mode"), modifs.mode, "up"),
+        "write":             if(contains(keys, write), modifs.write, 0),
+        "erase":             if(contains(keys, erase), modifs.erase, 0),
+        "fadeIn":            if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":           if(contains(keys, fadeOut), modifs.fadeOut, 0),
+        "linearFade":        if(contains(keys, linearFade), modifs.linearFade, 0)
+    };  
+
+    res.calculateFragments := (
+        self().fragments = fragment(self().string, self().size, self().family);
+        self().length = fragmentLength(self().fragments);
+    );
+    res.calculateFragments;
+
+    res.grow := self().write - self().erase;
+    res.trueAlpha := self().alpha * (easeInCirc(self().fadeIn) - easeOutCirc(self().fadeOut) + self().linearFade);
+    res.trueModifs := {
+        "color":             self().color,
+        "angle":             self().angle,
+        "bold":              self().bold,
+        "alpha":             self().trueAlpha,
+        "align":             self().align,
+        "colorMap":          self().colorMap,
+        "alphaMap":          self().alphaMap
+    };
+    res.outlineModifs := {
+        "color":             self().outlinecolor,
+        "angle":             self().angle,
+        "bold":              self().bold,
+        "alpha":             self().trueAlpha,
+        "outlinewidth":      self().outlinewidth,
+        "outlinecolor":      self().outlinecolor,
+        "align":             self().align,
+        "colorMap":          self().colorMap,
+        "alphaMap":          self().alphaMap
+    };
+    res.draw  := (
+        self().trueModifs.alpha = self().alpha;
+        self().outlineModifs.alpha = self().alpha;
+        if(self().alpha > 0,
+            if(self().outlineModifs.outlinewidth > 0,
+                drawFragments(self().position, self().fragments, self().grow, self().mode, self().outlineModifs);
+            );
+            drawFragments(self().position, self().fragments, self().grow, self().mode, self().trueModifs);
+        );
+    );
+
+    res;
+);
+newText(pos, nykaString) := newText(pos, nykaString, {});
+
+
+
+
+
+newNode(pos, modifs) := (
+    regional(res, keys);
+    keys = keys(modifs);
+    res = {
+        "id":           newID(),
+        "type":         "node",
+        "position":     pos,
+        "size":         if(contains(keys, "size"), modifs.size, defaultNodeSize),
+        "color":        if(contains(keys, "color"), modifs.color, defaultBackgroundColor),
+        "fillAlpha":    if(contains(keys, "fillAlpha"), modifs.fillAlpha, 1),
+        "label":        if(contains(keys, "label"), modifs.label, ""),
+        "labelSize":    if(contains(keys, "labelSize"), modifs.labelSize,  defaultTextSize),
+        "labelColor":   if(contains(keys, "labelColor"), modifs.labelColor, (1,1,1)),
+        "labelAlpha":   if(contains(keys, "labelAlpha"), modifs.labelAlpha, 1),
+        "outlineSize":  if(contains(keys, "outlineSize"), modifs.outlineSize, defaultLineSize),
+        "outlineColor": if(contains(keys, "outlineColor"), modifs.outlineColor, defaultTextColor),
+        "corner":       if(contains(keys, "corner"), modifs.corner, 3),
+        "family":       if(contains(keys, "family"), modifs.family, defaultFamily),
+        "slideDist":    if(contains(keys, "slideDist"), modifs.slideDist, 15),
+        "slideIn":      if(contains(keys, slideIn), modifs.slideIn, 0),
+        "slideOut":     if(contains(keys, slideOut), modifs.slideOut, 0),
+        "slideInDir":   if(contains(keys, "slideInDir"), modifs.slideInDir, [0, 1]),
+        "slideOutDir":  if(contains(keys, "slideOutDir"), modifs.slideOutDir, [0, -1]),
+        "fadeIn":       if(contains(keys, fadeIn), modifs.fadeIn, 1),
+        "fadeOut":      if(contains(keys, fadeOut), modifs.fadeOut, 0)
+    };
+    res.shape := roundedRectangleShape(self().position + self().offset + 0.5 * (-self().size.x, self().size.y), self().size.x, self().size.y, self().corner);
+    res.labelOffset := -0.6 * (pixelsize(self().label, size -> self().labelSize, family -> self().family)_2 - pixelsize(self().label, size -> self().labelSize, family -> self().family)_3) / screenresolution();
+
+    res.alpha := easeInCirc(min(self().fadeIn, self().slideIn)) - easeOutCirc(max(self().fadeOut, self().slideOut));
+    res.offset := self().slideDist * (self().slideOutDir * easeOutCubic(self().slideOut) - self().slideInDir * easeInCubic(1 - self().slideIn));
+    
+    res.draw := (
+        if(self().alpha > 0,
+            fill(self().shape, color -> self().color, alpha -> self().alpha * self().fillAlpha);
+            if(self().outlineSize > 0, draw(self().shape, size -> self().outlineSize, color -> self().outlineColor, alpha -> self().alpha));
+            fillpoly(self().labelBox, color -> sapColor.black, alpha -> self().alpha);
+            drawtext(self().position + self().offset + (0, self().labelOffset), self().label, align -> "mid", size -> self().labelSize, color -> self().labelColor, family -> self().family, alpha -> self().labelAlpha * self().alpha);
+        );
+    );
+
+    res;
+);
+newNode(pos) := newNode(pos, {});
+newBlueNode(pos, modifs) := (
+    modifs.color = sapColor.blue1;
+    modifs.outlineColor = sapColor.blue3;
+    newNode(pos, modifs);
+);
+newBlueNode(pos) := newBlueNode(pos, {});
+newRedNode(pos, modifs) := (
+    modifs.color = sapColor.red0;
+    modifs.outlineColor = sapColor.red2;
+    newNode(pos, modifs);
+);
+newRedNode(pos) := newRedNode(pos, {});
+newGreenNode(pos, modifs) := (
+    modifs.color = sapColor.green0;
+    modifs.outlineColor = sapColor.green2;
+    newNode(pos, modifs);
+);
+newGreenNode(pos) := newGreenNode(pos, {});
+newOrangeNode(pos, modifs) := (
+    modifs.color = sapColor.orange0;
+    modifs.outlineColor = sapColor.orange2;
+    newNode(pos, modifs);
+);
+newOrangeNode(pos) := newOrangeNode(pos, {});
+newVioletNode(pos, modifs) := (
+    modifs.color = sapColor.violet0;
+    modifs.outlineColor = sapColor.violet2;
+    newNode(pos, modifs);
+);
+newVioletNode(pos) := newVioletNode(pos, {});
+newTealNode(pos, modifs) := (
+    modifs.color = sapColor.teal0;
+    modifs.outlineColor = sapColor.teal2;
+    newNode(pos, modifs);
+);
+newTealNode(pos) := newTealNode(pos, {});
+newGrayNode(pos, modifs) := (
+    modifs.color = sapColor.grey1;
+    modifs.outlineColor = sapColor.grey3;
+    newNode(pos, modifs);
+);
+newGrayNode(pos) := newGrayNode(pos, {});
+newDotNode(pos, modifs) := (
+    modifs.size = [3, 3];
+    modifs.corner = 1.5;
+    modifs.outlineSize = 0;
+    modifs.color = defaultTextColor;
+    newNode(pos, modifs);
+);
+newDotNode(pos) := newDotNode(pos, {});
+newDebugNode(pos) := newNode(pos, {"color": debugColor, "slideIn": END});
+newPunctureNode(pos, modifs) := (
+    modifs.color = defaultBackgroundColor;
+    modifs.outlineColor = defaultBackgroundColor;
+    modifs.outlineSize = 0;
+    modifs.size = [0.02, 0.02];
+    modifs.corner = 0.01;
+    newNode(pos, modifs);
+);
+newPunctureNode(pos) := newPunctureNode(pos, {});
+newLabelNode(pos, modifs) := (
+    regional(keys);
+
+    keys = keys(modifs);
+
+    modifs.fillAlpha = 0;
+    modifs.outlineSize = 0;
+    modifs.size = if(contains(keys, "size"), modifs.size, [6, 6]);
+    modifs.corner = if(contains(keys, "corner"), modifs.corner, 2);
+    newNode(pos, modifs);
+);
+newLabelNode(pos) := newLabelNode(pos, {});
+
+
+
+
+
+rr2border(size, corner, dir) := (
+    regional(a, b, xSign, ySign, d, point, normal);
+
+    if(abs(dir) > 0, dir = dir / abs(dir));
+    xSign = sign(dir.x);
+    ySign = sign(dir.y);
+    dir = [dir.x * xSign, dir.y * ySign];
+    
+
+    
+    b = 0.5 * size.y - corner;
+    if(dir.y * size.x <= 2 * b * dir.x,
+        point = 0.5 * size.x * [xSign, ySign * dir.y / dir.x];
+        normal = [xSign, 0];
+    , // else //;
+        a = 0.5 * size.x - corner;
+        if(size.y * dir.x <= dir.y * 2 * a,
+            point = 0.5 * size.y * [xSign * dir.x / dir.y, ySign];
+            normal = [0, ySign];
+        , // else //;
+            d = [a, b] * dir;
+            point = [dir.x, dir.y] * (d + sqrt(d^2 - (a^2 + b^2 - corner^2)));
+            normal = point - [a, b];
+            normal = normal / abs(normal);
+            point = [point.x * xSign, point.y * ySign];
+            normal = [normal.x * xSign, normal.y * ySign];
+        );
+    );
+
+    [point, normal];
+);
+
+
+newEdge(nodeA, nodeB, modifs) := (
+    regional(res, d, dir, areNodes, anchorA, anchorB, offsetA, offsetB, keys, uA, uB, normalA, normalB, sampleRate);
+    keys = keys(modifs);
+
+
+    sampleRate = if(contains(keys, "sampleRate"), modifs.sampleRate, defaultEdgeSampleRate);
+    
+    if(!contains(keys, "color"), modifs.color = defaultTextColor);
+    if(!contains(keys, "arrow"), modifs.arrow = defaultEdgeArrow);
+    if(!contains(keys, "arrowShape"), modifs.arrowShape = "line");
+    if(!contains(keys, "edgeBend"), modifs.edgeBend = 0.3);
+
+    offsetA = if(contains(keys, "offsetA"), modifs.offsetA, 0°);
+    offsetB = if(contains(keys, "offsetB"), modifs.offsetB, 0°);
+    areNodes = [contains(keys(nodeA), "position"), contains(keys(nodeB), "position")];
+
+    dir = nodeB.position - nodeA.position;
+    d = abs(dir);
+    dir = dir / d;
+    uA = rotate(dir, offsetA);
+    uB = rotate(-dir, offsetB);
+    [anchorA, normalA] = rr2border(nodeA.size, nodeA.corner, uA);
+    [anchorB, normalB] = rr2border(nodeB.size, nodeB.corner, uB);
+
+    anchorA = nodeA.position + anchorA + normalA * if(modifs.arrow_1, 0.3, 0);
+    anchorB = nodeB.position + anchorB + normalB * if(modifs.arrow_2, 0.3, 0);
+
+
+
+    res = newStroke(sampleBezierCurve([anchorA, anchorA + uA * d * modifs.edgeBend, anchorB + uB * d * modifs.edgeBend, anchorB], sampleRate), modifs);
+    res.offsetA = offsetA;
+    res.offsetB = offsetB;
+
+    res;
+);
+newEdge(nodeA, nodeB) := newEdge(nodeA, nodeB, {});
+newDebugEdge(nodeA, nodeB) := newEdge(nodeA, nodeB, {"color": debugColor, "ink": END});
+
+
+
+
+
+
+cindy2shaderBox(p, bl, hs, r1, hr) := (
+    regional(res);
+    
+    res = (p - bl) / hs / r1 * hr;
+  
+    [floor(res.x), floor(res.y)];
+  );
+  cindy2shaderBox(p, env) := cindy2shaderBox(p, env.BL, env.hSize, env.ratio_1, env.hRes);
+  
+  
+  
+  
+  drawShaderBoxGrid(box, modifs) := (
+    regional(keys, scale);
+  
+    keys = keys(modifs);
+    if(!contains(keys, "color"), modifs.color = defaultBackgroundColor);
+    if(!contains(keys, "baseSize"), modifs.baseSize = 2);
+    
+    scale = min(1, box.ratio_1 / box.hRes);
+    if(scale * modifs.baseSize > 0.15,  
+      forall(1..box.hRes-1,
+        draw(lerp(box.BL, box.BR, #, 0, box.hRes), lerp(box.TL, box.TR, #, 0, box.hRes), color -> modifs.color, size -> scale * modifs.baseSize);
+      );
+      forall(1..box.vRes-1,
+        draw(lerp(box.BL, box.TL, #, 0, box.vRes), lerp(box.BR, box.TR, #, 0, box.vRes), color -> modifs.color, size -> scale * modifs.baseSize);
+      );
+    );
+    drawpoly([box.BL, box.BR, box.TR, box.TL], color -> modifs.color, size -> scale * modifs.baseSize);
+  );
+  
+  
+  
+  newShaderBox(position, hSize, ratio, hRes) := (
+      regional(res);
+  
+      res = {
+        "position": position,
+        "hSize": hSize,
+        "ratio": ratio,
+        "hRes": hRes,
+        "BL": position - 0.5 * hSize * ratio / ratio_1,
+        "TR": position + 0.5 * hSize * ratio / ratio_1,
+        "vRes": hRes * ratio_2 / ratio_1
+      };
+      res.TL = [res.BL.x, res.TR.y];
+      res.BR = [res.TR.x, res.BL.y];
+  
+      res;
+  );
+
+
+
+
+
+
+// ****************************************************************************************************
 
 
 
@@ -1484,3 +2323,23 @@ poissonDiscSampling(rect, d, numberOfPoints, searchThreshold) := (
 );
 poissonDiscSampling(rect, d, numberOfPoints) := poissonDiscSampling(rect, d, numberOfPoints, 32);
 
+
+
+
+delauney2D(listOfPoints) := select(convexhull3d(apply(listOfPoints, # :> # * #))_2, cross(listOfPoints_#_2 - listOfPoints_#_1, listOfPoints_#_3 - listOfPoints_#_1)_3 < 0);
+
+
+// Outputs list of x, y, r. Should be GPU-compatible.
+circleFromPoints(a, b, c) := (
+    regional(aa, bb, cc, p, l, m);
+
+    aa = a * a;
+    bb = b * b;
+    cc = c * c;
+    p = 0.5 * (det([(aa, a.y, 1), (bb, b.y, 1), (cc, c.y, 1)]), -det([(aa, a.x, 1), (bb, b.x, 1), (cc, c.x, 1)]));
+    l = det([(a.x, a.y, 1), (b.x, b.y, 1), (c.x, c.y, 1)]);
+    m = det([(a.x, a.y, aa), (b.x, b.y, bb), (c.x, c.y, cc)]);
+
+    [p.x / l, p.y / l, re(sqrt(m / l + (p * p) / (l * l)))];
+);
+circleFromPoints(list) := circleFromPoints(list_1, list_2, list_3);
