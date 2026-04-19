@@ -21,13 +21,13 @@ CindyJS({,
 ```
 
 ### Animation
-A full animation framework for creating frame-based, multi-track animations. Supports tweening, 20+ easing functions, Bézier/Catmull-Rom splines, typewriter-style math rendering via **Nyka** (a KaTeX wrapper), polygon animation, Perlin noise, and multiple render modes (real-time, frame-by-frame, step-by-step).
+A full animation framework for creating frame-based, multi-track animations. Supports tweening, 20+ easing functions, Bézier/Catmull-Rom splines, typewriter-style math rendering via **Nyka** (a KaTeX wrapper), polygon animation, Perlin noise, and multiple render modes (real-time, frame-by-frame, or one movement at a time). For standard movements on standard objects (drawing points, lines strokes; typing text; creating nodes and edges in a graph etc.) the animation process are stream-lined. But anything else can be added manually without too much hassle. (It's CindyJS, after all.)
 
 ### Responsive
 Handles canvas resizing and responsive layouts. Provides a 9-point compass anchor system for positioning elements relative to canvas edges and center, with automatic recalculation on window resize.
 
 ### UI
-Interactive UI component library: buttons, sliders, option sliders, and selectors. Uses SDF-based collision detection for rounded shapes and a lerp-based animation system for smooth interactions.
+Interactive UI component library: buttons, sliders, option sliders, and selectors..
 
 ---
 
